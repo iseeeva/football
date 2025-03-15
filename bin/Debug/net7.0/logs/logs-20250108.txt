@@ -1,0 +1,32 @@
+I > [Program] Logging started.
+I > [Sobee.Network.Socket.Hub] :[::ffff:127.0.0.1]:3000 Initialized.
+I > [Program]: Logging started.
+I > [Sobee.Network.Socket.Hub]: Port 3000 Initialized.
+I > [Program]: Logging started.
+I > [Sobee.Network.Socket.Hub]: Port 3000 initialized.
+I > [Program]: Logging started.
+I > [Sobee.Network.Socket.Hub]: Socket listening on 3000.
+I > [Program]: Logging started.
+I > [Sobee.Network.Socket.Hub]: Socket listening on 3000.
+I > [Program]: Logging started.
+I > [Sobee.Network.Socket.Hub]: Port 3000 initialized.
+I > [Program]: Logging started.
+I > [Sobee.Network.Socket.Hub]: Port 3000 initialized.
+I > [Program]: Logging started.
+I > [Sobee.Network.Socket.Hub]: Port 3000 initialized.
+I > [Sobee.Network.Socket.Hub]: Connection from [::ffff:127.0.0.1]:23272. (3000)
+I > [Sobee.Network.Socket.Hub]: 27968 received.
+I > [Program]: Logging started.
+I > [Sobee.Network.Socket.Hub]: Port 3000 initialized.
+I > [Sobee.Network.Socket.Hub]: Connection from [::ffff:127.0.0.1]:23275. (3000)
+I > [Sobee.Network.Socket.Hub]: 27968 received.
+I > [Program ""]: Logging started.
+I > [Sobee.Network.Socket.Hub ""]: Initialized.
+I > [Program {}]: Logging started.
+I > [Sobee.Network.Socket.Hub {}]: Initialized.
+I > [Program {}]: Logging started.
+I > [Sobee.Network.Socket.Hub {"Port":3000}]: Initialized.
+I > [Program {}]: Logging started.
+I > [Sobee.Network.Socket.Hub {"Port":"3000"}]: Initialized.
+I > [Program {}]: Logging started.
+I > [Sobee.Network.Socket.Hub {"Port":3000}]: Initialized.
