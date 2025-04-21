@@ -6,6 +6,7 @@ using Sobee.Messaging;
 
 public sealed class DispatchHelper
 {
+    private readonly object owner;
     private ILogger Log = Logging.Get<DispatchHelper>();
 
     private readonly IDictionary<ushort, ConstructorInfo> messageConstructorsById = new SortedDictionary<ushort, ConstructorInfo>();
@@ -19,6 +20,32 @@ public sealed class DispatchHelper
     public GDelegate2 GetMessageTypeToIdDelegate() => new GDelegate2(this.GetMessageTypeId);
     public int GetRegisteredMessageCount() => messageTypeToId.Count;
     public IEnumerable<KeyValuePair<Type, int>> GetAllTypeIndexes() => messageTypeToIndex;
+
+    public DispatchHelper(object owner)
+    {
+        this.owner = owner;
+    }
+
+    public object GetDispatchOwner()
+    {
+        return this.owner;
+    }
+
+    public int GetMessageIndex(Type type)
+    {
+        if (messageTypeToIndex.TryGetValue(type, out int index))
+            return index;
+
+        throw new KeyNotFoundException($"Message type index not found for: {type.FullName}");
+    }
+
+    public ushort GetMessageTypeId(Type type)
+    {
+        if (messageTypeToId.TryGetValue(type, out ushort id))
+            return id;
+
+        throw new KeyNotFoundException($"Message ID not found for type: {type.FullName}");
+    }
 
     public void RegisterMessagesFromAllAssemblies()
     {
@@ -53,14 +80,6 @@ public sealed class DispatchHelper
                 RegisterMessageType(attributes[0].method_0(), type);
             }
         }
-    }
-
-    public int GetMessageIndex(Type type)
-    {
-        if (messageTypeToIndex.TryGetValue(type, out int index))
-            return index;
-
-        throw new KeyNotFoundException($"Message type index not found for: {type.FullName}");
     }
 
     public void RegisterMessageEvent(Type messageType, GDelegate5 messageEvent)
@@ -99,7 +118,7 @@ public sealed class DispatchHelper
         messageTypeToIndex[type] = messageTypeToIndex.Count + 1;
         usedMessageIds.Add(messageId);
 
-        Log.Information("Message Type Registered: {Type} with ID {MessageId}", type.FullName, messageId);
+        Log.Information("Message type registered: {Type} with ID {MessageId}", type.FullName, messageId);
     }
 
     public void RegisterMessageType(Type type)
@@ -112,14 +131,6 @@ public sealed class DispatchHelper
 
         var messageId = attributes[0].method_0();
         RegisterMessageType(messageId, type);
-    }
-
-    public ushort GetMessageTypeId(Type type)
-    {
-        if (messageTypeToId.TryGetValue(type, out ushort id))
-            return id;
-
-        throw new KeyNotFoundException($"Message ID not found for type: {type.FullName}");
     }
 
     public object DispatchToMessageConstructor(ushort messageId, BinaryReader reader)

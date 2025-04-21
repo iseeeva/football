@@ -1,5 +1,5 @@
 ﻿using System.Net.Sockets;
-using Sobee.Messaging;
+using Sobee.Network;
 
 
 // Token: 0x02000009 RID: 9
@@ -18,7 +18,7 @@ public class GEventArgs10 : EventArgs
     }
 
     // Token: 0x06000055 RID: 85 RVA: 0x000025EB File Offset: 0x000007EB
-    public SocketHandle method_2()
+    public SocketQueueHandler method_2()
     {
         return this.SocketHandle_0;
     }
@@ -38,7 +38,7 @@ public class GEventArgs10 : EventArgs
     }
 
     // Token: 0x06000058 RID: 88 RVA: 0x0000261F File Offset: 0x0000081F
-    public GEventArgs10(SocketHandle SocketHandle_1)
+    public GEventArgs10(SocketQueueHandler SocketHandle_1)
     {
         this.SocketHandle_0 = SocketHandle_1;
     }
@@ -54,7 +54,7 @@ public class GEventArgs10 : EventArgs
     }
 
     // Token: 0x04000026 RID: 38
-    private SocketHandle SocketHandle_0;
+    private SocketQueueHandler SocketHandle_0;
 
     // Token: 0x04000027 RID: 39
     private ConnectionError connectionError_0;

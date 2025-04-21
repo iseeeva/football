@@ -2,7 +2,7 @@
 public class GEventArgs9 : EventArgs
 {
     // Token: 0x060000BE RID: 190 RVA: 0x00002B2D File Offset: 0x00000D2D
-    public GClass300 method_0()
+    public SocketWrapper method_0()
     {
         return this.gclass306_0;
     }
@@ -14,14 +14,14 @@ public class GEventArgs9 : EventArgs
     }
 
     // Token: 0x060000C0 RID: 192 RVA: 0x00002B3D File Offset: 0x00000D3D
-    public GEventArgs9(GClass300 gclass306_1, Message gclass175_1)
+    public GEventArgs9(SocketWrapper gclass306_1, Message gclass175_1)
     {
         this.gclass306_0 = gclass306_1;
         this.gclass175_0 = gclass175_1;
     }
 
     // Token: 0x04000046 RID: 70
-    private GClass300 gclass306_0;
+    private SocketWrapper gclass306_0;
 
     // Token: 0x04000047 RID: 71
     private Message gclass175_0;

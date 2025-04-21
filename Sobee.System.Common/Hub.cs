@@ -1,9 +1,8 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using Sobee.Common;
-using Sobee.Messages.Hub;
 
-namespace Sobee.Network
+namespace Sobee.System.Common
 {
     public class Hub : IDisposable
     {
@@ -12,8 +11,8 @@ namespace Sobee.Network
         private readonly CancellationTokenSource Cancellation = new();
         private bool IsDisposed = false;
 
-        private List<GClass300> Guests = new();
-        private DispatchHelper Dispatch = new();
+        private ClientManager? ClientManager;
+        private DispatchHelper? Dispatch;
 
         private static Serilog.ILogger Log = Logging.Get<Hub>();
 
@@ -23,8 +22,6 @@ namespace Sobee.Network
             {
                 if (Port > IPEndPoint.MinPort && Port < IPEndPoint.MaxPort)
                 {
-                    //DispatchHelper.RegisterMessagesFromAssemblyName("Sobee.Messages.Hub");
-
                     this.Port = Port;
                     Initialize(this.Port);
                 }
@@ -45,8 +42,11 @@ namespace Sobee.Network
                 Server.Bind(new IPEndPoint(IPAddress.Loopback, Port));
                 Server.Listen();
 
-                Dispatch.RegisterMessagesFromAssemblyName("Sobee.Messages.Hub");
-                Dispatch.RegisterMessageEvent(typeof(PlayerInitializeMessage), PlayerInitializeMessage.TestEvent);
+                Dispatch = new DispatchHelper(this);
+                Dispatch.RegisterMessagesFromAssemblyName("Sobee.Messages.Common");
+                Dispatch.RegisterMessageEvent(typeof(Messages.Common.Player.Initialize), Events.Common.Player.Initialize);
+
+                ClientManager = new ClientManager(Dispatch);
 
                 Task.Run(() => Start(Cancellation.Token));
                 Task.Run(() => Tick(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
@@ -83,19 +83,12 @@ namespace Sobee.Network
         private async Task Connection(Socket Socket)
         {
             Log.Information($"Connection from {Socket.RemoteEndPoint}");
-
-            var Guest = new GClass300(Socket);
-            Guest.SetDispatchSource(Dispatch);
-
-            Guests.Add(Guest);
+            ClientManager.AddClient(Socket);
         }
 
         private async Task Update()
         {
-            foreach (GClass300 Guest in Guests)
-            {
-                Guest.Update();
-            }
+            ClientManager.Update();
         }
 
         private async Task Tick(double Previous)

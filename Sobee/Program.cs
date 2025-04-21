@@ -13,7 +13,7 @@ namespace Sobee
             Logging.Configure();
             Log.Information("Logging started.");
 
-            Sobee.Network.Hub Hub = new(3000);
+            Sobee.System.Common.Hub Hub = new(3000);
 
             Console.CancelKeyPress += (sender, eventArgs) =>
             {

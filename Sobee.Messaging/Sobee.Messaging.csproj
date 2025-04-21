@@ -8,14 +8,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sobee.Common\Sobee.Common.csproj" />
+    <ProjectReference Include="..\Sobee.Network\Sobee.Network.csproj" />
     <ProjectReference Include="..\Sobee.Serialization\Sobee.Serialization.csproj" />
     <ProjectReference Include="..\Sobee.Tasks\Sobee.Tasks.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="GClass300.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="SocketHandle.cs">
       <SubType>Component</SubType>
     </Compile>

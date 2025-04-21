@@ -8,9 +8,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sobee.Common\Sobee.Common.csproj" />
-    <ProjectReference Include="..\Sobee.Messages.Hub\Sobee.Messages.Hub.csproj" />
-    <ProjectReference Include="..\Sobee.Messaging\Sobee.Messaging.csproj" />
     <ProjectReference Include="..\Sobee.Tasks\Sobee.Tasks.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="SocketWrapper.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="SocketQueueHandler.cs">
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
 
 </Project>

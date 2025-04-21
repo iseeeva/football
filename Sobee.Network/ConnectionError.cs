@@ -1,4 +1,4 @@
-﻿namespace Sobee.Messaging
+﻿namespace Sobee.Network
 {
     // Token: 0x02000004 RID: 4
     public enum ConnectionError

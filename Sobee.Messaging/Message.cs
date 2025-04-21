@@ -1,12 +1,7 @@
 ﻿// Token: 0x02000005 RID: 5
-using Serilog;
-using Sobee.Common;
-
 [GAttribute0(1)]
 public class Message : IDeserialize
 {
-    private static ILogger Log = Logging.Get<Message>();
-
     // Token: 0x06000059 RID: 89 RVA: 0x00002598 File Offset: 0x00000798
     public virtual bool vmethod_0()
     {
@@ -26,11 +21,6 @@ public class Message : IDeserialize
     // Token: 0x0600005C RID: 92 RVA: 0x000025A3 File Offset: 0x000007A3
     public virtual void Deserialize(BinaryWriter gclass316_0)
     {
-    }
-
-    public static void TestEvent(object sender, GEventArgs9 e)
-    {
-        //Log.Information($"{(tp(TestEvent)}");
     }
 
     // Token: 0x04000021 RID: 33

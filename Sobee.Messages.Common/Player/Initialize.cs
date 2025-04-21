@@ -1,8 +1,7 @@
-﻿// Token: 0x02000073 RID: 115
-namespace Sobee.Messages.Hub
+﻿namespace Sobee.Messages.Common.Player
 {
     [GAttribute0(29475)]
-    public sealed class PlayerInitializeMessage : Message
+    public sealed class Initialize : Message
     {
         // Token: 0x060002F4 RID: 756 RVA: 0x0000467C File Offset: 0x0000287C
         public override bool vmethod_0()
@@ -89,7 +88,7 @@ namespace Sobee.Messages.Hub
         }
 
         // Token: 0x06000302 RID: 770 RVA: 0x0000D1C4 File Offset: 0x0000B3C4
-        public PlayerInitializeMessage(BinaryReader gclass315_0) : base(gclass315_0)
+        public Initialize(BinaryReader gclass315_0) : base(gclass315_0)
         {
             version_0 = gclass315_0.method_24();
             long_0 = gclass315_0.method_10();
@@ -105,7 +104,7 @@ namespace Sobee.Messages.Hub
         }
 
         // Token: 0x06000303 RID: 771 RVA: 0x0000D25C File Offset: 0x0000B45C
-        public PlayerInitializeMessage(Version version_1, long long_1, string string_6, string string_7, string string_8, int int_3, string string_9, string string_10, int int_4, string string_11, bool bool_1)
+        public Initialize(Version version_1, long long_1, string string_6, string string_7, string string_8, int int_3, string string_9, string string_10, int int_4, string string_11, bool bool_1)
         {
             version_0 = version_1;
             long_0 = long_1;
