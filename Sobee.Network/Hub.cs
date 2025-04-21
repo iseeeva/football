@@ -1,25 +1,41 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using Net = System.Net.Sockets;
+using Sobee.Common;
+using Sobee.Messages.Hub;
 
-namespace Sobee.Network.Socket
+namespace Sobee.Network
 {
     public class Hub : IDisposable
     {
         public readonly int Port;
-        private readonly Net.Socket Server = new(SocketType.Stream, ProtocolType.Tcp);
+        private readonly Socket Server = new(SocketType.Stream, ProtocolType.Tcp);
         private readonly CancellationTokenSource Cancellation = new();
         private bool IsDisposed = false;
 
+        private List<GClass300> Guests = new();
+        private DispatchHelper Dispatch = new();
+
+        private static Serilog.ILogger Log = Logging.Get<Hub>();
+
         public Hub(int Port)
         {
-            if (Port > IPEndPoint.MinPort && Port < IPEndPoint.MaxPort)
+            try
             {
-                this.Port = Port;
-                Initialize(this.Port);
+                if (Port > IPEndPoint.MinPort && Port < IPEndPoint.MaxPort)
+                {
+                    //DispatchHelper.RegisterMessagesFromAssemblyName("Sobee.Messages.Hub");
+
+                    this.Port = Port;
+                    Initialize(this.Port);
+                }
+                else
+                    Log.Error($"{nameof(Port)} ({Port}) must be in port range.");
             }
-            else
-                Log.Error($"{nameof(Port)} ({Port}) must be in port range.");
+            catch (Exception ex)
+            {
+                Log.Error($"Failed on construction: {ex.Message}");
+                Dispose();
+            }
         }
 
         private void Initialize(int Port)
@@ -29,6 +45,9 @@ namespace Sobee.Network.Socket
                 Server.Bind(new IPEndPoint(IPAddress.Loopback, Port));
                 Server.Listen();
 
+                Dispatch.RegisterMessagesFromAssemblyName("Sobee.Messages.Hub");
+                Dispatch.RegisterMessageEvent(typeof(PlayerInitializeMessage), PlayerInitializeMessage.TestEvent);
+
                 Task.Run(() => Start(Cancellation.Token));
                 Task.Run(() => Tick(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
 
@@ -36,7 +55,7 @@ namespace Sobee.Network.Socket
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed to initialize: {ex.Message}");
+                Log.Error($"Failed on initialize: {ex.Message}");
                 Dispose();
             }
         }
@@ -47,7 +66,7 @@ namespace Sobee.Network.Socket
             {
                 while (!Cancellation.IsCancellationRequested)
                 {
-                    Net.Socket Client = await Server.AcceptAsync(Cancellation);
+                    Socket Client = await Server.AcceptAsync(Cancellation);
                     await Connection(Client);
                 }
             }
@@ -61,42 +80,21 @@ namespace Sobee.Network.Socket
             }
         }
 
-        private async Task Connection(Net.Socket Client)
+        private async Task Connection(Socket Socket)
         {
-            Log.Information($"Connection from {Client.RemoteEndPoint}");
-            var Buffer = new byte[4096]; // 4 Kilobayt
+            Log.Information($"Connection from {Socket.RemoteEndPoint}");
 
-            try
-            {
-                while (true)
-                {
-                    int Received = await Client.ReceiveAsync(Buffer, SocketFlags.None);
-                    if (Received > 0)
-                    {
-                        var Parsed = new Messaging.Events.Parser(Buffer);
-                        Log.Information($"{Parsed.Id} received.");
-                    }
-                    else
-                    {
-                        Log.Information($"Connection from {Client.RemoteEndPoint} closed by client.");
-                        break;
-                    }
+            var Guest = new GClass300(Socket);
+            Guest.SetDispatchSource(Dispatch);
 
-                    //await client.SendAsync(Buffer.AsMemory(0, bytesRead), SocketFlags.None);
-                }
-            }
-            catch (SocketException ex)
+            Guests.Add(Guest);
+        }
+
+        private async Task Update()
+        {
+            foreach (GClass300 Guest in Guests)
             {
-                Log.Error($"Socket error with {Client.RemoteEndPoint}: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"Unexpected error with {Client.RemoteEndPoint}: {ex.Message}");
-            }
-            finally
-            {
-                Client.Dispose();
-                Log.Information($"Connection with {Client.RemoteEndPoint} closed.");
+                Guest.Update();
             }
         }
 
@@ -107,11 +105,13 @@ namespace Sobee.Network.Socket
                 var Starting = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 var Delta = (Starting - Previous) / 1000.0;
 
+                await Update();
+
                 // Update all rooms
                 // Rooms.Update(delta);
 
                 var Elapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - Starting;
-                var Delay = Math.Max(0, (1000.0 / 100) - Elapsed); // TODO: FPS Needs Environment.
+                var Delay = Math.Max(0, 1000.0 / 100 - Elapsed); // TODO: FPS Needs Environment.
 
                 if (Delay > 0)
                 {
@@ -150,9 +150,5 @@ namespace Sobee.Network.Socket
             Log.Information("Resources disposed.");
         }
 
-        private static Serilog.ILogger Log
-        {
-            get { return Logger.Get<Hub>(); }
-        }
     }
 }

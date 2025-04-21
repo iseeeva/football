@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sobee.Common\Sobee.Common.csproj" />
+    <ProjectReference Include="..\Sobee.Messages.Hub\Sobee.Messages.Hub.csproj" />
+    <ProjectReference Include="..\Sobee.Messaging\Sobee.Messaging.csproj" />
+    <ProjectReference Include="..\Sobee.Tasks\Sobee.Tasks.csproj" />
+  </ItemGroup>
+
+</Project>
