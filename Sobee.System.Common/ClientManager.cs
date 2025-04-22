@@ -2,10 +2,16 @@
 
 namespace Sobee.System.Common
 {
-    public class ClientManager(DispatchHelper dispatchGroup)
+    public class ClientManager
     {
-        private List<Client> Clients = new();
-        private DispatchHelper DispatchGroup = dispatchGroup;
+        private List<Client> Clients;
+        private DispatchHelper DispatchGroup;
+
+        public ClientManager(DispatchHelper dispatchGroup)
+        {
+            this.Clients = new List<Client>();
+            this.DispatchGroup = dispatchGroup;
+        }
 
         public async Task Update()
         {
