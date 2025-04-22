@@ -6,13 +6,13 @@ namespace Sobee.System.Common
     public class Client
     {
         private readonly Guid Id;
-        private readonly SocketHandle Socket;
+        private readonly SocketMessageHandler Socket;
         public Messages.Common.Player.Initialize Information;
 
         public Client(Guid Id, Socket Socket)
         {
             this.Id = Id;
-            this.Socket = new SocketHandle(Socket);
+            this.Socket = new SocketMessageHandler(Socket);
         }
 
         public Guid GetId() { return Id; }
@@ -22,7 +22,7 @@ namespace Sobee.System.Common
             this.Socket.Update();
         }
 
-        public void SetDispatchSource(DispatchHelper dispatcher)
+        public void SetDispatchSource(MessageDispatcher dispatcher)
         {
             this.Socket.SetDispatchSource(dispatcher);
         }

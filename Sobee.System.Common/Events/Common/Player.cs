@@ -7,7 +7,7 @@ namespace Sobee.System.Common.Events.Common
     {
         private static ILogger Log = Logging.Get<Player>();
 
-        public static void Initialize(object sender, GEventArgs9 e)
+        public static void Initialize(object sender, MessageEventArgs e)
         {
             Log.Information($"{((Hub)sender).Port}");
         }

@@ -3,15 +3,15 @@ using System.Runtime.Serialization;
 
 namespace Sobee.Messaging
 {
-    public class SocketHandle : SocketWrapper
+    public class SocketMessageHandler : SocketQueueHandler
     {
-        private static MemoryStream UpdateMessageReadingStream = new MemoryStream(SocketHandle.MaxMessageSize);
+        private static MemoryStream UpdateMessageReadingStream = new MemoryStream(SocketMessageHandler.MaxMessageSize);
         private MessageHelper? MessageHelper;
-        private DispatchHelper? Dispatcher;
+        private MessageDispatcher? Dispatcher;
 
-        public SocketHandle(Socket Socket) : base(Socket)
+        public SocketMessageHandler(Socket Socket) : base(Socket)
         {
-
+            base.BeginReceive();
         }
 
         public virtual void Update()
@@ -37,7 +37,7 @@ namespace Sobee.Messaging
                             gclass.int_0 = array.Length;
                             num2 += gclass.int_0;
                             num++;
-                            this.vmethod_11(new GEventArgs23(Dispatcher.GetDispatchOwner(), new GEventArgs9(this, gclass)));
+                            this.vmethod_11(new MessageDelegateArgs(Dispatcher.GetDispatchOwner(), new MessageEventArgs(this, gclass)));
                         }
                     }
                     catch (SerializationException ex)
@@ -64,7 +64,7 @@ namespace Sobee.Messaging
             }
         }
 
-        protected virtual void vmethod_11(GEventArgs23 gclass175_0)
+        protected virtual void vmethod_11(MessageDelegateArgs gclass175_0)
         {
             Dispatcher.DispatchToMessageEvent(gclass175_0.method_1().method_1().GetType(), gclass175_0);
             //Dispatcher.DispatchToMessageEvent(gclass175_0.int_0, gclass175_0)
@@ -74,7 +74,7 @@ namespace Sobee.Messaging
             //}
         }
 
-        public void SetDispatchSource(DispatchHelper dispatcher)
+        public void SetDispatchSource(MessageDispatcher dispatcher)
         {
             this.Dispatcher = dispatcher;
             this.MessageHelper = new MessageHelper(UpdateMessageReadingStream, this.Dispatcher.GetDispatcher(), this.Dispatcher.GetMessageTypeToIdDelegate());

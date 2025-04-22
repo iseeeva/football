@@ -12,7 +12,7 @@ namespace Sobee.System.Common
         private bool IsDisposed = false;
 
         private ClientManager? ClientManager;
-        private DispatchHelper? Dispatch;
+        private MessageDispatcher? Dispatch;
 
         private static Serilog.ILogger Log = Logging.Get<Hub>();
 
@@ -42,7 +42,7 @@ namespace Sobee.System.Common
                 Server.Bind(new IPEndPoint(IPAddress.Loopback, Port));
                 Server.Listen();
 
-                Dispatch = new DispatchHelper(this);
+                Dispatch = new MessageDispatcher(this);
                 Dispatch.RegisterMessagesFromAssemblyName("Sobee.Messages.Common");
                 Dispatch.RegisterMessageEvent(typeof(Messages.Common.Player.Initialize), Events.Common.Player.Initialize);
 

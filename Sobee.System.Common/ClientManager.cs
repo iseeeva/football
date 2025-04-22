@@ -5,9 +5,9 @@ namespace Sobee.System.Common
     public class ClientManager
     {
         private List<Client> Clients;
-        private DispatchHelper DispatchGroup;
+        private MessageDispatcher DispatchGroup;
 
-        public ClientManager(DispatchHelper dispatchGroup)
+        public ClientManager(MessageDispatcher dispatchGroup)
         {
             this.Clients = new List<Client>();
             this.DispatchGroup = dispatchGroup;

@@ -12,9 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="SocketWrapper.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="SocketQueueHandler.cs">
       <SubType>Component</SubType>
     </Compile>

@@ -4,14 +4,14 @@ using Serilog;
 using Sobee.Common;
 using Sobee.Messaging;
 
-public sealed class DispatchHelper
+public sealed class MessageDispatcher
 {
     private readonly object owner;
-    private ILogger Log = Logging.Get<DispatchHelper>();
+    private ILogger Log = Logging.Get<MessageDispatcher>();
 
     private readonly IDictionary<ushort, ConstructorInfo> messageConstructorsById = new SortedDictionary<ushort, ConstructorInfo>();
     private readonly IDictionary<Type, ushort> messageTypeToId = new Dictionary<Type, ushort>();
-    private readonly IDictionary<ushort, GDelegate5> messageIdToEvent = new Dictionary<ushort, GDelegate5>();
+    private readonly IDictionary<ushort, MessageDelegate> messageIdToEvent = new Dictionary<ushort, MessageDelegate>();
     private readonly IDictionary<Type, int> messageTypeToIndex = new Dictionary<Type, int>();
     private readonly HashSet<ushort> usedMessageIds = new HashSet<ushort>();
 
@@ -21,7 +21,7 @@ public sealed class DispatchHelper
     public int GetRegisteredMessageCount() => messageTypeToId.Count;
     public IEnumerable<KeyValuePair<Type, int>> GetAllTypeIndexes() => messageTypeToIndex;
 
-    public DispatchHelper(object owner)
+    public MessageDispatcher(object owner)
     {
         this.owner = owner;
     }
@@ -82,7 +82,7 @@ public sealed class DispatchHelper
         }
     }
 
-    public void RegisterMessageEvent(Type messageType, GDelegate5 messageEvent)
+    public void RegisterMessageEvent(Type messageType, MessageDelegate messageEvent)
     {
         var id = GetMessageTypeId(messageType);
         if (messageIdToEvent.ContainsKey(id))
@@ -151,10 +151,10 @@ public sealed class DispatchHelper
         throw new SerializationException($"ClassID: {messageId} - Not registered.");
     }
 
-    public void DispatchToMessageEvent(Type messageType, GEventArgs23 e)
+    public void DispatchToMessageEvent(Type messageType, MessageDelegateArgs e)
     {
         var id = GetMessageTypeId(messageType);
-        if (messageIdToEvent.TryGetValue(id, out GDelegate5 eventDelegate))
+        if (messageIdToEvent.TryGetValue(id, out MessageDelegate eventDelegate))
         {
             try
             {

@@ -21,7 +21,6 @@ public class SocketQueueHandler : Component
     public static int MaxMessageSize = 4096;
 
     protected Socket clientSocket;
-    protected IPEndPoint remoteEndPoint;
 
     protected MemoryStream sendBuffer = new MemoryStream(BufferSize);
     protected Queue<byte[]> receivedMessagesQueue = new Queue<byte[]>();
@@ -41,11 +40,10 @@ public class SocketQueueHandler : Component
         Initialize();
     }
 
-    protected SocketQueueHandler(Socket socket, IPEndPoint endPoint)
+    protected SocketQueueHandler(Socket socket)
     {
-        Initialize();
         this.clientSocket = socket;
-        this.remoteEndPoint = endPoint;
+        Initialize();
     }
 
     protected virtual void Dispose(bool disposing)
@@ -101,9 +99,7 @@ public class SocketQueueHandler : Component
         peekBuffer = new byte[size];
     }
 
-    public IPEndPoint GetRemoteEndPoint() => remoteEndPoint;
-
-    public void SetRemoteEndPoint(IPEndPoint endPoint) => remoteEndPoint = endPoint;
+    public IPEndPoint GetRemoteEndPoint() => (IPEndPoint)this.clientSocket.RemoteEndPoint;
 
     public IPEndPoint GetLocalEndPoint() => (IPEndPoint)clientSocket.LocalEndPoint;
 
