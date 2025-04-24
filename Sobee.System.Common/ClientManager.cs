@@ -4,40 +4,52 @@ namespace Sobee.System.Common
 {
     public class ClientManager
     {
-        private List<Client> Clients;
-        private MessageDispatcher DispatchGroup;
+        private readonly List<Client> Clients;
+        private readonly MessageDispatcher DispatchGroup;
 
         public ClientManager(MessageDispatcher dispatchGroup)
         {
-            this.Clients = new List<Client>();
-            this.DispatchGroup = dispatchGroup;
+            Clients = new List<Client>();
+            DispatchGroup = dispatchGroup ?? throw new ArgumentNullException(nameof(dispatchGroup));
         }
 
         public async Task Update()
         {
-            foreach (Client Client in Clients)
-            {
-                Client.Update();
-            }
+            var updateTasks = Clients.Select(client => client.Update());
+            await Task.WhenAll(updateTasks);
         }
 
-        public bool AddClient(Socket Socket)
+        public bool AddClient(Socket socket)
         {
+            if (socket == null)
+                throw new ArgumentNullException(nameof(socket), "Socket cannot be null.");
+
             try
             {
                 Guid uniqueId;
-                do { uniqueId = Guid.NewGuid(); }
-                while (Clients.Any(c => c.GetId() == uniqueId));
+                do
+                {
+                    uniqueId = Guid.NewGuid();
+                } while (Clients.Any(c => c.GetId() == uniqueId));
 
-                var Client = new Client(uniqueId, Socket);
-                Client.SetDispatchSource(DispatchGroup);
-                Clients.Add(Client);
+                var client = new Client(uniqueId, socket);
+                client.SetDispatchSource(DispatchGroup);
 
-                return Clients.Contains(Client);
+                lock (Clients)
+                {
+                    Clients.Add(client);
+                }
+
+                return true;
+            }
+            catch (SocketException ex)
+            {
+                // Daha spesifik bir hata türü yakalanıyor
+                throw new InvalidOperationException("Failed to add client due to a socket error.", ex);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Client adding failed: " + ex.Message);
+                throw new InvalidOperationException("An unexpected error occurred while adding a client.", ex);
             }
         }
     }

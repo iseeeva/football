@@ -10,9 +10,9 @@ namespace Sobee.System.Common
         {
         }
 
-        public override void Update()
+        public override Task Update()
         {
-            base.Update();
+            return base.Update();
         }
     }
 }

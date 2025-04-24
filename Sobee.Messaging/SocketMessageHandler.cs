@@ -6,73 +6,48 @@ namespace Sobee.Messaging
     public class SocketMessageHandler : SocketQueueHandler
     {
         private MessageDispatcher? Dispatcher;
-
         private MessageHelper? MessageHelperUpdate;
-        private MemoryStream UpdateMessageReadingStream = new MemoryStream(SocketMessageHandler.MaxMessageSize);
-
         private MessageHelper? MessageHelperSend;
-        private MemoryStream ReadingStreamSend = new MemoryStream(SocketMessageHandler.BufferSize);
 
-        public SocketMessageHandler(Socket Socket) : base(Socket)
-        {
-            base.BeginReceive();
-        }
+        private readonly MemoryStream UpdateMessageReadingStream = new MemoryStream(SocketMessageHandler.MaxReceivingSize);
+        private readonly MemoryStream ReadingStreamSend = new MemoryStream(SocketMessageHandler.MaxSendingSize);
 
-        public virtual void Update()
+        public SocketMessageHandler(Socket socket) : base(socket) { }
+
+        public virtual async Task Update()
         {
-            lock (this)
+            if (!this.IsSocketAlive) return;
+
+            try
             {
-                try
-                {
-                    // Gelen mesajları işleme
-                    ProcessIncomingMessages();
-
-                    // Gönderim kuyruğundaki mesajları gönder
-                    if (this.GetSocketAlive())
-                    {
-                        this.SendAsync();
-                    }
-
-                    // Mesajları kuyruklama
-                    this.QueueBufferedMessage();
-                }
-                catch (Exception ex)
-                {
-                    // Genel hata işleme
-                    HandleException(ex);
-                }
+                await ProcessIncomingMessagesAsync();
+                await ProcessSendQueueAsync();
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
             }
         }
 
-        private void ProcessIncomingMessages()
+        private async Task ProcessIncomingMessagesAsync()
         {
-            if (!this.GetSocketAlive())
-                return;
-
             byte[]? array;
-            while ((array = this.DequeueMessage()) != null)
+            while ((array = this.DequeueReceiveMessage()) != null)
             {
                 try
                 {
-                    UpdateMessageReadingStream.Position = 0L;
-                    UpdateMessageReadingStream.SetLength(0L);
-                    UpdateMessageReadingStream.Write(array, 0, array.Length);
-                    UpdateMessageReadingStream.Position = 0L;
-
+                    PrepareStream(UpdateMessageReadingStream, array);
                     var message = (Message)this.MessageHelperUpdate.ReadMessage();
                     message.int_0 = array.Length;
 
-                    // Mesajı işleme
-                    this.vmethod_11(new MessageDelegateArgs(Dispatcher.Owner, new MessageEventArgs(this, message)));
+                    await DispatchMessageAsync(new MessageDelegateArgs(Dispatcher.Owner, new MessageEventArgs(this, message)));
                 }
                 catch (SerializationException ex)
                 {
-                    // Serileştirme hatası işleme
                     HandleSerializationException(ex);
                 }
                 catch (Exception ex)
                 {
-                    // Diğer hatalar
                     HandleException(ex);
                 }
             }
@@ -80,44 +55,51 @@ namespace Sobee.Messaging
 
         public virtual void SendMessage(Message message)
         {
-            lock (this)
+            try
             {
-                try
-                {
-                    this.ReadingStreamSend.Position = 0L;
-                    this.ReadingStreamSend.SetLength(0L);
-                    this.MessageHelperSend.WriteMessage(message);
-                    this.EnqueueMessage(this.ReadingStreamSend.GetBuffer(), 0, (int)this.ReadingStreamSend.Length);
-                    message.int_0 = (int)this.ReadingStreamSend.Length;
-                }
-                catch (Exception ex)
-                {
-                    HandleException(ex);
-                }
+                PrepareStream(ReadingStreamSend);
+                this.MessageHelperSend.WriteMessage(message);
+                this.EnqueueSendMessage(ReadingStreamSend.GetBuffer());
+                message.int_0 = (int)ReadingStreamSend.Length;
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
             }
         }
 
-        protected virtual void vmethod_11(MessageDelegateArgs args)
+        private static void PrepareStream(MemoryStream stream, byte[]? data = null)
         {
-            Dispatcher.DispatchToMessageEvent(args.method_1().method_1().GetType(), args);
+            stream.Position = 0L;
+            stream.SetLength(0L);
+            if (data != null)
+            {
+                stream.Write(data, 0, data.Length);
+                stream.Position = 0L;
+            }
+        }
+
+        protected virtual async Task DispatchMessageAsync(MessageDelegateArgs args)
+        {
+            await Task.Run(() => Dispatcher.DispatchToMessageEvent(args.method_1().method_1().GetType(), args));
         }
 
         public virtual void SetDispatchSource(MessageDispatcher dispatcher)
         {
             this.Dispatcher = dispatcher;
-            this.MessageHelperUpdate = new MessageHelper(UpdateMessageReadingStream, this.Dispatcher.GetDispatcher(), this.Dispatcher.GetMessageTypeToIdDelegate());
-            this.MessageHelperSend = new MessageHelper(ReadingStreamSend, this.Dispatcher.GetDispatcher(), this.Dispatcher.GetMessageTypeToIdDelegate());
+            this.MessageHelperUpdate = new MessageHelper(UpdateMessageReadingStream, dispatcher.GetDispatcher(), dispatcher.GetMessageTypeToIdDelegate());
+            this.MessageHelperSend = new MessageHelper(ReadingStreamSend, dispatcher.GetDispatcher(), dispatcher.GetMessageTypeToIdDelegate());
         }
 
         private void HandleSerializationException(SerializationException ex)
         {
-            // Serileştirme hatası için loglama veya özel işlem
+            // Loglama
             Console.WriteLine($"Serialization error: {ex.Message}");
         }
 
         private void HandleException(Exception ex)
         {
-            // Genel hata işleme
+            // Loglama
             Console.WriteLine($"Error: {ex.Message}");
         }
     }

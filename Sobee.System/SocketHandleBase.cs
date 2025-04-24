@@ -14,9 +14,9 @@ namespace Sobee.System
 
         public Guid GetId() { return Id; }
 
-        public override void Update()
+        public override Task Update()
         {
-            base.Update();
+            return base.Update();
         }
     }
 }

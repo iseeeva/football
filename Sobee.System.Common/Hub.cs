@@ -14,32 +14,35 @@ namespace Sobee.System.Common
         private ClientManager? ClientManager;
         private MessageDispatcher? Dispatch;
 
-        private static Serilog.ILogger Log = Logging.Get<Hub>();
+        private static readonly Serilog.ILogger Log = Logging.Get<Hub>();
 
-        public Hub(int Port)
+        public Hub(int port)
         {
+            if (port <= IPEndPoint.MinPort || port >= IPEndPoint.MaxPort)
+            {
+                Log.Error($"{nameof(port)} ({port}) must be in the valid port range.");
+                throw new ArgumentOutOfRangeException(nameof(port), "Port must be between MinPort and MaxPort.");
+            }
+
+            Port = port;
+
             try
             {
-                if (Port > IPEndPoint.MinPort && Port < IPEndPoint.MaxPort)
-                {
-                    this.Port = Port;
-                    Initialize(this.Port);
-                }
-                else
-                    Log.Error($"{nameof(Port)} ({Port}) must be in port range.");
+                Initialize(Port);
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed on construction: {ex.Message}");
+                Log.Error($"Failed during construction: {ex.Message}");
                 Dispose();
+                throw;
             }
         }
 
-        private void Initialize(int Port)
+        private void Initialize(int port)
         {
             try
             {
-                Server.Bind(new IPEndPoint(IPAddress.Loopback, Port));
+                Server.Bind(new IPEndPoint(IPAddress.Loopback, port));
                 Server.Listen();
 
                 Dispatch = new MessageDispatcher(this);
@@ -48,75 +51,89 @@ namespace Sobee.System.Common
 
                 ClientManager = new ClientManager(Dispatch);
 
-                Task.Run(() => Start(Cancellation.Token));
-                Task.Run(() => Tick(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
+                _ = Task.Run(() => Start(Cancellation.Token));
+                _ = Task.Run(() => Tick(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
 
-                Log.Information("Initialized.");
+                Log.Information("Hub initialized successfully.");
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed on initialize: {ex.Message}");
+                Log.Error($"Failed during initialization: {ex.Message}");
                 Dispose();
+                throw;
             }
         }
 
-        private async Task Start(CancellationToken Cancellation)
+        private async Task Start(CancellationToken cancellationToken)
         {
             try
             {
-                while (!Cancellation.IsCancellationRequested)
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    Socket Client = await Server.AcceptAsync(Cancellation);
-                    await Connection(Client);
+                    var clientSocket = await Server.AcceptAsync(cancellationToken);
+                    _ = Task.Run(() => HandleConnection(clientSocket));
                 }
             }
             catch (OperationCanceledException)
             {
-                Log.Error("Shutting down.");
+                Log.Information("Server is shutting down.");
             }
             catch (Exception ex)
             {
-                Log.Error($"Error in loop: {ex.Message}");
+                Log.Error($"Error in Start loop: {ex.Message}");
             }
         }
 
-        private async Task Connection(Socket Socket)
+        private async Task HandleConnection(Socket socket)
         {
-            Log.Information($"Connection from {Socket.RemoteEndPoint}");
-            ClientManager.AddClient(Socket);
+            try
+            {
+                Log.Information($"Connection established from {socket.RemoteEndPoint}");
+                if (ClientManager != null)
+                {
+                    ClientManager.AddClient(socket);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error handling connection: {ex.Message}");
+            }
         }
 
         private async Task Update()
         {
-            ClientManager.Update();
+            if (ClientManager != null)
+            {
+                await ClientManager.Update();
+            }
         }
 
-        private async Task Tick(double Previous)
+        private async Task Tick(double previous)
         {
             try
             {
-                var Starting = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                var Delta = (Starting - Previous) / 1000.0;
+                var starting = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                var delta = (starting - previous) / 1000.0;
 
                 await Update();
 
-                // Update all rooms
+                // Update all rooms (if applicable)
                 // Rooms.Update(delta);
 
-                var Elapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - Starting;
-                var Delay = Math.Max(0, 1000.0 / 100 - Elapsed); // TODO: FPS Needs Environment.
+                var elapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - starting;
+                var delay = Math.Max(0, 1000.0 / 100 - elapsed); // TODO: FPS Needs Environment.
 
-                if (Delay > 0)
+                if (delay > 0)
                 {
-                    await Task.Delay((int)Delay);
+                    await Task.Delay((int)delay);
                 }
 
-                await Tick(Starting);
+                await Tick(starting);
             }
             catch (Exception ex)
             {
-                Log.Error("Error in Tick function:", ex);
-                await Tick(Previous);
+                Log.Error($"Error in Tick function: {ex.Message}");
+                await Tick(previous);
             }
         }
 
@@ -125,8 +142,6 @@ namespace Sobee.System.Common
             if (!Cancellation.IsCancellationRequested)
             {
                 Cancellation.Cancel();
-                Cancellation.Dispose();
-
                 Log.Information("Server is stopping...");
             }
         }
@@ -137,11 +152,11 @@ namespace Sobee.System.Common
 
             Stop();
             Server.Dispose();
+            Cancellation.Dispose();
             GC.SuppressFinalize(this);
 
             IsDisposed = true;
             Log.Information("Resources disposed.");
         }
-
     }
 }
