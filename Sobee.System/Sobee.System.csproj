@@ -7,4 +7,9 @@
     <Platforms>AnyCPU;x86;x64</Platforms>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Sobee.Messaging\Sobee.Messaging.csproj" />
+    <ProjectReference Include="..\Sobee.Network\Sobee.Network.csproj" />
+  </ItemGroup>
+
 </Project>

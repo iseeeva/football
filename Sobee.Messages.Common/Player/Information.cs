@@ -1,7 +1,7 @@
 ﻿namespace Sobee.Messages.Common.Player
 {
     [GAttribute0(29475)]
-    public sealed class Initialize : Message
+    public sealed class Information : Message
     {
         // Token: 0x060002F4 RID: 756 RVA: 0x0000467C File Offset: 0x0000287C
         public override bool vmethod_0()
@@ -70,15 +70,9 @@
         }
 
         // Token: 0x060002FF RID: 767 RVA: 0x000046D1 File Offset: 0x000028D1
-        public int method_10()
+        public MatchEntry method_10()
         {
-            return int_2;
-        }
-
-        // Token: 0x06000300 RID: 768 RVA: 0x000046D9 File Offset: 0x000028D9
-        public void method_11(int int_3)
-        {
-            int_2 = int_3;
+            return matchEntry;
         }
 
         // Token: 0x06000301 RID: 769 RVA: 0x000046E2 File Offset: 0x000028E2
@@ -88,7 +82,7 @@
         }
 
         // Token: 0x06000302 RID: 770 RVA: 0x0000D1C4 File Offset: 0x0000B3C4
-        public Initialize(BinaryReader gclass315_0) : base(gclass315_0)
+        public Information(BinaryReader gclass315_0) : base(gclass315_0)
         {
             version_0 = gclass315_0.method_24();
             long_0 = gclass315_0.method_10();
@@ -98,13 +92,13 @@
             int_1 = gclass315_0.method_9();
             string_3 = gclass315_0.method_14();
             string_4 = gclass315_0.method_14();
-            int_2 = gclass315_0.method_9();
+            matchEntry = new MatchEntry(gclass315_0);
             string_5 = gclass315_0.method_14();
             bool_0 = gclass315_0.method_1();
         }
 
         // Token: 0x06000303 RID: 771 RVA: 0x0000D25C File Offset: 0x0000B45C
-        public Initialize(Version version_1, long long_1, string string_6, string string_7, string string_8, int int_3, string string_9, string string_10, int int_4, string string_11, bool bool_1)
+        public Information(Version version_1, long long_1, string string_6, string string_7, string string_8, int int_3, string string_9, string string_10, MatchEntry int_4, string string_11, bool bool_1)
         {
             version_0 = version_1;
             long_0 = long_1;
@@ -114,7 +108,7 @@
             int_1 = int_3;
             string_3 = string_9;
             string_4 = string_10;
-            int_2 = int_4;
+            matchEntry = int_4;
             string_5 = string_11;
             bool_0 = bool_1;
         }
@@ -131,7 +125,7 @@
             gclass316_0.method_9(int_1);
             gclass316_0.method_14(string_3);
             gclass316_0.method_14(string_4);
-            gclass316_0.method_9(int_2);
+            matchEntry.Deserialize(gclass316_0);
             gclass316_0.method_14(string_5);
             gclass316_0.method_1(bool_0);
         }
@@ -148,7 +142,7 @@
             " Pass: ",
             string_0,
             " EntryID:",
-            int_2,
+            matchEntry,
             " WEB:",
             string_5,
             " Auto:",
@@ -181,7 +175,7 @@
         private string string_4;
 
         // Token: 0x04000656 RID: 1622
-        private int int_2;
+        private readonly MatchEntry matchEntry;
 
         // Token: 0x04000657 RID: 1623
         private string string_5;

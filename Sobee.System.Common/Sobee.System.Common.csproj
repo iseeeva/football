@@ -4,12 +4,20 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Platforms>AnyCPU;x86;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Sobee.Messages.Common\Sobee.Messages.Common.csproj" />
     <ProjectReference Include="..\Sobee.Messaging\Sobee.Messaging.csproj" />
     <ProjectReference Include="..\Sobee.Network\Sobee.Network.csproj" />
+    <ProjectReference Include="..\Sobee.System\Sobee.System.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.DirectX">
+      <HintPath>..\Library\Microsoft.DirectX.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

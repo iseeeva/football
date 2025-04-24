@@ -44,7 +44,7 @@ namespace Sobee.System.Common
 
                 Dispatch = new MessageDispatcher(this);
                 Dispatch.RegisterMessagesFromAssemblyName("Sobee.Messages.Common");
-                Dispatch.RegisterMessageEvent(typeof(Messages.Common.Player.Initialize), Events.Common.Player.Initialize);
+                Dispatch.RegisterMessageEvent(typeof(Messages.Common.Player.Information), Events.Common.Player.Initialize);
 
                 ClientManager = new ClientManager(Dispatch);
 

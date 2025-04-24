@@ -9,7 +9,13 @@ namespace Sobee.System.Common.Events.Common
 
         public static void Initialize(object sender, MessageEventArgs e)
         {
-            Log.Information($"{((Hub)sender).Port}");
+            var Sender = ((Hub)sender);
+            var Client = ((Client)e.method_0());
+            var Message = ((Messages.Common.Player.Information)e.method_1());
+
+            Client.Information = Message;
+            Client.SendMessage(Messages.Common.Match.Information.testMethod());
+            Log.Information($"{Sender.Port} {Client.GetId()} {Message.ToString()}");
         }
     }
 }

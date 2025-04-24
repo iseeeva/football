@@ -1,6 +1,7 @@
-﻿using Microsoft.DirectX;
-
+﻿
 // Token: 0x0200000C RID: 12
+using System.Numerics;
+
 public class BinaryWriter
 {
     // Token: 0x06000048 RID: 72 RVA: 0x000023D5 File Offset: 0x000005D5
@@ -162,7 +163,7 @@ public class BinaryWriter
     }
 
     // Token: 0x0600005F RID: 95 RVA: 0x00002F3C File Offset: 0x0000113C
-    public void method_22(Matrix matrix_0)
+    public void method_22(Matrix4x4 matrix_0)
     {
         this.binaryWriter_0.Write(matrix_0.M11);
         this.binaryWriter_0.Write(matrix_0.M12);

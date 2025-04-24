@@ -1,30 +1,18 @@
 ﻿using System.Net.Sockets;
-using Sobee.Messaging;
 
 namespace Sobee.System.Common
 {
-    public class Client
+    public class Client : SocketHandleBase
     {
-        private readonly Guid Id;
-        private readonly SocketMessageHandler Socket;
-        public Messages.Common.Player.Initialize Information;
+        public Messages.Common.Player.Information Information;
 
-        public Client(Guid Id, Socket Socket)
+        public Client(Guid Id, Socket Socket) : base(Id, Socket)
         {
-            this.Id = Id;
-            this.Socket = new SocketMessageHandler(Socket);
         }
 
-        public Guid GetId() { return Id; }
-
-        public void Update()
+        public override void Update()
         {
-            this.Socket.Update();
-        }
-
-        public void SetDispatchSource(MessageDispatcher dispatcher)
-        {
-            this.Socket.SetDispatchSource(dispatcher);
+            base.Update();
         }
     }
 }

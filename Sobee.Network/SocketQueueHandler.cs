@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel;
-using System.Net;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using Serilog;
 using Sobee.Common;
 using Sobee.Network;
@@ -35,6 +33,18 @@ public class SocketQueueHandler : Component
     protected static byte[] messageHeaderBuffer = new byte[4];
     protected static byte[] peekBuffer = new byte[MaxMessageSize];
 
+    public bool GetSocketAlive() => this.clientSocket != null && this.clientSocket.Connected;
+
+    public long GetTotalBytesSent() => totalBytesSent;
+    public long GetTotalBytesReceived() => totalBytesReceived;
+    public long GetTotalMessagesSent() => totalMessagesSent;
+    public long GetTotalMessagesQueued() => totalMessagesQueued;
+
+    protected virtual void OnDisconnected() => onDisconnected?.Invoke(this, EventArgs.Empty);
+    protected virtual void OnSocketError(SocketError error) => onSocketError?.Invoke(this, new GEventArgs10(error));
+    protected virtual void OnConnectionError(ConnectionError error) => onSocketError?.Invoke(this, new GEventArgs10(error));
+    protected virtual void OnReceiveError(SocketError error) => onConnectionError?.Invoke(this, new GEventArgs10(error));
+
     public SocketQueueHandler()
     {
         Initialize();
@@ -52,63 +62,14 @@ public class SocketQueueHandler : Component
         {
             components.Dispose();
         }
+
         base.Dispose(disposing);
     }
 
-    private void Initialize() { }
-
-    public static void SetTaskDelay(double seconds)
+    private void Initialize()
     {
-        taskScheduler.method_34(seconds);
+        SetTaskDelay(60);
     }
-
-    private void QueueSendCallback(object state)
-    {
-        lock (sendBuffer)
-        {
-            var data = (QueuedData)state;
-            data.socket.BeginSend(data.memoryStream.GetBuffer(), 0, (int)sendBuffer.Length, SocketFlags.None, SendCallback, data.socket);
-            data.memoryStream.SetLength(0);
-            data.memoryStream.Position = 0;
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.Synchronized)]
-    public void AddDisconnectedHandler(EventHandler handler) => onDisconnected += handler;
-
-    [MethodImpl(MethodImplOptions.Synchronized)]
-    public void RemoveDisconnectedHandler(EventHandler handler) => onDisconnected -= handler;
-
-    [MethodImpl(MethodImplOptions.Synchronized)]
-    public void AddSocketErrorHandler(EventHandler<GEventArgs10> handler) => onSocketError += handler;
-
-    [MethodImpl(MethodImplOptions.Synchronized)]
-    public void RemoveSocketErrorHandler(EventHandler<GEventArgs10> handler) => onSocketError -= handler;
-
-    [MethodImpl(MethodImplOptions.Synchronized)]
-    public void AddConnectionErrorHandler(EventHandler<GEventArgs10> handler) => onConnectionError += handler;
-
-    [MethodImpl(MethodImplOptions.Synchronized)]
-    public void RemoveConnectionErrorHandler(EventHandler<GEventArgs10> handler) => onConnectionError -= handler;
-
-    public static int GetMaxMessageSize() => MaxMessageSize;
-
-    public static void SetMaxMessageSize(int size)
-    {
-        MaxMessageSize = size;
-        peekBuffer = new byte[size];
-    }
-
-    public IPEndPoint GetRemoteEndPoint() => (IPEndPoint)this.clientSocket.RemoteEndPoint;
-
-    public IPEndPoint GetLocalEndPoint() => (IPEndPoint)clientSocket.LocalEndPoint;
-
-    public bool GetIsConnected() => this.clientSocket.Connected;
-
-    public long GetTotalBytesSent() => totalBytesSent;
-    public long GetTotalBytesReceived() => totalBytesReceived;
-    public long GetTotalMessagesSent() => totalMessagesSent;
-    public long GetTotalMessagesQueued() => totalMessagesQueued;
 
     public virtual void EnqueueMessage(byte[] data, int offset, int length)
     {
@@ -121,29 +82,7 @@ public class SocketQueueHandler : Component
         }
     }
 
-    public void Disconnect()
-    {
-        if (clientSocket != null)
-        {
-            clientSocket.Close();
-            clientSocket = null;
-            log.Information($"{GetRemoteEndPoint()} closed");
-            OnDisconnected();
-        }
-    }
 
-    public void Clear()
-    {
-        totalBytesSent = 0;
-        totalBytesReceived = 0;
-        totalMessagesSent = 0;
-        totalMessagesQueued = 0;
-    }
-
-    protected virtual void OnDisconnected() => onDisconnected?.Invoke(this, EventArgs.Empty);
-    protected virtual void OnSocketError(SocketError error) => onSocketError?.Invoke(this, new GEventArgs10(error));
-    protected virtual void OnConnectionError(ConnectionError error) => onSocketError?.Invoke(this, new GEventArgs10(error));
-    protected virtual void OnReceiveError(SocketError error) => onConnectionError?.Invoke(this, new GEventArgs10(error));
 
     public int FlushSendBuffer()
     {
@@ -175,9 +114,28 @@ public class SocketQueueHandler : Component
         return sent;
     }
 
-    public virtual byte[] Receive()
+    #region Receive
+    protected void BeginReceive() => ReceiveQueued(0);
+
+    private void ReceiveQueued(int offset = 0)
     {
-        if (clientSocket == null || !clientSocket.Connected)
+        if (clientSocket != null)
+        {
+            try
+            {
+                clientSocket.BeginReceive(receiveBuffer, offset, receiveBuffer.Length - offset, SocketFlags.None, ReceiveCallback, clientSocket);
+            }
+            catch (SocketException ex)
+            {
+                OnSocketError(ex.SocketErrorCode);
+                Disconnect();
+            }
+        }
+    }
+
+    public virtual byte[] ReceiveNotQueued()
+    {
+        if (!this.GetSocketAlive())
         {
             Disconnect();
             return null;
@@ -224,6 +182,52 @@ public class SocketQueueHandler : Component
 
         return null;
     }
+
+    private void ReceiveCallback(IAsyncResult result)
+    {
+        try
+        {
+            Socket socket = (Socket)result.AsyncState;
+            int bytesRead = socket.EndReceive(result);
+            totalBytesReceived += bytesRead;
+            receiveBufferOffset += bytesRead;
+
+            while (receiveBufferOffset > 4)
+            {
+                int msgLength = BitConverter.ToInt32(receiveBuffer, 0);
+                if (msgLength > receiveBuffer.Length || msgLength <= 0)
+                {
+                    OnConnectionError(ConnectionError.BufferLengthTooLong);
+                    Disconnect();
+                    return;
+                }
+
+                int totalLength = 4 + msgLength;
+                if (receiveBufferOffset < totalLength) break;
+
+                byte[] msg = new byte[msgLength];
+                Array.Copy(receiveBuffer, 4, msg, 0, msgLength);
+                Array.Copy(receiveBuffer, totalLength, receiveBuffer, 0, receiveBufferOffset - totalLength);
+                receiveBufferOffset -= totalLength;
+
+                lock (receivedMessagesQueue)
+                {
+                    receivedMessagesQueue.Enqueue(msg);
+                    totalMessagesQueued++;
+                }
+            }
+
+            log.Information($"cleint has new messages in queue (total: {totalMessagesQueued})");
+            ReceiveQueued(receiveBufferOffset);
+        }
+        catch (SocketException ex)
+        {
+            OnSocketError(ex.SocketErrorCode);
+            Disconnect();
+        }
+    }
+
+    #endregion
 
     public byte[] DequeueMessage()
     {
@@ -286,67 +290,28 @@ public class SocketQueueHandler : Component
         return result;
     }
 
-    private void StartReceive(int offset)
+    public static void SetTaskDelay(double seconds)
     {
-        if (clientSocket != null)
+        taskScheduler.method_34(seconds);
+    }
+
+    private void QueueSendCallback(object state)
+    {
+        lock (sendBuffer)
         {
-            try
-            {
-                clientSocket.BeginReceive(receiveBuffer, offset, receiveBuffer.Length - offset, SocketFlags.None, ReceiveCallback, clientSocket);
-            }
-            catch (SocketException ex)
-            {
-                OnSocketError(ex.SocketErrorCode);
-                Disconnect();
-            }
+            var data = (QueuedData)state;
+            data.socket.BeginSend(data.memoryStream.GetBuffer(), 0, (int)sendBuffer.Length, SocketFlags.None, SendCallback, data.socket);
+            data.memoryStream.SetLength(0);
+            data.memoryStream.Position = 0;
         }
     }
 
-    protected void BeginReceive() => StartReceive(0);
-
-    private void ReceiveCallback(IAsyncResult result)
+    public static void SetMaxMessageSize(int size)
     {
-        try
-        {
-            Socket socket = (Socket)result.AsyncState;
-            int bytesRead = socket.EndReceive(result);
-            totalBytesReceived += bytesRead;
-            receiveBufferOffset += bytesRead;
-
-            while (receiveBufferOffset > 4)
-            {
-                int msgLength = BitConverter.ToInt32(receiveBuffer, 0);
-                if (msgLength > receiveBuffer.Length || msgLength <= 0)
-                {
-                    OnConnectionError(ConnectionError.BufferLengthTooLong);
-                    Disconnect();
-                    return;
-                }
-
-                int totalLength = 4 + msgLength;
-                if (receiveBufferOffset < totalLength) break;
-
-                byte[] msg = new byte[msgLength];
-                Array.Copy(receiveBuffer, 4, msg, 0, msgLength);
-                Array.Copy(receiveBuffer, totalLength, receiveBuffer, 0, receiveBufferOffset - totalLength);
-                receiveBufferOffset -= totalLength;
-
-                lock (receivedMessagesQueue)
-                {
-                    receivedMessagesQueue.Enqueue(msg);
-                    totalMessagesQueued++;
-                }
-            }
-
-            log.Information($"{GetRemoteEndPoint()} has new messages in queue (total: {totalMessagesQueued})");
-            StartReceive(receiveBufferOffset);
-        }
-        catch (SocketException ex)
-        {
-            OnSocketError(ex.SocketErrorCode);
-            Disconnect();
-        }
+        MaxMessageSize = size;
+        peekBuffer = new byte[size];
     }
+
 
     private void SendCallback(IAsyncResult result)
     {
@@ -364,6 +329,29 @@ public class SocketQueueHandler : Component
                 Disconnect();
             }
         }
+    }
+
+    public void Disconnect()
+    {
+        if (clientSocket != null)
+        {
+            clientSocket.Close();
+            clientSocket = null;
+            OnDisconnected();
+
+            if (GetSocketAlive())
+            {
+                log.Information($"{clientSocket.RemoteEndPoint} closed");
+            }
+        }
+    }
+
+    public void Clear()
+    {
+        totalBytesSent = 0;
+        totalBytesReceived = 0;
+        totalMessagesSent = 0;
+        totalMessagesQueued = 0;
     }
 
     private class QueuedData
