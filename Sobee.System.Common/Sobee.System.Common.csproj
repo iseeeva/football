@@ -14,10 +14,4 @@
     <ProjectReference Include="..\Sobee.System\Sobee.System.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.DirectX">
-      <HintPath>..\Library\Microsoft.DirectX.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

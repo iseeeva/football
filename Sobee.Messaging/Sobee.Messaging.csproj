@@ -15,9 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="SocketMessageHandler.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Update="SocketMessageHandler.cs" />
   </ItemGroup>
 
 </Project>

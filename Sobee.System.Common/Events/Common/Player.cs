@@ -10,12 +10,12 @@ namespace Sobee.System.Common.Events.Common
         public static void Initialize(object sender, MessageEventArgs e)
         {
             var Sender = ((Hub)sender);
-            var Client = ((Client)e.method_0());
-            var Message = ((Messages.Common.Player.Information)e.method_1());
+            var Client = ((Client)e.handler);
+            var Message = ((Messages.Common.Player.Information)e.message);
 
             Client.Information = Message;
             Client.SendMessage(Messages.Common.Match.Information.testMethod());
-            Log.Information($"{Sender.Port} {Client.GetId()} {Message.ToString()}");
+            Log.Information($"{Sender.Port} {Client.Id} {Message.ToString()}");
         }
     }
 }

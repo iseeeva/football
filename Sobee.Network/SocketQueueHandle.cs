@@ -1,12 +1,11 @@
 ﻿using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.Net.Sockets;
 using Serilog;
 using Sobee.Common;
 
-public class SocketQueueHandler : Component, IDisposable
+public class SocketQueueHandle : Component
 {
-    private readonly ILogger log = Logging.Get<SocketQueueHandler>();
+    private readonly ILogger log = Logging.Get<SocketQueueHandle>();
     private readonly SemaphoreSlim sendSemaphore = new SemaphoreSlim(1, 1);
 
     public static int MaxSendingSize { get; private set; } = 32768;
@@ -20,26 +19,74 @@ public class SocketQueueHandler : Component, IDisposable
     protected byte[] receiveBuffer = new byte[MaxReceivingSize];
     protected int receiveBufferOffset;
 
-    protected long totalBytesSent;
-    protected long totalBytesReceived;
-    protected long totalMessagesSent;
-    protected long totalMessagesQueued => sendQueue.Count + receiveQueue.Count;
+    public long totalReceive { get; private set; }
+    public long totalBytesReceive { get; private set; }
+    public long totalSent { get; private set; }
+    public long totalBytesSent { get; private set; }
+    public long totalQueued => sendQueue.Count + receiveQueue.Count;
 
     public bool IsSocketAlive => clientSocket?.Connected == true;
 
-    protected SocketQueueHandler(Socket socket)
+    public SocketQueueHandle(Socket socket)
     {
         clientSocket = socket ?? throw new ArgumentNullException(nameof(socket));
-        Initialize();
+
+        try
+        {
+            _ = StartReceivingAsync();
+            log.Information("initialized.");
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message, ex);
+        }
     }
 
-    private void Initialize()
+    public override async Task Update()
     {
-        StartReceivingAsync();
-        log.Information("SocketQueueHandler initialized.");
+        try
+        {
+            await ProcessSendQueueAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message, ex);
+        }
     }
 
-    public void EnqueueSendMessage(byte[] data)
+    private async Task ProcessSendQueueAsync()
+    {
+        if (!IsSocketAlive) return;
+
+        await sendSemaphore.WaitAsync();
+
+        try
+        {
+            while (sendQueue.TryDequeue(out var message))
+            {
+                try
+                {
+                    await clientSocket.SendAsync(new ArraySegment<byte>(message), SocketFlags.None);
+                    totalBytesSent += message.Length;
+                    totalSent++;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message, ex);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message, ex);
+        }
+        finally
+        {
+            sendSemaphore.Release();
+        }
+    }
+
+    public void EnqueueSendData(byte[] data)
     {
         if (data == null || data.Length == 0)
         {
@@ -54,35 +101,62 @@ public class SocketQueueHandler : Component, IDisposable
         sendQueue.Enqueue(messageWithHeader);
     }
 
-    public async Task ProcessSendQueueAsync()
+    public byte[]? DequeueSendData()
+    {
+        return sendQueue.TryDequeue(out var message) ? message : null;
+    }
+
+    private async Task StartReceivingAsync(CancellationToken cancellationToken = default)
     {
         if (!IsSocketAlive) return;
 
-        await sendSemaphore.WaitAsync();
         try
         {
-            while (sendQueue.TryDequeue(out var message))
+            while (IsSocketAlive && !cancellationToken.IsCancellationRequested)
             {
-                try
+                int bytesRead = await clientSocket.ReceiveAsync(
+                    new ArraySegment<byte>(receiveBuffer, receiveBufferOffset, receiveBuffer.Length - receiveBufferOffset),
+                    SocketFlags.None,
+                    cancellationToken
+                );
+
+                if (bytesRead == 0)
                 {
-                    await clientSocket.SendAsync(new ArraySegment<byte>(message), SocketFlags.None);
-                    totalBytesSent += message.Length;
-                    totalMessagesSent++;
-                }
-                catch (Exception ex)
-                {
-                    HandleException(ex);
                     break;
+                }
+
+                receiveBufferOffset += bytesRead;
+                while (receiveBufferOffset > 4)
+                {
+                    int messageLength = BitConverter.ToInt32(receiveBuffer, 0);
+                    if (messageLength > MaxReceivingSize || messageLength <= 0)
+                    {
+                        //throw new Exception("Message length out of range"));
+                        return;
+                    }
+
+                    int totalLength = 4 + messageLength;
+                    if (receiveBufferOffset < totalLength) break;
+
+                    byte[] message = new byte[messageLength];
+                    Array.Copy(receiveBuffer, 4, message, 0, messageLength);
+                    Array.Copy(receiveBuffer, totalLength, receiveBuffer, 0, receiveBufferOffset - totalLength);
+
+                    receiveBufferOffset -= totalLength;
+                    totalBytesReceive += message.Length;
+                    totalReceive++;
+
+                    EnqueueReceiveData(message);
                 }
             }
         }
-        finally
+        catch (Exception ex)
         {
-            sendSemaphore.Release();
+            throw new Exception(ex.Message, ex);
         }
     }
 
-    public void EnqueueReceiveMessage(byte[] data)
+    public void EnqueueReceiveData(byte[] data)
     {
         if (data == null || data.Length == 0)
         {
@@ -93,96 +167,15 @@ public class SocketQueueHandler : Component, IDisposable
         receiveQueue.Enqueue(data);
     }
 
-    public byte[] DequeueReceiveMessage()
+    public byte[]? DequeueReceiveData()
     {
         return receiveQueue.TryDequeue(out var message) ? message : null;
     }
 
-    public async Task StartReceivingAsync(CancellationToken cancellationToken = default)
-    {
-        if (!IsSocketAlive) return;
-
-        try
-        {
-            while (IsSocketAlive && !cancellationToken.IsCancellationRequested)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                int bytesRead = await clientSocket.ReceiveAsync(
-                    new ArraySegment<byte>(receiveBuffer, receiveBufferOffset, receiveBuffer.Length - receiveBufferOffset),
-                    SocketFlags.None,
-                    cancellationToken
-                );
-
-                if (bytesRead == 0)
-                {
-                    Disconnect();
-                    break;
-                }
-
-                receiveBufferOffset += bytesRead;
-                while (receiveBufferOffset > 4)
-                {
-                    int messageLength = BitConverter.ToInt32(receiveBuffer, 0);
-                    if (messageLength > MaxReceivingSize || messageLength <= 0)
-                    {
-                        HandleException(new Exception("Message length out of range"));
-                        return;
-                    }
-
-                    int totalLength = 4 + messageLength;
-                    if (receiveBufferOffset < totalLength) break;
-
-                    byte[] message = new byte[messageLength];
-                    Array.Copy(receiveBuffer, 4, message, 0, messageLength);
-                    Array.Copy(receiveBuffer, totalLength, receiveBuffer, 0, receiveBufferOffset - totalLength);
-                    receiveBufferOffset -= totalLength;
-
-                    EnqueueReceiveMessage(message);
-                }
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            log.Information("Receiving operation canceled.");
-        }
-        catch (Exception ex)
-        {
-            HandleException(ex);
-        }
-        finally
-        {
-            Disconnect();
-        }
-    }
-
-    public void Disconnect()
-    {
-        if (clientSocket != null)
-        {
-            clientSocket.Close();
-            clientSocket = null;
-            log.Information("Socket disconnected.");
-        }
-    }
-
-    private void HandleException(Exception error)
-    {
-        log.Error(error, "An error occurred.");
-
-        if (error is SocketException socketEx && socketEx.SocketErrorCode == SocketError.TimedOut)
-        {
-            log.Warning("Socket timeout occurred. Retrying...");
-            return; // Bağlantıyı kesmeden devam edebilir.
-        }
-
-        Disconnect();
-    }
-
-    public new void Dispose()
+    public override void Dispose()
     {
         clientSocket?.Dispose();
-        log.Information("SocketQueueHandler disposed.");
+        log.Information("disposed.");
         base.Dispose();
     }
 }

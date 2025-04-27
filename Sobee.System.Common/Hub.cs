@@ -32,7 +32,7 @@ namespace Sobee.System.Common
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed during construction: {ex.Message}");
+                Log.Error($"Failed during construction: {ex.Message}", ex);
                 Dispose();
                 throw;
             }
@@ -58,7 +58,7 @@ namespace Sobee.System.Common
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed during initialization: {ex.Message}");
+                Log.Error($"Failed during initialization: {ex.Message}", ex);
                 Dispose();
                 throw;
             }
@@ -80,7 +80,7 @@ namespace Sobee.System.Common
             }
             catch (Exception ex)
             {
-                Log.Error($"Error in Start loop: {ex.Message}");
+                Log.Error($"Error in Start loop: {ex.Message}", ex);
             }
         }
 
@@ -96,7 +96,7 @@ namespace Sobee.System.Common
             }
             catch (Exception ex)
             {
-                Log.Error($"Error handling connection: {ex.Message}");
+                Log.Error($"Error handling connection: {ex.Message}", ex);
             }
         }
 
@@ -132,7 +132,7 @@ namespace Sobee.System.Common
             }
             catch (Exception ex)
             {
-                Log.Error($"Error in Tick function: {ex.Message}");
+                Log.Error($"Error in Tick function: {ex.Message}", ex);
                 await Tick(previous);
             }
         }

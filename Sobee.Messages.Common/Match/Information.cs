@@ -307,15 +307,15 @@ namespace Sobee.Messages.Common.Match
             var gg1 = new GClass166(0);
             gg1.Clear();
 
-            var homeTeam = Enumerable.Range(0, 11).Select(i => new Player.MatchInformation(
+            var homeTeam = Enumerable.Range(1, 5).Select(i => new Player.MatchInformation(
                 i, i, $"Player{i}", StadiumSitting.HomePlayer,
-                (sbyte)MatchEntry.ToSquad(i + 1), new Vector2(0, 0),
-                new Vector3(0, 0, 0), 0f, MatchCard.None, string.Empty)).ToList();
+                (sbyte)MatchEntry.ToSquad(i, true), new Vector2(0, 0),
+                new Vector3(0, 0, 0), 0f, MatchCard.None, "<XMLData><Script></Script></XMLData>")).ToList();
 
-            var awayTeam = Enumerable.Range(0, 11).Select(i => new Player.MatchInformation(
-                12 + i, 12 + i, $"Player{i}", StadiumSitting.AwayPlayer,
-                (sbyte)MatchEntry.ToSquad(12 + (i + 1)), new Vector2(0, 0),
-                new Vector3(0, 0, 0), 0f, MatchCard.None, string.Empty)).ToList();
+            var awayTeam = Enumerable.Range(12, 5).Select(i => new Player.MatchInformation(
+                i, i, $"Player{i}", StadiumSitting.AwayPlayer,
+                (sbyte)MatchEntry.ToSquad(i, true), new Vector2(0, 0),
+                new Vector3(0, 0, 0), 0f, MatchCard.None, "<XMLData><Script></Script></XMLData>")).ToList();
 
             return new Information(
                 homeTeam, awayTeam, Enumerable.Empty<Player.MatchInformation>(),

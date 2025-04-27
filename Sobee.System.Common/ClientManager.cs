@@ -30,7 +30,7 @@ namespace Sobee.System.Common
                 do
                 {
                     uniqueId = Guid.NewGuid();
-                } while (Clients.Any(c => c.GetId() == uniqueId));
+                } while (Clients.Any(c => c.Id == uniqueId));
 
                 var client = new Client(uniqueId, socket);
                 client.SetDispatchSource(DispatchGroup);
@@ -42,14 +42,9 @@ namespace Sobee.System.Common
 
                 return true;
             }
-            catch (SocketException ex)
-            {
-                // Daha spesifik bir hata türü yakalanıyor
-                throw new InvalidOperationException("Failed to add client due to a socket error.", ex);
-            }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("An unexpected error occurred while adding a client.", ex);
+                throw new Exception(ex.Message, ex);
             }
         }
     }

@@ -23,7 +23,7 @@ namespace Sobee.Messages.Common.Player
         public bool bool_2;
         public string string_2 = string.Empty;
         public MatchCard CardStatus;
-        public string string_3 = string.Empty;
+        public string xmlCode;
         public string string_4 = string.Empty;
         public int LeagueGroupId = -1;
         public int LeagueId = -1;
@@ -47,7 +47,7 @@ namespace Sobee.Messages.Common.Player
             vector3_0 = vector3_1;
             float_0 = float_3;
             CardStatus = matchCard_1;
-            string_3 = string_7;
+            xmlCode = string_7;
         }
 
         public MatchInformation(BinaryReader gclass315_0)
@@ -88,10 +88,10 @@ namespace Sobee.Messages.Common.Player
                 MemoryStream stream = new MemoryStream(buffer);
                 GZipStream gzipStream = new GZipStream(stream, CompressionMode.Decompress);
                 gzipStream.Read(array, 0, array.Length);
-                string_3 = Encoding.Unicode.GetString(array);
+                xmlCode = Encoding.Unicode.GetString(array);
                 return;
             }
-            string_3 = gclass315_0.method_14();
+            xmlCode = gclass315_0.method_14();
         }
 
         public override void Deserialize(BinaryWriter gclass316_0)
@@ -125,11 +125,11 @@ namespace Sobee.Messages.Common.Player
             {
                 gclass316_0.method_14(list_1[j]);
             }
-            bool flag = string_3.Length > 256;
+            bool flag = xmlCode.Length > 256;
             gclass316_0.method_1(flag);
             if (flag)
             {
-                byte[] bytes = Encoding.Unicode.GetBytes(string_3);
+                byte[] bytes = Encoding.Unicode.GetBytes(xmlCode);
                 gclass316_0.method_9(bytes.Length);
                 MemoryStream memoryStream = new MemoryStream(bytes.Length);
                 GZipStream gzipStream = new GZipStream(memoryStream, CompressionMode.Compress);
@@ -138,7 +138,7 @@ namespace Sobee.Messages.Common.Player
                 gclass316_0.method_3(memoryStream.ToArray());
                 return;
             }
-            gclass316_0.method_14(string_3);
+            gclass316_0.method_14(xmlCode);
         }
 
         public bool method_2()

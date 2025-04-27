@@ -3,16 +3,14 @@ using Sobee.Messaging;
 
 namespace Sobee.System
 {
-    public class SocketHandleBase : SocketMessageHandler
+    public class SocketHandleBase : SocketMessageHandle
     {
-        private readonly Guid Id;
+        public Guid Id { get; private set; }
 
         public SocketHandleBase(Guid Id, Socket Socket) : base(Socket)
         {
             this.Id = Id;
         }
-
-        public Guid GetId() { return Id; }
 
         public override Task Update()
         {

@@ -171,9 +171,9 @@ public sealed class MessageDispatcher
         }
     }
 
-    public void DispatchToMessageEvent(Type messageType, MessageDelegateArgs e)
+    public void DispatchToMessageEvent(MessageDelegateArgs args)
     {
-        var id = GetMessageTypeId(messageType);
+        var id = GetMessageTypeId(args.eventArgs.message.GetType());
         if (!messageIdToEvent.TryGetValue(id, out var eventDelegate))
         {
             throw new SerializationException($"ClassID: {id} - Not registered.");
@@ -181,8 +181,8 @@ public sealed class MessageDispatcher
 
         try
         {
-            eventDelegate.Invoke(e.method_0(), e.method_1());
-            Log.Information("Invoked event for {Type} (ID: {Id})", messageType.FullName, id);
+            eventDelegate.Invoke(args.sender, args.eventArgs);
+            Log.Information("Invoked event for {Type} (ID: {Id})", args.eventArgs.message.GetType().FullName, id);
         }
         catch (Exception ex)
         {

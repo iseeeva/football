@@ -160,11 +160,11 @@ namespace Sobee.Messages.Common
                 team1Color = 2,
                 team1Name = "Teams.Home.Name.Full",
                 team1ShortName = "Teams.Home.Name.Short",
-                team1Size = 11,
+                team1Size = 10,
                 team2Color = 3,
                 team2Name = "Teams.Away.Name.Full",
                 team2ShortName = "Teams.Away.Name.Short",
-                team2Size = 11,
+                team2Size = 10,
                 xmlCode = "<XMLData><Script></Script></XMLData>",
                 scenarioType_0 = ScenarioType.ScenarioMatch
             };
@@ -279,7 +279,7 @@ namespace Sobee.Messages.Common
         public string string_6 = string.Empty;
 
         // Token: 0x04000692 RID: 1682
-        public string xmlCode = string.Empty;
+        public string xmlCode;
 
         // Token: 0x04000693 RID: 1683
         public string string_8 = string.Empty;

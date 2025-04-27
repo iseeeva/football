@@ -8,6 +8,7 @@ namespace Sobee.System.Common
 
         public Client(Guid Id, Socket Socket) : base(Id, Socket)
         {
+
         }
 
         public override Task Update()

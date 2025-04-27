@@ -24,5 +24,5 @@ public class Message : IDeserialize
     }
 
     // Token: 0x04000021 RID: 33
-    public int int_0;
+    public int byteLength;
 }
