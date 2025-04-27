@@ -4,13 +4,12 @@ namespace Sobee.System.Common
 {
     public class ClientManager
     {
-        private readonly List<Client> Clients;
-        private readonly MessageDispatcher DispatchGroup;
+        private readonly List<Client> Clients = new();
+        private readonly MessageDispatch Dispatch;
 
-        public ClientManager(MessageDispatcher dispatchGroup)
+        public ClientManager(MessageDispatch dispatch)
         {
-            Clients = new List<Client>();
-            DispatchGroup = dispatchGroup ?? throw new ArgumentNullException(nameof(dispatchGroup));
+            Dispatch = dispatch ?? throw new ArgumentNullException(nameof(dispatch));
         }
 
         public async Task Update()
@@ -33,7 +32,7 @@ namespace Sobee.System.Common
                 } while (Clients.Any(c => c.Id == uniqueId));
 
                 var client = new Client(uniqueId, socket);
-                client.SetDispatchSource(DispatchGroup);
+                client.SetDispatchSource(Dispatch);
 
                 lock (Clients)
                 {

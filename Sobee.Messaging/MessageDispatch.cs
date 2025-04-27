@@ -4,10 +4,10 @@ using Serilog;
 using Sobee.Common;
 using Sobee.Messaging;
 
-public sealed class MessageDispatcher
+public sealed class MessageDispatch
 {
     private readonly object owner;
-    private readonly ILogger Log = Logging.Get<MessageDispatcher>();
+    private readonly ILogger Log = Logging.Get<MessageDispatch>();
 
     private readonly IDictionary<ushort, ConstructorInfo> messageConstructorsById = new SortedDictionary<ushort, ConstructorInfo>();
     private readonly IDictionary<Type, ushort> messageTypeToId = new Dictionary<Type, ushort>();
@@ -15,7 +15,7 @@ public sealed class MessageDispatcher
     private readonly IDictionary<Type, int> messageTypeToIndex = new Dictionary<Type, int>();
     private readonly HashSet<ushort> usedMessageIds = new HashSet<ushort>();
 
-    public MessageDispatcher(object owner)
+    public MessageDispatch(object owner)
     {
         this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
     }

@@ -11,8 +11,8 @@ namespace Sobee.System.Common
         private readonly CancellationTokenSource Cancellation = new();
         private bool IsDisposed = false;
 
-        private ClientManager? ClientManager;
-        private MessageDispatcher? Dispatch;
+        private ClientManager? Clients;
+        private MessageDispatch? Dispatch;
 
         private static readonly Serilog.ILogger Log = Logging.Get<Hub>();
 
@@ -32,7 +32,7 @@ namespace Sobee.System.Common
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed during construction: {ex.Message}", ex);
+                Log.Error($"Failed during construction: " + ex.GetBaseException(), ex);
                 Dispose();
                 throw;
             }
@@ -45,11 +45,11 @@ namespace Sobee.System.Common
                 Server.Bind(new IPEndPoint(IPAddress.Loopback, port));
                 Server.Listen();
 
-                Dispatch = new MessageDispatcher(this);
+                Dispatch = new MessageDispatch(this);
                 Dispatch.RegisterMessagesFromAssemblyName("Sobee.Messages.Common");
                 Dispatch.RegisterMessageEvent(typeof(Messages.Common.Player.Information), Events.Common.Player.Initialize);
 
-                ClientManager = new ClientManager(Dispatch);
+                Clients = new ClientManager(Dispatch);
 
                 _ = Task.Run(() => Start(Cancellation.Token));
                 _ = Task.Run(() => Tick(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
@@ -71,7 +71,7 @@ namespace Sobee.System.Common
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var clientSocket = await Server.AcceptAsync(cancellationToken);
-                    _ = Task.Run(() => HandleConnection(clientSocket));
+                    _ = Task.Run(() => Connection(clientSocket));
                 }
             }
             catch (OperationCanceledException)
@@ -84,27 +84,24 @@ namespace Sobee.System.Common
             }
         }
 
-        private async Task HandleConnection(Socket socket)
+        private async Task Connection(Socket socket)
         {
             try
             {
                 Log.Information($"Connection established from {socket.RemoteEndPoint}");
-                if (ClientManager != null)
-                {
-                    ClientManager.AddClient(socket);
-                }
+                Clients?.AddClient(socket);
             }
             catch (Exception ex)
             {
-                Log.Error($"Error handling connection: {ex.Message}", ex);
+                Log.Error($"Error handling connection: " + ex.GetBaseException(), ex);
             }
         }
 
         private async Task Update()
         {
-            if (ClientManager != null)
+            if (Clients != null)
             {
-                await ClientManager.Update();
+                await Clients.Update();
             }
         }
 
@@ -132,7 +129,7 @@ namespace Sobee.System.Common
             }
             catch (Exception ex)
             {
-                Log.Error($"Error in Tick function: {ex.Message}", ex);
+                Log.Error($"Error in tick: " + ex.GetBaseException(), ex);
                 await Tick(previous);
             }
         }

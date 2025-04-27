@@ -7,7 +7,7 @@ namespace Sobee.Messaging
     public class SocketMessageHandle : SocketQueueHandle, IDisposable
     {
         private readonly ILogger log = Logging.Get<SocketMessageHandle>();
-        private MessageDispatcher? _dispatcher;
+        private MessageDispatch? _dispatcher;
 
         private MessageHelper? _receiveHelper;
         private readonly MemoryStream _receiveStream = new MemoryStream(SocketQueueHandle.MaxReceivingSize);
@@ -55,7 +55,7 @@ namespace Sobee.Messaging
             }
         }
 
-        public virtual void SetDispatchSource(MessageDispatcher dispatcher)
+        public virtual void SetDispatchSource(MessageDispatch dispatcher)
         {
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
             _receiveHelper = new MessageHelper(_receiveStream, dispatcher.GetDispatcher(), dispatcher.GetMessageTypeToIdDelegate());
