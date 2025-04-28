@@ -1,6 +1,6 @@
 ﻿namespace Sobee.Common
 {
-    public class Component
+    public class Component : IDisposable
     {
         public Component()
         {
@@ -12,6 +12,7 @@
             // Start receiving logic here
             throw new Exception("Update not defined");
         }
+
         public virtual void Dispose()
         {
             // Dispose logic here

@@ -89,7 +89,7 @@ namespace Sobee.System.Common
             try
             {
                 Log.Information($"Connection established from {socket.RemoteEndPoint}");
-                Clients?.AddClient(socket);
+                Clients?.Add(socket);
             }
             catch (Exception ex)
             {

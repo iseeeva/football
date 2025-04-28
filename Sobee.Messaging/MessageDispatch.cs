@@ -6,7 +6,7 @@ using Sobee.Messaging;
 
 public sealed class MessageDispatch
 {
-    private readonly object owner;
+    public object owner { get; private set; }
     private readonly ILogger Log = Logging.Get<MessageDispatch>();
 
     private readonly IDictionary<ushort, ConstructorInfo> messageConstructorsById = new SortedDictionary<ushort, ConstructorInfo>();
@@ -19,8 +19,6 @@ public sealed class MessageDispatch
     {
         this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
     }
-
-    public object Owner => owner;
 
     public IEnumerable<KeyValuePair<ushort, ConstructorInfo>> GetAllRegisteredConstructors() => messageConstructorsById;
 

@@ -8,24 +8,22 @@ public class SocketQueueHandle : Component
     private readonly ILogger log = Logging.Get<SocketQueueHandle>();
     private readonly SemaphoreSlim sendSemaphore = new SemaphoreSlim(1, 1);
 
+    protected Socket clientSocket;
+
     public static int MaxSendingSize { get; private set; } = 32768;
     public static int MaxReceivingSize { get; private set; } = 4096;
-
-    protected Socket clientSocket;
 
     private readonly ConcurrentQueue<byte[]> sendQueue = new ConcurrentQueue<byte[]>();
     private readonly ConcurrentQueue<byte[]> receiveQueue = new ConcurrentQueue<byte[]>();
 
-    protected byte[] receiveBuffer = new byte[MaxReceivingSize];
-    protected int receiveBufferOffset;
+    private byte[] receiveBuffer = new byte[MaxReceivingSize];
+    private int receiveBufferOffset;
 
     public long totalReceive { get; private set; }
     public long totalBytesReceive { get; private set; }
     public long totalSent { get; private set; }
     public long totalBytesSent { get; private set; }
     public long totalQueued => sendQueue.Count + receiveQueue.Count;
-
-    public bool IsSocketAlive => clientSocket?.Connected == true;
 
     public SocketQueueHandle(Socket socket)
     {
@@ -56,7 +54,7 @@ public class SocketQueueHandle : Component
 
     private async Task ProcessSendQueueAsync()
     {
-        if (!IsSocketAlive) return;
+        if (!IsConnected()) return;
 
         await sendSemaphore.WaitAsync();
 
@@ -108,11 +106,11 @@ public class SocketQueueHandle : Component
 
     private async Task StartReceivingAsync(CancellationToken cancellationToken = default)
     {
-        if (!IsSocketAlive) return;
+        if (!IsConnected()) return;
 
         try
         {
-            while (IsSocketAlive && !cancellationToken.IsCancellationRequested)
+            while (IsConnected() && !cancellationToken.IsCancellationRequested)
             {
                 int bytesRead = await clientSocket.ReceiveAsync(
                     new ArraySegment<byte>(receiveBuffer, receiveBufferOffset, receiveBuffer.Length - receiveBufferOffset),
@@ -172,10 +170,22 @@ public class SocketQueueHandle : Component
         return receiveQueue.TryDequeue(out var message) ? message : null;
     }
 
+    public bool IsConnected()
+    {
+        try
+        {
+            return !(clientSocket.Poll(1, SelectMode.SelectRead) && clientSocket.Available == 0);
+        }
+        catch (SocketException)
+        {
+            return false;
+        }
+    }
+
     public override void Dispose()
     {
         clientSocket?.Dispose();
         log.Information("disposed.");
-        base.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

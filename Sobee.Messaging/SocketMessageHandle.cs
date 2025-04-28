@@ -4,7 +4,7 @@ using Sobee.Common;
 
 namespace Sobee.Messaging
 {
-    public class SocketMessageHandle : SocketQueueHandle, IDisposable
+    public class SocketMessageHandle : SocketQueueHandle
     {
         private readonly ILogger log = Logging.Get<SocketMessageHandle>();
         private MessageDispatch? _dispatcher;
@@ -22,7 +22,7 @@ namespace Sobee.Messaging
 
         public override async Task Update()
         {
-            if (!this.IsSocketAlive) return;
+            if (!IsConnected()) return;
 
             try
             {
@@ -31,7 +31,7 @@ namespace Sobee.Messaging
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message, ex); // Fixed: Pass the message and inner exception  
+                throw new Exception(ex.Message, ex);
             }
         }
 
@@ -51,7 +51,7 @@ namespace Sobee.Messaging
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message, ex); // Fixed: Pass the message and inner exception  
+                throw new Exception(ex.Message, ex);
             }
         }
 
@@ -79,11 +79,11 @@ namespace Sobee.Messaging
                     if (_dispatcher == null)
                         throw new InvalidOperationException($"{nameof(_dispatcher)} is not initialized.");
 
-                    _dispatcher.DispatchToMessageEvent(new MessageDelegateArgs(_dispatcher.Owner, new MessageEventArgs(this, message)));
+                    _dispatcher.DispatchToMessageEvent(new MessageDelegateArgs(_dispatcher.owner, new MessageEventArgs(this, message)));
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception(ex.Message, ex); // Fixed: Pass the message and inner exception  
+                    throw new Exception(ex.Message, ex);
                 }
             }
         }
@@ -103,6 +103,8 @@ namespace Sobee.Messaging
         {
             _receiveStream.Dispose();
             _sendStream.Dispose();
+            log.Information("disposed.");
+            GC.SuppressFinalize(this);
             base.Dispose();
         }
     }

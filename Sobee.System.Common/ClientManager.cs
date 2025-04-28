@@ -14,11 +14,31 @@ namespace Sobee.System.Common
 
         public async Task Update()
         {
+            List<Client> disconnectedClients = new();
+
+            lock (Clients)
+            {
+                foreach (var client in Clients)
+                {
+                    if (!client.IsConnected())
+                    {
+                        disconnectedClients.Add(client);
+                    }
+                }
+
+                foreach (var client in disconnectedClients)
+                {
+                    client.Dispose();
+                    Clients.Remove(client);
+                }
+            }
+
             var updateTasks = Clients.Select(client => client.Update());
             await Task.WhenAll(updateTasks);
         }
 
-        public bool AddClient(Socket socket)
+
+        public bool Add(Socket socket)
         {
             if (socket == null)
                 throw new ArgumentNullException(nameof(socket), "Socket cannot be null.");
@@ -26,10 +46,9 @@ namespace Sobee.System.Common
             try
             {
                 Guid uniqueId;
-                do
-                {
-                    uniqueId = Guid.NewGuid();
-                } while (Clients.Any(c => c.Id == uniqueId));
+
+                do uniqueId = Guid.NewGuid();
+                while (Clients.Any(c => c.Id == uniqueId));
 
                 var client = new Client(uniqueId, socket);
                 client.SetDispatchSource(Dispatch);
@@ -44,6 +63,21 @@ namespace Sobee.System.Common
             catch (Exception ex)
             {
                 throw new Exception(ex.Message, ex);
+            }
+        }
+
+        public bool Remove(Guid clientId)
+        {
+            lock (Clients)
+            {
+                var client = Clients.FirstOrDefault(c => c.Id == clientId);
+                if (client == null)
+                {
+                    return false;
+                }
+
+                Clients.Remove(client);
+                return true;
             }
         }
     }
