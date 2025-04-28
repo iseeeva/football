@@ -22,7 +22,7 @@ namespace Sobee.System.Common
 
         public override void Dispose()
         {
-            log.Information("{ClientId} disposed.", Id);
+            log.Information("{ClientId} disposing.", Id);
             GC.SuppressFinalize(this);
             base.Dispose();
         }

@@ -29,7 +29,7 @@ namespace Sobee.System
 
             try
             {
-                clientSocket.Shutdown(SocketShutdown.Both);
+                Socket.Shutdown(SocketShutdown.Both);
             }
             catch (Exception ex)
             {
@@ -37,8 +37,8 @@ namespace Sobee.System
             }
             finally
             {
-                clientSocket.Close();
-                clientSocket.Dispose();
+                Socket.Close();
+                Socket.Dispose();
             }
 
             onDisconnect?.Invoke(this, EventArgs.Empty);
@@ -52,7 +52,7 @@ namespace Sobee.System
             }
             finally
             {
-                log.Information("disposed.");
+                log.Information("{id} disposing.", Socket.RemoteEndPoint);
                 GC.SuppressFinalize(this);
                 base.Dispose();
             }

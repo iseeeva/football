@@ -17,7 +17,7 @@ namespace Sobee.Messaging
 
         public SocketMessageHandle(Socket socket) : base(socket)
         {
-            log.Information("initialized.");
+            log.Debug("{id} initialized.", socket.RemoteEndPoint);
         }
 
         public override async Task Update()
@@ -101,9 +101,10 @@ namespace Sobee.Messaging
 
         public override void Dispose()
         {
+            log.Debug("{id} disposing.", Socket.RemoteEndPoint);
+
             _receiveStream.Dispose();
             _sendStream.Dispose();
-            log.Information("disposed.");
             GC.SuppressFinalize(this);
             base.Dispose();
         }

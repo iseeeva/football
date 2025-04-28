@@ -121,6 +121,36 @@ namespace Sobee.Messages.Common.Match
             return string_1;
         }
 
+        public Information()
+        {
+            var gg1 = new GClass166(0);
+            gg1.Clear();
+
+            this.HomeTeam = new List<Player.MatchInformation>(11);
+            this.AwayTeam = new List<Player.MatchInformation>(11);
+            this.HomeSpectator = new List<Player.MatchInformation>(11);
+            this.AwaySpectator = new List<Player.MatchInformation>(11);
+            this.Actor = new MatchActor(-1, -1, -1);
+            this.BallPosition = new Vector3(0, 0, 0);
+            this.BallVelocity = new Vector3(0, 0, 0);
+            this.matchStateType_0 = MatchStateType.Positioning;
+            this.matchFieldPositioning_0 = MatchFieldPositioning.Kickoff;
+            this.gclass166_0 = gg1;
+            this.gclass170_0 = GClass170.Default();
+            this.gclass167_0 = GClass167.Default();
+            this.double_0 = 0.0;
+            this.float_0 = 0f;
+            this.ilist_4 = Enumerable.Empty<string>().ToList();
+            this.ilist_5 = Enumerable.Empty<string>().ToList();
+            this.gclass156_0 = GClass156.Default();
+            this.list_0 = new List<GClass163>();
+            this.list_1 = new List<GClass172>();
+            this.userSessionRights_0 = new UserSessionRights();
+            this.gclass171_0 = new GClass171();
+            this.string_0 = string.Empty;
+            this.string_1 = string.Empty;
+        }
+
         public Information(BinaryReader gclass315_0) : base(gclass315_0)
         {
             Actor = new MatchActor(gclass315_0);
@@ -300,32 +330,6 @@ namespace Sobee.Messages.Common.Match
             gclass316_0.method_25(gclass171_0);
             gclass316_0.method_14(string_0);
             gclass316_0.method_14(string_1);
-        }
-
-        public static Information testMethod()
-        {
-            var gg1 = new GClass166(0);
-            gg1.Clear();
-
-            var homeTeam = Enumerable.Range(1, 5).Select(i => new Player.MatchInformation(
-                i, i, $"Player{i}", StadiumSitting.HomePlayer,
-                (sbyte)MatchEntry.ToSquad(i, true), new Vector2(0, 0),
-                new Vector3(0, 0, 0), 0f, MatchCard.None, "<XMLData><Script></Script></XMLData>")).ToList();
-
-            var awayTeam = Enumerable.Range(12, 5).Select(i => new Player.MatchInformation(
-                i, i, $"Player{i}", StadiumSitting.AwayPlayer,
-                (sbyte)MatchEntry.ToSquad(i, true), new Vector2(0, 0),
-                new Vector3(0, 0, 0), 0f, MatchCard.None, "<XMLData><Script></Script></XMLData>")).ToList();
-
-            return new Information(
-                homeTeam, awayTeam, Enumerable.Empty<Player.MatchInformation>(),
-                Enumerable.Empty<Player.MatchInformation>(), new MatchActor(1, 1, 1),
-                new Vector3(0, 0, 0), new Vector3(0, 0, 0), MatchStateType.Positioning,
-                MatchFieldPositioning.Kickoff, gg1, GClass170.Default(),
-                GClass167.Default(), 0.0, 0f, Enumerable.Empty<string>(),
-                Enumerable.Empty<string>(), GClass156.Default(), new List<GClass163>(),
-                new List<GClass172>(), new UserSessionRights(), new GClass171(),
-                string.Empty, string.Empty);
         }
 
         private MatchActor Actor;

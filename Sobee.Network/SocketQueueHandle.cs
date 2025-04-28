@@ -8,7 +8,7 @@ public class SocketQueueHandle : Component
     private readonly ILogger log = Logging.Get<SocketQueueHandle>();
     private readonly SemaphoreSlim sendSemaphore = new SemaphoreSlim(1, 1);
 
-    protected Socket clientSocket;
+    public Socket Socket { get; protected set; }
 
     public static int MaxSendingSize { get; private set; } = 32768;
     public static int MaxReceivingSize { get; private set; } = 4096;
@@ -27,12 +27,12 @@ public class SocketQueueHandle : Component
 
     public SocketQueueHandle(Socket socket)
     {
-        clientSocket = socket ?? throw new ArgumentNullException(nameof(socket));
+        this.Socket = socket ?? throw new ArgumentNullException(nameof(socket));
 
         try
         {
             _ = StartReceivingAsync();
-            log.Information("initialized.");
+            log.Debug("{id} initialized.", Socket.RemoteEndPoint);
         }
         catch (Exception ex)
         {
@@ -64,7 +64,7 @@ public class SocketQueueHandle : Component
             {
                 try
                 {
-                    await clientSocket.SendAsync(new ArraySegment<byte>(message), SocketFlags.None);
+                    await Socket.SendAsync(new ArraySegment<byte>(message), SocketFlags.None);
                     totalBytesSent += message.Length;
                     totalSent++;
                 }
@@ -112,7 +112,7 @@ public class SocketQueueHandle : Component
         {
             while (IsConnected() && !cancellationToken.IsCancellationRequested)
             {
-                int bytesRead = await clientSocket.ReceiveAsync(
+                int bytesRead = await Socket.ReceiveAsync(
                     new ArraySegment<byte>(receiveBuffer, receiveBufferOffset, receiveBuffer.Length - receiveBufferOffset),
                     SocketFlags.None,
                     cancellationToken
@@ -174,7 +174,7 @@ public class SocketQueueHandle : Component
     {
         try
         {
-            return !(clientSocket.Poll(1, SelectMode.SelectRead) && clientSocket.Available == 0);
+            return !(Socket.Poll(1, SelectMode.SelectRead) && Socket.Available == 0);
         }
         catch (SocketException)
         {
@@ -184,8 +184,9 @@ public class SocketQueueHandle : Component
 
     public override void Dispose()
     {
-        clientSocket?.Dispose();
-        log.Information("disposed.");
+        log.Debug("{id} disposing.", Socket.RemoteEndPoint);
+
+        Socket?.Dispose();
         GC.SuppressFinalize(this);
     }
 }

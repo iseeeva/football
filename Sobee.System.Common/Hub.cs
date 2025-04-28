@@ -47,7 +47,8 @@ namespace Sobee.System.Common
 
                 Dispatch = new MessageDispatch(this);
                 Dispatch.RegisterMessagesFromAssemblyName("Sobee.Messages.Common");
-                Dispatch.RegisterMessageEvent(typeof(Messages.Common.Player.Information), Events.Common.Player.Initialize);
+                Dispatch.RegisterMessageEvent(typeof(Messages.Common.Player.Information), Events.Player.Information);
+                //Dispatch.RegisterMessageEvent(typeof(Messages.Common.Chat.Messaging), Events.Chat.Messaging);
 
                 Clients = new ClientManager(Dispatch);
 

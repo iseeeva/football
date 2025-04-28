@@ -1,9 +1,13 @@
 ﻿using System.Net.Sockets;
+using Serilog;
+using Sobee.Common;
 
 namespace Sobee.System.Common
 {
     public class ClientManager
     {
+        private readonly ILogger log = Logging.Get<ClientManager>();
+
         private readonly List<Client> Clients = new();
         private readonly MessageDispatch Dispatch;
 
@@ -30,6 +34,8 @@ namespace Sobee.System.Common
                 {
                     client.Dispose();
                     Clients.Remove(client);
+
+                    log.Information("Client {id} removed due disconnection.", client.Id);
                 }
             }
 
@@ -56,6 +62,7 @@ namespace Sobee.System.Common
                 lock (Clients)
                 {
                     Clients.Add(client);
+                    log.Information("Client {id} ({endPoint}) added.", client.Id, client.Socket.RemoteEndPoint);
                 }
 
                 return true;
@@ -77,6 +84,8 @@ namespace Sobee.System.Common
                 }
 
                 Clients.Remove(client);
+                log.Information("Client {id} ({endPoint}) removed.", client.Id, client.Socket.RemoteEndPoint);
+
                 return true;
             }
         }
