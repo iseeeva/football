@@ -13,7 +13,7 @@ namespace Sobee.System.Common.Events
             var Client = (Client)e.handler;
             var Message = (Messages.Common.Chat.Messaging)e.message;
 
-            log.Information($"{Client.Id} {Message.ToString()}");
+            log.Information($"{Client.Id} {Message}");
         }
     }
 }

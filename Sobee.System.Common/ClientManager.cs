@@ -32,10 +32,10 @@ namespace Sobee.System.Common
 
                 foreach (var client in disconnectedClients)
                 {
+                    log.Information("Client {id} removing due disconnection.", client.Id);
+
                     client.Dispose();
                     Clients.Remove(client);
-
-                    log.Information("Client {id} removed due disconnection.", client.Id);
                 }
             }
 
@@ -43,6 +43,27 @@ namespace Sobee.System.Common
             await Task.WhenAll(updateTasks);
         }
 
+        public bool Add(Client client)
+        {
+            if (client == null)
+                throw new ArgumentNullException(nameof(client), "Client cannot be null.");
+
+            lock (Clients)
+            {
+                if (Clients.Any(c => c.Id == client.Id))
+                {
+                    log.Warning("Client {id} already exists.", client.Id);
+                    return false;
+                }
+
+                client.SetDispatchSource(Dispatch);
+                Clients.Add(client);
+
+                log.Information("Client {id} ({endPoint}) added.", client.Id, client.Socket.RemoteEndPoint);
+            }
+
+            return true;
+        }
 
         public bool Add(Socket socket)
         {
@@ -73,6 +94,26 @@ namespace Sobee.System.Common
             }
         }
 
+        public bool Remove(Client client)
+        {
+            if (client == null)
+                throw new ArgumentNullException(nameof(client), "Client cannot be null.");
+
+            lock (Clients)
+            {
+                if (!Clients.Contains(client))
+                {
+                    log.Warning("Client {id} not found.", client.Id);
+                    return false;
+                }
+
+                Clients.Remove(client);
+                log.Information("Client {id} ({endPoint}) removed.", client.Id, client.Socket.RemoteEndPoint);
+
+                return true;
+            }
+        }
+
         public bool Remove(Guid clientId)
         {
             lock (Clients)
@@ -87,6 +128,18 @@ namespace Sobee.System.Common
                 log.Information("Client {id} ({endPoint}) removed.", client.Id, client.Socket.RemoteEndPoint);
 
                 return true;
+            }
+        }
+
+        public void Broadcast(Message message)
+        {
+            if (message == null) throw new ArgumentNullException(nameof(message));
+            lock (Clients)
+            {
+                foreach (var client in Clients)
+                {
+                    client.SendMessage(message);
+                }
             }
         }
     }

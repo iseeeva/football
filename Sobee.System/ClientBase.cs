@@ -2,17 +2,17 @@
 using Serilog;
 using Sobee.Common;
 
-namespace Sobee.System.Common
+namespace Sobee.System
 {
-    public class Client : ClientBase
+    public class ClientBase : SocketHandleBase
     {
-        private readonly ILogger log = Logging.Get<Client>();
+        private readonly ILogger log = Logging.Get<ClientBase>();
 
-        public Messages.Common.Player.Information? Information;
+        public Guid Id { get; private set; }
 
-        public Client(Guid Id, Socket Socket) : base(Id, Socket)
+        public ClientBase(Guid Id, Socket Socket) : base(Socket)
         {
-
+            this.Id = Id;
         }
 
         public override Task Update()
