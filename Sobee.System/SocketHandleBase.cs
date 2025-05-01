@@ -9,11 +9,13 @@ namespace Sobee.System
     {
         private readonly ILogger log = Logging.Get<SocketHandleBase>();
 
+        public Guid Id { get; private set; }
+
         public event EventHandler? onDisconnect;
 
-        public SocketHandleBase(Socket socket) : base(socket)
+        public SocketHandleBase(Guid id, Socket socket) : base(socket)
         {
-
+            Id = id;
         }
 
         public override Task Update()

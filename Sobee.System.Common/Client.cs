@@ -4,7 +4,7 @@ using Sobee.Common;
 
 namespace Sobee.System.Common
 {
-    public class Client : ClientBase
+    public class Client : SocketHandleBase
     {
         private readonly ILogger log = Logging.Get<Client>();
 
@@ -22,7 +22,7 @@ namespace Sobee.System.Common
 
         public override void Dispose()
         {
-            log.Information("{id} disposing.", Id);
+            log.Information("{ClientId} disposing.", Id);
             GC.SuppressFinalize(this);
             base.Dispose();
         }

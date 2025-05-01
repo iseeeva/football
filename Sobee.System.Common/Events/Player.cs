@@ -14,11 +14,7 @@ namespace Sobee.System.Common.Events
             var Message = (Messages.Common.Player.Information)e.message;
 
             Client.Information = Message;
-
-            var roomTest = Sender.Rooms.Create();
-            roomTest.Clients.Add(Client);
-
-            roomTest.Broadcast(new Messages.Common.Match.Information());
+            Client.SendMessage(new Messages.Common.Match.Information());
             log.Information($"{Sender.Port} {Client.Id} {Message.ToString()}");
         }
     }
