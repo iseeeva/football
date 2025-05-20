@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using Sobee.Common;
+using Sobee.Messaging;
 
 namespace Sobee.System.Common
 {
@@ -11,8 +12,11 @@ namespace Sobee.System.Common
         private readonly CancellationTokenSource Cancellation = new();
         private bool IsDisposed = false;
 
-        private ClientManager? Clients;
-        private MessageDispatch? Dispatch;
+        public ClientManager? Clients { get; private set; }
+        private MessageDispatch? ClientsDispatch;
+
+        public RoomManager? Rooms { get; private set; }
+        private MessageDispatch? RoomsDispatch;
 
         private static readonly Serilog.ILogger Log = Logging.Get<Hub>();
 
@@ -45,12 +49,16 @@ namespace Sobee.System.Common
                 Server.Bind(new IPEndPoint(IPAddress.Loopback, port));
                 Server.Listen();
 
-                Dispatch = new MessageDispatch(this);
-                Dispatch.RegisterMessagesFromAssemblyName("Sobee.Messages.Common");
-                Dispatch.RegisterMessageEvent(typeof(Messages.Common.Player.Information), Events.Player.Information);
-                //Dispatch.RegisterMessageEvent(typeof(Messages.Common.Chat.Messaging), Events.Chat.Messaging);
+                ClientsDispatch = new MessageDispatch(this);
+                ClientsDispatch.RegisterMessagesFromAssemblyName("Sobee.Messages.Common");
+                ClientsDispatch.RegisterMessageEvent(typeof(Messages.Common.Player.Information), Events.Player.Information);
 
-                Clients = new ClientManager(Dispatch);
+                RoomsDispatch = new MessageDispatch(this);
+                RoomsDispatch.RegisterMessagesFromAssemblyName("Sobee.Messages.Common");
+                RoomsDispatch.RegisterMessageEvent(typeof(Messages.Common.Chat.Messaging), Events.Chat.Messaging);
+
+                Clients = new ClientManager(ClientsDispatch);
+                Rooms = new RoomManager(RoomsDispatch);
 
                 _ = Task.Run(() => Start(Cancellation.Token));
                 _ = Task.Run(() => Tick(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
@@ -103,6 +111,11 @@ namespace Sobee.System.Common
             if (Clients != null)
             {
                 await Clients.Update();
+            }
+
+            if (Rooms != null)
+            {
+                await Rooms.Update();
             }
         }
 

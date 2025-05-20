@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Sobee.Messaging;
 using Sobee.Serialization.GameServer;
 
 namespace Sobee.Messages.Common.Match

@@ -1,4 +1,6 @@
-﻿namespace Sobee.Messages.Common
+﻿using Sobee.Messaging;
+
+namespace Sobee.Messages.Common
 {
 
     // Token: 0x02000094 RID: 148

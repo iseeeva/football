@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.IO.Compression;
 using System.Text;
+using Sobee.Messaging;
 
 namespace Sobee.Messages.Common
 {

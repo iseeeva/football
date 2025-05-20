@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using Sobee.Messaging;
 
 namespace Sobee.Messages.Common.Player
 {

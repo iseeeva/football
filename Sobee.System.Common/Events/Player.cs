@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using Sobee.Common;
+using Sobee.Messaging;
 
 namespace Sobee.System.Common.Events
 {
@@ -14,7 +15,12 @@ namespace Sobee.System.Common.Events
             var Message = (Messages.Common.Player.Information)e.message;
 
             Client.Information = Message;
-            Client.SendMessage(new Messages.Common.Match.Information());
+            Sender.Clients.Remove(Client);
+
+            var roomTest = Sender.Rooms.Create();
+            roomTest.Clients.Add(Client);
+
+            Client.Broadcast(new Messages.Common.Match.Information());
             log.Information($"{Sender.Port} {Client.Id} {Message.ToString()}");
         }
     }

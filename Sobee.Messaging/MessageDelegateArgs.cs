@@ -1,11 +1,14 @@
-﻿public class MessageDelegateArgs : EventArgs
+﻿namespace Sobee.Messaging
 {
-    public MessageEventArgs eventArgs { get; private set; }
-    public object sender { get; private set; }
-
-    public MessageDelegateArgs(object gclass306_1, MessageEventArgs gclass175_1)
+    public class MessageDelegateArgs : EventArgs
     {
-        this.sender = gclass306_1;
-        this.eventArgs = gclass175_1;
+        public MessageEventArgs eventArgs { get; private set; }
+        public object sender { get; private set; }
+
+        public MessageDelegateArgs(object gclass306_1, MessageEventArgs gclass175_1)
+        {
+            sender = gclass306_1;
+            eventArgs = gclass175_1;
+        }
     }
 }

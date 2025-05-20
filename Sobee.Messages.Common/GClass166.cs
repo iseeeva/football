@@ -1,4 +1,6 @@
 ﻿// Token: 0x02000066 RID: 102
+using Sobee.Messaging;
+
 namespace Sobee.Messages.Common
 {
     [GAttribute0(12908)]

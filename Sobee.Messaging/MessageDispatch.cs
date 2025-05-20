@@ -2,190 +2,192 @@
 using System.Runtime.Serialization;
 using Serilog;
 using Sobee.Common;
-using Sobee.Messaging;
 
-public sealed class MessageDispatch
+namespace Sobee.Messaging
 {
-    public object owner { get; private set; }
-    private readonly ILogger Log = Logging.Get<MessageDispatch>();
-
-    private readonly IDictionary<ushort, ConstructorInfo> messageConstructorsById = new SortedDictionary<ushort, ConstructorInfo>();
-    private readonly IDictionary<Type, ushort> messageTypeToId = new Dictionary<Type, ushort>();
-    private readonly IDictionary<ushort, MessageDelegate> messageIdToEvent = new Dictionary<ushort, MessageDelegate>();
-    private readonly IDictionary<Type, int> messageTypeToIndex = new Dictionary<Type, int>();
-    private readonly HashSet<ushort> usedMessageIds = new HashSet<ushort>();
-
-    public MessageDispatch(object owner)
+    public sealed class MessageDispatch
     {
-        this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
-    }
+        public object owner { get; private set; }
+        private readonly ILogger Log = Logging.Get<MessageDispatch>();
 
-    public IEnumerable<KeyValuePair<ushort, ConstructorInfo>> GetAllRegisteredConstructors() => messageConstructorsById;
+        private readonly IDictionary<ushort, ConstructorInfo> messageConstructorsById = new SortedDictionary<ushort, ConstructorInfo>();
+        private readonly IDictionary<Type, ushort> messageTypeToId = new Dictionary<Type, ushort>();
+        private readonly IDictionary<ushort, MessageDelegate> messageIdToEvent = new Dictionary<ushort, MessageDelegate>();
+        private readonly IDictionary<Type, int> messageTypeToIndex = new Dictionary<Type, int>();
+        private readonly HashSet<ushort> usedMessageIds = new HashSet<ushort>();
 
-    public GDelegate1 GetDispatcher() => new GDelegate1(DispatchToMessageConstructor);
-
-    public GDelegate2 GetMessageTypeToIdDelegate() => new GDelegate2(GetMessageTypeId);
-
-    public int GetRegisteredMessageCount() => messageTypeToId.Count;
-
-    public IEnumerable<KeyValuePair<Type, int>> GetAllTypeIndexes() => messageTypeToIndex;
-
-    public int GetMessageIndex(Type type)
-    {
-        if (messageTypeToIndex.TryGetValue(type, out var index))
-            return index;
-
-        throw new KeyNotFoundException($"Message type index not found for: {type.FullName}");
-    }
-
-    public ushort GetMessageTypeId(Type type)
-    {
-        if (messageTypeToId.TryGetValue(type, out var id))
-            return id;
-
-        throw new KeyNotFoundException($"Message ID not found for type: {type.FullName}");
-    }
-
-    public void RegisterMessagesFromAllAssemblies()
-    {
-        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        public MessageDispatch(object owner)
         {
-            RegisterMessagesFromAssembly(assembly);
+            this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
         }
-    }
 
-    public void RegisterMessagesFromCurrentAssembly()
-    {
-        RegisterMessagesFromAssembly(Assembly.GetExecutingAssembly());
-    }
+        public IEnumerable<KeyValuePair<ushort, ConstructorInfo>> GetAllRegisteredConstructors() => messageConstructorsById;
 
-    public void RegisterMessagesFromAssemblyName(string assemblyName)
-    {
-        try
+        public GDelegate1 GetDispatcher() => new GDelegate1(DispatchToMessageConstructor);
+
+        public GDelegate2 GetMessageTypeToIdDelegate() => new GDelegate2(GetMessageTypeId);
+
+        public int GetRegisteredMessageCount() => messageTypeToId.Count;
+
+        public IEnumerable<KeyValuePair<Type, int>> GetAllTypeIndexes() => messageTypeToIndex;
+
+        public int GetMessageIndex(Type type)
         {
-            var assembly = Assembly.Load(assemblyName);
-            RegisterMessagesFromAssembly(assembly);
+            if (messageTypeToIndex.TryGetValue(type, out var index))
+                return index;
+
+            throw new KeyNotFoundException($"Message type index not found for: {type.FullName}");
         }
-        catch (FileNotFoundException ex)
-        {
-            Log.Warning("Assembly not found: {AssemblyName} - {Message}", assemblyName, ex.Message);
-        }
-    }
 
-    public void RegisterMessagesFromAssembly(Assembly assembly)
-    {
-        if (assembly == null) return;
+        public ushort GetMessageTypeId(Type type)
+        {
+            if (messageTypeToId.TryGetValue(type, out var id))
+                return id;
 
-        Type[] types;
-        try
-        {
-            types = assembly.GetTypes();
+            throw new KeyNotFoundException($"Message ID not found for type: {type.FullName}");
         }
-        catch (ReflectionTypeLoadException ex)
+
+        public void RegisterMessagesFromAllAssemblies()
         {
-            types = ex.Types.Where(t => t != null).ToArray();
-            foreach (var loaderException in ex.LoaderExceptions)
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                Log.Warning("Loader exception: {Message}", loaderException?.Message);
+                RegisterMessagesFromAssembly(assembly);
             }
         }
 
-        foreach (var type in types)
+        public void RegisterMessagesFromCurrentAssembly()
+        {
+            RegisterMessagesFromAssembly(Assembly.GetExecutingAssembly());
+        }
+
+        public void RegisterMessagesFromAssemblyName(string assemblyName)
+        {
+            try
+            {
+                var assembly = Assembly.Load(assemblyName);
+                RegisterMessagesFromAssembly(assembly);
+            }
+            catch (FileNotFoundException ex)
+            {
+                Log.Warning("Assembly not found: {AssemblyName} - {Message}", assemblyName, ex.Message);
+            }
+        }
+
+        public void RegisterMessagesFromAssembly(Assembly assembly)
+        {
+            if (assembly == null) return;
+
+            Type[] types;
+            try
+            {
+                types = assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                types = ex.Types.Where(t => t != null).ToArray();
+                foreach (var loaderException in ex.LoaderExceptions)
+                {
+                    Log.Warning("Loader exception: {Message}", loaderException?.Message);
+                }
+            }
+
+            foreach (var type in types)
+            {
+                var attribute = type.GetCustomAttribute<GAttribute0>();
+                if (attribute != null)
+                {
+                    RegisterMessageType(attribute.method_0(), type);
+                }
+            }
+        }
+
+        public void RegisterMessageEvent(Type messageType, MessageDelegate messageEvent)
+        {
+            var id = GetMessageTypeId(messageType);
+
+            if (messageIdToEvent.ContainsKey(id))
+            {
+                Log.Warning("Message event already registered for ID {Id}, overwriting...", id);
+            }
+
+            messageIdToEvent[id] = messageEvent;
+        }
+
+        public void RegisterMessageType(ushort messageId, Type type)
+        {
+            if (usedMessageIds.Contains(messageId))
+            {
+                Log.Warning("Message ID {MessageId} already used. Skipping type {Type}.", messageId, type.FullName);
+                return;
+            }
+
+            if (messageTypeToId.ContainsKey(type))
+            {
+                Log.Warning("Type {Type} already registered with ID {MessageId}. Skipping.", type.FullName, messageTypeToId[type]);
+                return;
+            }
+
+            var constructor = type.GetConstructor(new[] { typeof(BinaryReader) });
+            if (constructor == null)
+            {
+                throw new NotImplementedException($"Missing BinaryReader constructor for: {type.FullName}");
+            }
+
+            messageConstructorsById[messageId] = constructor;
+            messageTypeToId[type] = messageId;
+            messageTypeToIndex[type] = messageTypeToIndex.Count + 1;
+            usedMessageIds.Add(messageId);
+
+            Log.Information("Registered message type: {Type} with ID: {MessageId}", type.FullName, messageId);
+        }
+
+        public void RegisterMessageType(Type type)
         {
             var attribute = type.GetCustomAttribute<GAttribute0>();
-            if (attribute != null)
+            if (attribute == null)
             {
-                RegisterMessageType(attribute.method_0(), type);
+                throw new NotImplementedException($"Missing [GAttribute0] on message class: {type.FullName}");
+            }
+
+            RegisterMessageType(attribute.method_0(), type);
+        }
+
+        public object DispatchToMessageConstructor(ushort messageId, BinaryReader reader)
+        {
+            if (!messageConstructorsById.TryGetValue(messageId, out var constructor))
+            {
+                throw new SerializationException($"ClassID: {messageId} - Not registered.");
+            }
+
+            try
+            {
+                return constructor.Invoke(new object[] { reader });
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Deserialization failed for message ID: {MessageId}", messageId);
+                throw new SerializationException($"ClassID: {messageId} - Failed to deserialize.");
             }
         }
-    }
 
-    public void RegisterMessageEvent(Type messageType, MessageDelegate messageEvent)
-    {
-        var id = GetMessageTypeId(messageType);
-
-        if (messageIdToEvent.ContainsKey(id))
+        public void DispatchToMessageEvent(MessageDelegateArgs args)
         {
-            Log.Warning("Message event already registered for ID {Id}, overwriting...", id);
-        }
+            var id = GetMessageTypeId(args.eventArgs.message.GetType());
+            if (!messageIdToEvent.TryGetValue(id, out var eventDelegate))
+            {
+                throw new SerializationException($"ClassID: {id} - Not registered.");
+            }
 
-        messageIdToEvent[id] = messageEvent;
-    }
-
-    public void RegisterMessageType(ushort messageId, Type type)
-    {
-        if (usedMessageIds.Contains(messageId))
-        {
-            Log.Warning("Message ID {MessageId} already used. Skipping type {Type}.", messageId, type.FullName);
-            return;
-        }
-
-        if (messageTypeToId.ContainsKey(type))
-        {
-            Log.Warning("Type {Type} already registered with ID {MessageId}. Skipping.", type.FullName, messageTypeToId[type]);
-            return;
-        }
-
-        var constructor = type.GetConstructor(new[] { typeof(BinaryReader) });
-        if (constructor == null)
-        {
-            throw new NotImplementedException($"Missing BinaryReader constructor for: {type.FullName}");
-        }
-
-        messageConstructorsById[messageId] = constructor;
-        messageTypeToId[type] = messageId;
-        messageTypeToIndex[type] = messageTypeToIndex.Count + 1;
-        usedMessageIds.Add(messageId);
-
-        Log.Information("Registered message type: {Type} with ID: {MessageId}", type.FullName, messageId);
-    }
-
-    public void RegisterMessageType(Type type)
-    {
-        var attribute = type.GetCustomAttribute<GAttribute0>();
-        if (attribute == null)
-        {
-            throw new NotImplementedException($"Missing [GAttribute0] on message class: {type.FullName}");
-        }
-
-        RegisterMessageType(attribute.method_0(), type);
-    }
-
-    public object DispatchToMessageConstructor(ushort messageId, BinaryReader reader)
-    {
-        if (!messageConstructorsById.TryGetValue(messageId, out var constructor))
-        {
-            throw new SerializationException($"ClassID: {messageId} - Not registered.");
-        }
-
-        try
-        {
-            return constructor.Invoke(new object[] { reader });
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Deserialization failed for message ID: {MessageId}", messageId);
-            throw new SerializationException($"ClassID: {messageId} - Failed to deserialize.");
-        }
-    }
-
-    public void DispatchToMessageEvent(MessageDelegateArgs args)
-    {
-        var id = GetMessageTypeId(args.eventArgs.message.GetType());
-        if (!messageIdToEvent.TryGetValue(id, out var eventDelegate))
-        {
-            throw new SerializationException($"ClassID: {id} - Not registered.");
-        }
-
-        try
-        {
-            eventDelegate.Invoke(args.sender, args.eventArgs);
-            Log.Information("Invoked event for {Type} (ID: {Id})", args.eventArgs.message.GetType().FullName, id);
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Event invocation failed for ClassID: {Id}", id);
-            throw new SerializationException($"ClassID: {id} - Event failed.");
+            try
+            {
+                eventDelegate.Invoke(args.sender, args.eventArgs);
+                Log.Information("Invoked event for {Type} (ID: {Id})", args.eventArgs.message.GetType().FullName, id);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Event invocation failed for ClassID: {Id}", id);
+                throw new SerializationException($"ClassID: {id} - Event failed.");
+            }
         }
     }
 }

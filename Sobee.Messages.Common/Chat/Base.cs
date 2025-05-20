@@ -1,4 +1,6 @@
 ﻿// Token: 0x02000079 RID: 121
+using Sobee.Messaging;
+
 namespace Sobee.Messages.Common.Chat
 {
     [GAttribute0(13335)]

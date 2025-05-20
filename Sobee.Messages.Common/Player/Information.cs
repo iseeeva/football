@@ -1,4 +1,6 @@
-﻿namespace Sobee.Messages.Common.Player
+﻿using Sobee.Messaging;
+
+namespace Sobee.Messages.Common.Player
 {
     [GAttribute0(29475)]
     public sealed class Information : Message
