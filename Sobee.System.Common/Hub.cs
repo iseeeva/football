@@ -61,7 +61,7 @@ namespace Sobee.System.Common
                 Rooms = new RoomManager(RoomsDispatch);
 
                 _ = Task.Run(() => Start(Cancellation.Token));
-                _ = Task.Run(() => Tick(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
+                _ = Task.Run(() => Tick());
 
                 Log.Information("Hub initialized successfully.");
             }
@@ -119,32 +119,37 @@ namespace Sobee.System.Common
             }
         }
 
-        private async Task Tick(double previous)
+        private async Task Tick()
         {
-            try
+            double previous = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+            while (true)
             {
-                var starting = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                var delta = (starting - previous) / 1000.0;
-
-                await Update();
-
-                // Update all rooms (if applicable)
-                // Rooms.Update(delta);
-
-                var elapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - starting;
-                var delay = Math.Max(0, 1000.0 / 100 - elapsed); // TODO: FPS Needs Environment.
-
-                if (delay > 0)
+                try
                 {
-                    await Task.Delay((int)delay);
-                }
+                    var starting = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    var delta = (starting - previous) / 1000.0;
 
-                await Tick(starting);
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"Error in tick: " + ex.GetBaseException(), ex);
-                await Tick(previous);
+                    await Update();
+
+                    // Rooms.Update(delta); // varsa
+
+                    var elapsed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - starting;
+                    var delay = Math.Max(0, 1000.0 / 100 - elapsed); // 100 FPS hedef
+
+                    if (delay > 0)
+                    {
+                        await Task.Delay((int)delay);
+                    }
+
+                    previous = starting;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Error in tick: {ex.GetBaseException()}", ex);
+                    // İsterseniz burada kısa bir bekleme ekleyebilirsiniz:
+                    await Task.Delay(10);
+                }
             }
         }
 
