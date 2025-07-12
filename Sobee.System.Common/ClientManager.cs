@@ -25,7 +25,7 @@ namespace Sobee.System.Common
 
                 foreach (var client in Clients.ToList())
                 {
-                    if (!client.IsConnected())
+                    if (!client.IsConnected)
                     {
                         disconnectedClients.Add(client);
                     }
@@ -44,7 +44,7 @@ namespace Sobee.System.Common
             {
                 foreach (var client in Clients.ToList())
                 {
-                    if (client.IsConnected())
+                    if (client.IsConnected)
                     {
                         client.Update();
                     }

@@ -2,13 +2,12 @@
 using System.Net.Sockets;
 using Serilog;
 using Sobee.Common;
+using Sobee.Network;
 
-public class SocketQueueHandle : Component
+public class SocketQueueHandle : SocketBase
 {
     private readonly ILogger log = Logging.Get<SocketQueueHandle>();
     private readonly SemaphoreSlim sendSemaphore = new SemaphoreSlim(1, 1);
-
-    public Socket Socket { get; protected set; }
 
     public static int MaxSendingSize { get; private set; } = 32768;
     public static int MaxReceivingSize { get; private set; } = 4096;
@@ -25,10 +24,8 @@ public class SocketQueueHandle : Component
     public long totalBytesSent { get; private set; }
     public long totalQueued => sendQueue.Count + receiveQueue.Count;
 
-    public SocketQueueHandle(Socket socket)
+    public SocketQueueHandle(Socket socket) : base(socket)
     {
-        this.Socket = socket ?? throw new ArgumentNullException(nameof(socket));
-
         try
         {
             _ = StartReceivingAsync();
@@ -54,7 +51,7 @@ public class SocketQueueHandle : Component
 
     private async Task ProcessSendQueueAsync()
     {
-        if (!IsConnected()) return;
+        if (!IsConnected) return;
 
         await sendSemaphore.WaitAsync();
 
@@ -106,11 +103,11 @@ public class SocketQueueHandle : Component
 
     private async Task StartReceivingAsync(CancellationToken cancellationToken = default)
     {
-        if (!IsConnected()) return;
+        if (!IsConnected) return;
 
         try
         {
-            while (IsConnected() && !cancellationToken.IsCancellationRequested)
+            while (IsConnected && !cancellationToken.IsCancellationRequested)
             {
                 int bytesRead = await Socket.ReceiveAsync(
                     new ArraySegment<byte>(receiveBuffer, receiveBufferOffset, receiveBuffer.Length - receiveBufferOffset),
@@ -168,18 +165,6 @@ public class SocketQueueHandle : Component
     public byte[]? DequeueReceiveData()
     {
         return receiveQueue.TryDequeue(out var message) ? message : null;
-    }
-
-    public bool IsConnected()
-    {
-        try
-        {
-            return !(Socket.Poll(1, SelectMode.SelectRead) && Socket.Available == 0);
-        }
-        catch (SocketException)
-        {
-            return false;
-        }
     }
 
     public override void Dispose()

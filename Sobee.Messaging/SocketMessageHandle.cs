@@ -22,7 +22,7 @@ namespace Sobee.Messaging
 
         public override async Task Update()
         {
-            if (!IsConnected()) return;
+            if (!IsConnected) return;
 
             try
             {

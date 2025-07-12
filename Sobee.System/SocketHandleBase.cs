@@ -23,7 +23,7 @@ namespace Sobee.System
 
         protected virtual void Disconnect()
         {
-            if (!IsConnected()) return;
+            if (!IsConnected) return;
 
             try
             {

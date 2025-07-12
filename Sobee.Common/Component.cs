@@ -7,7 +7,7 @@
             // Constructor logic here
         }
 
-        public virtual async Task Update()
+        public virtual Task Update()
         {
             // Start receiving logic here
             throw new Exception("Update not defined");
