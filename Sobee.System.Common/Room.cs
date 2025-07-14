@@ -6,14 +6,15 @@ namespace Sobee.System.Common
 {
     public class Room : RoomBase
     {
-        private readonly ILogger log = Logging.Get<Room>();
+        private readonly ILogger _log = Logging.Get<Room>();
+        private bool _isDisposed;
 
         public readonly ClientManager Clients;
         public Messages.Common.Match.Information Information = new Messages.Common.Match.Information();
 
-        public Room(Guid Id, MessageDispatch Dispatch) : base(Id)
+        public Room(MessageDispatch dispatch) : base()
         {
-            Clients = new ClientManager(Dispatch);
+            Clients = new ClientManager(dispatch);
         }
 
         public void Broadcast(Message message)
@@ -31,11 +32,20 @@ namespace Sobee.System.Common
             await base.Update();
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            log.Information("{id} disposing.", Id);
-            GC.SuppressFinalize(this);
-            base.Dispose();
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+
+                if (disposing)
+                {
+                    _log.Debug("{id} disposing.", this.Id);
+                    _log.Debug("{id} disposed.", this.Id);
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

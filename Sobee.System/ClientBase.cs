@@ -1,30 +1,59 @@
 ﻿using System.Net.Sockets;
 using Serilog;
 using Sobee.Common;
+using Sobee.Messaging;
+using Sobee.Network;
 
 namespace Sobee.System
 {
-    public class ClientBase : SocketHandleBase
+    public class ClientBase : Session
     {
-        private readonly ILogger log = Logging.Get<ClientBase>();
+        private readonly ILogger _log = Logging.Get<ClientBase>();
+        private bool _isDisposed;
 
-        public Guid Id { get; private set; }
+        public readonly SessionQueueHandle queueHandle;
+        public readonly SessionMessageHandle messageHandle;
 
-        public ClientBase(Guid Id, Socket Socket) : base(Socket)
+        public ClientBase(Socket socket, SessionType sessionType) : base(socket, sessionType)
         {
-            this.Id = Id;
+            try
+            {
+                queueHandle = new SessionQueueHandle(this);
+                messageHandle = new SessionMessageHandle(queueHandle, this);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error initializing: {ex.Message}", ex);
+            }
+
+            _log.Debug("{id} initialized.", Id);
         }
 
-        public override Task Update()
+        public override async Task Update()
         {
-            return base.Update();
+            await queueHandle.Update();
+            await messageHandle.Update();
+            await base.Update();
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            log.Information("{id} disposing.", Id);
-            GC.SuppressFinalize(this);
-            base.Dispose();
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+
+                if (disposing)
+                {
+                    _log.Information("{id} disposing.", Id);
+
+                    queueHandle.Dispose();
+                    messageHandle.Dispose();
+
+                    _log.Information("{id} disposed.", Id);
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

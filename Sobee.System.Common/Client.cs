@@ -7,11 +7,12 @@ namespace Sobee.System.Common
 {
     public class Client : ClientBase
     {
-        private readonly ILogger log = Logging.Get<Client>();
+        private readonly ILogger _log = Logging.Get<Client>();
+        private bool _isDisposed;
 
         public Messages.Common.Player.Information? Information;
 
-        public Client(Guid Id, Socket Socket) : base(Id, Socket)
+        public Client(Socket socket, SessionType sessionType) : base(socket, sessionType)
         {
 
         }
@@ -23,11 +24,11 @@ namespace Sobee.System.Common
 
         public virtual void Broadcast(Message message)
         {
-            if (message == null) throw new ArgumentNullException(nameof(message));
+            ArgumentNullException.ThrowIfNull(message);
 
             try
             {
-                SendMessage(message);
+                messageHandle.SendMessage(message);
             }
             catch (Exception ex)
             {
@@ -35,11 +36,23 @@ namespace Sobee.System.Common
             }
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            log.Information("{id} disposing.", Id);
-            GC.SuppressFinalize(this);
-            base.Dispose();
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+
+                if (disposing)
+                {
+                    _log.Debug("{id} disposing.", Id);
+
+                    this.Information = null;
+
+                    _log.Debug("{id} disposed.", Id);
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

@@ -18,7 +18,7 @@ public class GEventArgs10 : EventArgs
     }
 
     // Token: 0x06000055 RID: 85 RVA: 0x000025EB File Offset: 0x000007EB
-    public SocketQueueHandle method_2()
+    public SessionQueueHandle method_2()
     {
         return this.SocketHandle_0;
     }
@@ -38,7 +38,7 @@ public class GEventArgs10 : EventArgs
     }
 
     // Token: 0x06000058 RID: 88 RVA: 0x0000261F File Offset: 0x0000081F
-    public GEventArgs10(SocketQueueHandle SocketHandle_1)
+    public GEventArgs10(SessionQueueHandle SocketHandle_1)
     {
         this.SocketHandle_0 = SocketHandle_1;
     }
@@ -54,7 +54,7 @@ public class GEventArgs10 : EventArgs
     }
 
     // Token: 0x04000026 RID: 38
-    private SocketQueueHandle SocketHandle_0;
+    private SessionQueueHandle SocketHandle_0;
 
     // Token: 0x04000027 RID: 39
     private ConnectionError connectionError_0;

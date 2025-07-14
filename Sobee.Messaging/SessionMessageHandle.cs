@@ -1,43 +1,54 @@
-﻿using System.Net.Sockets;
-using Serilog;
+﻿using Serilog;
 using Sobee.Common;
+using Sobee.Network;
 
 namespace Sobee.Messaging
 {
-    public class SocketMessageHandle : SocketQueueHandle
+    public class SessionMessageHandle : Component
     {
-        private readonly ILogger log = Logging.Get<SocketMessageHandle>();
+        private readonly ILogger _log = Logging.Get<SessionMessageHandle>();
+        private bool _isDisposed;
+
         private MessageDispatch? _dispatcher;
 
+        private readonly SessionQueueHandle _queue;
+        private readonly Session _session;
+
         private MessageHelper? _receiveHelper;
-        private readonly MemoryStream _receiveStream = new MemoryStream(SocketQueueHandle.MaxReceivingSize);
+        private readonly MemoryStream _receiveStream = new MemoryStream(SessionQueueHandle.MaxReceivingSize);
 
         private MessageHelper? _sendHelper;
-        private readonly MemoryStream _sendStream = new MemoryStream(SocketQueueHandle.MaxSendingSize);
+        private readonly MemoryStream _sendStream = new MemoryStream(SessionQueueHandle.MaxSendingSize);
 
-        public SocketMessageHandle(Socket socket) : base(socket)
+        public SessionMessageHandle(SessionQueueHandle queueHandle, Session session)
         {
-            log.Debug("{id} initialized.", socket.RemoteEndPoint);
+            _session = session ?? throw new ArgumentNullException(nameof(session));
+            _queue = queueHandle;
+
+            _log.Debug("{id} initialized.", this.Id);
         }
 
-        public override async Task Update()
+        public override Task Update()
         {
-            if (!IsConnected) return;
+            if (!_session.IsConnected) return Task.CompletedTask;
 
             try
             {
-                await base.Update();
                 ProcessIncomingMessages();
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message, ex);
+                _log.Error(ex, "Error during update.");
+                this.Dispose();
+                throw;
             }
+
+            return Task.CompletedTask;
         }
 
         public virtual void SendMessage(Message message)
         {
-            if (message == null) throw new ArgumentNullException(nameof(message));
+            ArgumentNullException.ThrowIfNull(message);
 
             try
             {
@@ -46,12 +57,13 @@ namespace Sobee.Messaging
 
                 PrepareStream(_sendStream);
                 _sendHelper.WriteMessage(message);
-                this.EnqueueSendData(_sendStream.GetBuffer());
+                _queue.EnqueueSendData(_sendStream.GetBuffer());
                 message.byteLength = (int)_sendStream.Length;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message, ex);
+                _log.Error(ex, "Failed to send message.");
+                throw;
             }
         }
 
@@ -65,7 +77,7 @@ namespace Sobee.Messaging
         private void ProcessIncomingMessages()
         {
             byte[]? array;
-            while ((array = this.DequeueReceiveData()) != null)
+            while ((array = _queue.DequeueReceiveData()) != null)
             {
                 try
                 {
@@ -79,11 +91,12 @@ namespace Sobee.Messaging
                     if (_dispatcher == null)
                         throw new InvalidOperationException($"{nameof(_dispatcher)} is not initialized.");
 
-                    _dispatcher.DispatchToMessageEvent(new MessageDelegateArgs(_dispatcher.owner, new MessageEventArgs(this, message)));
+                    _dispatcher.DispatchToMessageEvent(new MessageDelegateArgs(_dispatcher.Owner, new MessageEventArgs(_session, message)));
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception(ex.Message, ex);
+                    _log.Error(ex, "Failed to process incoming message.");
+                    throw;
                 }
             }
         }
@@ -99,14 +112,30 @@ namespace Sobee.Messaging
             }
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            log.Debug("{id} disposing.", Socket.RemoteEndPoint);
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
 
-            _receiveStream.Dispose();
-            _sendStream.Dispose();
-            GC.SuppressFinalize(this);
-            base.Dispose();
+                if (disposing)
+                {
+                    _log.Debug("{id} disposing.", this.Id);
+
+                    _receiveHelper?.Dispose();
+                    _receiveStream.Dispose();
+                    _sendHelper?.Dispose();
+                    _sendStream.Dispose();
+
+                    //_dispatcher?.Dispose();
+                    _queue.Dispose();
+                    _session.Dispose();
+
+                    _log.Debug("{id} disposed.", this.Id);
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

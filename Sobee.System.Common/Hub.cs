@@ -5,12 +5,11 @@ using Sobee.Messaging;
 
 namespace Sobee.System.Common
 {
-    public class Hub : IDisposable
+    public class Hub : Component
     {
         public readonly int Port;
         private readonly Socket Server = new(SocketType.Stream, ProtocolType.Tcp);
         private readonly CancellationTokenSource Cancellation = new();
-        private bool IsDisposed = false;
 
         public ClientManager? Clients { get; private set; }
         private MessageDispatch? ClientsDispatch;
@@ -18,26 +17,26 @@ namespace Sobee.System.Common
         public RoomManager? Rooms { get; private set; }
         private MessageDispatch? RoomsDispatch;
 
-        private static readonly Serilog.ILogger Log = Logging.Get<Hub>();
+        private static readonly Serilog.ILogger _log = Logging.Get<Hub>();
+        private bool _isDisposed;
 
         public Hub(int port)
         {
-            if (port <= IPEndPoint.MinPort || port >= IPEndPoint.MaxPort)
-            {
-                Log.Error($"{nameof(port)} ({port}) must be in the valid port range.");
-                throw new ArgumentOutOfRangeException(nameof(port), "Port must be between MinPort and MaxPort.");
-            }
-
-            Port = port;
-
             try
             {
+                if (port <= IPEndPoint.MinPort || port >= IPEndPoint.MaxPort)
+                {
+                    _log.Error($"{nameof(port)} ({port}) must be in the valid port range.");
+                    throw new ArgumentOutOfRangeException(nameof(port), "Port must be between MinPort and MaxPort.");
+                }
+
+                Port = port;
                 Initialize(Port);
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed during construction: " + ex.GetBaseException(), ex);
-                Dispose();
+                _log.Error($"Failed during construction: " + ex.GetBaseException(), ex);
+                this.Dispose();
                 throw;
             }
         }
@@ -46,6 +45,8 @@ namespace Sobee.System.Common
         {
             try
             {
+                _log.Information("{id} initializing...", this.Id);
+
                 Server.Bind(new IPEndPoint(IPAddress.Loopback, port));
                 Server.Listen();
 
@@ -63,12 +64,12 @@ namespace Sobee.System.Common
                 _ = Task.Run(() => Start(Cancellation.Token));
                 _ = Task.Run(() => Tick());
 
-                Log.Information("Hub initialized successfully.");
+                _log.Information("{id} ({port}) initialized.", this.Id, this.Port);
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed during initialization: {ex.Message}", ex);
-                Dispose();
+                _log.Error($"Failed during initialization: {ex.Message}", ex);
+                this.Dispose();
                 throw;
             }
         }
@@ -85,37 +86,48 @@ namespace Sobee.System.Common
             }
             catch (OperationCanceledException)
             {
-                Log.Information("Server is shutting down.");
+                _log.Information("{id} is shutting down.", this.Id);
             }
             catch (Exception ex)
             {
-                Log.Error($"Error in Start loop: {ex.Message}", ex);
+                _log.Error($"Error in start: {ex.Message}", ex);
+                this.Dispose();
+                throw;
             }
         }
 
-        private async Task Connection(Socket socket)
+        private void Connection(Socket socket)
         {
             try
             {
-                Log.Information($"Connection established from {socket.RemoteEndPoint}");
+                _log.Information($"Connection established from {socket.RemoteEndPoint}");
                 Clients?.Add(socket);
             }
             catch (Exception ex)
             {
-                Log.Error($"Error handling connection: " + ex.GetBaseException(), ex);
+                _log.Error($"Error handling connection: " + ex.GetBaseException(), ex);
             }
         }
 
-        private async Task Update()
+        public override async Task Update()
         {
-            if (Clients != null)
+            try
             {
-                await Clients.Update();
-            }
+                if (Clients != null)
+                {
+                    await Clients.Update();
+                }
 
-            if (Rooms != null)
+                if (Rooms != null)
+                {
+                    await Rooms.Update();
+                }
+            }
+            catch (Exception ex)
             {
-                await Rooms.Update();
+                _log.Error($"Error during update: {ex.GetBaseException()}", ex);
+                this.Dispose();
+                throw;
             }
         }
 
@@ -146,9 +158,12 @@ namespace Sobee.System.Common
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Error in tick: {ex.GetBaseException()}", ex);
+                    _log.Error($"Error in tick: {ex.GetBaseException()}", ex);
+                    this.Dispose();
+                    throw;
+
                     // İsterseniz burada kısa bir bekleme ekleyebilirsiniz:
-                    await Task.Delay(10);
+                    //await Task.Delay(10);
                 }
             }
         }
@@ -158,21 +173,37 @@ namespace Sobee.System.Common
             if (!Cancellation.IsCancellationRequested)
             {
                 Cancellation.Cancel();
-                Log.Information("Server is stopping...");
+                _log.Information("{id} is stopping...", this.Id);
             }
         }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            if (IsDisposed) return;
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
 
-            Stop();
-            Server.Dispose();
-            Cancellation.Dispose();
-            GC.SuppressFinalize(this);
+                if (disposing)
+                {
+                    _log.Debug("{id} disposing.", this.Id);
 
-            IsDisposed = true;
-            Log.Information("Resources disposed.");
+                    Stop();
+                    Server.Dispose();
+                    Cancellation.Dispose();
+
+                    Clients?.Dispose();
+                    Clients = null;
+                    ClientsDispatch = null;
+
+                    Rooms?.Dispose();
+                    Rooms = null;
+                    RoomsDispatch = null;
+
+                    _log.Debug("{id} disposed.", this.Id);
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

@@ -5,35 +5,36 @@ using Sobee.Common;
 
 namespace Sobee.Messaging
 {
+    // TODO: Dispose pattern
     public sealed class MessageDispatch
     {
-        public object owner { get; private set; }
-        private readonly ILogger Log = Logging.Get<MessageDispatch>();
+        public object Owner { get; private set; }
+        private readonly ILogger _log = Logging.Get<MessageDispatch>();
 
-        private readonly IDictionary<ushort, ConstructorInfo> messageConstructorsById = new SortedDictionary<ushort, ConstructorInfo>();
-        private readonly IDictionary<Type, ushort> messageTypeToId = new Dictionary<Type, ushort>();
-        private readonly IDictionary<ushort, MessageDelegate> messageIdToEvent = new Dictionary<ushort, MessageDelegate>();
-        private readonly IDictionary<Type, int> messageTypeToIndex = new Dictionary<Type, int>();
-        private readonly HashSet<ushort> usedMessageIds = new HashSet<ushort>();
+        private readonly SortedDictionary<ushort, ConstructorInfo> _messageConstructorsById = [];
+        private readonly Dictionary<Type, ushort> _messageTypeToId = [];
+        private readonly Dictionary<ushort, MessageDelegate> _messageIdToEvent = [];
+        private readonly Dictionary<Type, int> _messageTypeToIndex = [];
+        private readonly HashSet<ushort> _usedMessageIds = [];
 
         public MessageDispatch(object owner)
         {
-            this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
+            this.Owner = owner ?? throw new ArgumentNullException(nameof(owner));
         }
 
-        public IEnumerable<KeyValuePair<ushort, ConstructorInfo>> GetAllRegisteredConstructors() => messageConstructorsById;
+        public IEnumerable<KeyValuePair<ushort, ConstructorInfo>> GetAllRegisteredConstructors() => _messageConstructorsById;
 
-        public GDelegate1 GetDispatcher() => new GDelegate1(DispatchToMessageConstructor);
+        public GDelegate1 GetDispatcher() => new(DispatchToMessageConstructor);
 
-        public GDelegate2 GetMessageTypeToIdDelegate() => new GDelegate2(GetMessageTypeId);
+        public GDelegate2 GetMessageTypeToIdDelegate() => new(GetMessageTypeId);
 
-        public int GetRegisteredMessageCount() => messageTypeToId.Count;
+        public int GetRegisteredMessageCount() => _messageTypeToId.Count;
 
-        public IEnumerable<KeyValuePair<Type, int>> GetAllTypeIndexes() => messageTypeToIndex;
+        public IEnumerable<KeyValuePair<Type, int>> GetAllTypeIndexes() => _messageTypeToIndex;
 
         public int GetMessageIndex(Type type)
         {
-            if (messageTypeToIndex.TryGetValue(type, out var index))
+            if (_messageTypeToIndex.TryGetValue(type, out var index))
                 return index;
 
             throw new KeyNotFoundException($"Message type index not found for: {type.FullName}");
@@ -41,7 +42,7 @@ namespace Sobee.Messaging
 
         public ushort GetMessageTypeId(Type type)
         {
-            if (messageTypeToId.TryGetValue(type, out var id))
+            if (_messageTypeToId.TryGetValue(type, out var id))
                 return id;
 
             throw new KeyNotFoundException($"Message ID not found for type: {type.FullName}");
@@ -69,7 +70,7 @@ namespace Sobee.Messaging
             }
             catch (FileNotFoundException ex)
             {
-                Log.Warning("Assembly not found: {AssemblyName} - {Message}", assemblyName, ex.Message);
+                _log.Warning("Assembly not found: {AssemblyName} - {Message}", assemblyName, ex.Message);
             }
         }
 
@@ -87,7 +88,7 @@ namespace Sobee.Messaging
                 types = ex.Types.Where(t => t != null).ToArray();
                 foreach (var loaderException in ex.LoaderExceptions)
                 {
-                    Log.Warning("Loader exception: {Message}", loaderException?.Message);
+                    _log.Warning("Loader exception: {Message}", loaderException?.Message);
                 }
             }
 
@@ -105,25 +106,25 @@ namespace Sobee.Messaging
         {
             var id = GetMessageTypeId(messageType);
 
-            if (messageIdToEvent.ContainsKey(id))
+            if (_messageIdToEvent.ContainsKey(id))
             {
-                Log.Warning("Message event already registered for ID {Id}, overwriting...", id);
+                _log.Warning("Message event already registered for ID {Id}, overwriting...", id);
             }
 
-            messageIdToEvent[id] = messageEvent;
+            _messageIdToEvent[id] = messageEvent;
         }
 
         public void RegisterMessageType(ushort messageId, Type type)
         {
-            if (usedMessageIds.Contains(messageId))
+            if (_usedMessageIds.Contains(messageId))
             {
-                Log.Warning("Message ID {MessageId} already used. Skipping type {Type}.", messageId, type.FullName);
+                _log.Warning("Message ID {MessageId} already used. Skipping type {Type}.", messageId, type.FullName);
                 return;
             }
 
-            if (messageTypeToId.ContainsKey(type))
+            if (_messageTypeToId.ContainsKey(type))
             {
-                Log.Warning("Type {Type} already registered with ID {MessageId}. Skipping.", type.FullName, messageTypeToId[type]);
+                _log.Warning("Type {Type} already registered with ID {MessageId}. Skipping.", type.FullName, _messageTypeToId[type]);
                 return;
             }
 
@@ -133,12 +134,12 @@ namespace Sobee.Messaging
                 throw new NotImplementedException($"Missing BinaryReader constructor for: {type.FullName}");
             }
 
-            messageConstructorsById[messageId] = constructor;
-            messageTypeToId[type] = messageId;
-            messageTypeToIndex[type] = messageTypeToIndex.Count + 1;
-            usedMessageIds.Add(messageId);
+            _messageConstructorsById[messageId] = constructor;
+            _messageTypeToId[type] = messageId;
+            _messageTypeToIndex[type] = _messageTypeToIndex.Count + 1;
+            _usedMessageIds.Add(messageId);
 
-            Log.Information("Registered message type: {Type} with ID: {MessageId}", type.FullName, messageId);
+            _log.Information("Registered message type: {Type} with ID: {MessageId}", type.FullName, messageId);
         }
 
         public void RegisterMessageType(Type type)
@@ -154,7 +155,7 @@ namespace Sobee.Messaging
 
         public object DispatchToMessageConstructor(ushort messageId, BinaryReader reader)
         {
-            if (!messageConstructorsById.TryGetValue(messageId, out var constructor))
+            if (!_messageConstructorsById.TryGetValue(messageId, out var constructor))
             {
                 throw new SerializationException($"ClassID: {messageId} - Not registered.");
             }
@@ -165,7 +166,7 @@ namespace Sobee.Messaging
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Deserialization failed for message ID: {MessageId}", messageId);
+                _log.Error(ex, "Deserialization failed for message ID: {MessageId}", messageId);
                 throw new SerializationException($"ClassID: {messageId} - Failed to deserialize.");
             }
         }
@@ -173,7 +174,7 @@ namespace Sobee.Messaging
         public void DispatchToMessageEvent(MessageDelegateArgs args)
         {
             var id = GetMessageTypeId(args.eventArgs.message.GetType());
-            if (!messageIdToEvent.TryGetValue(id, out var eventDelegate))
+            if (!_messageIdToEvent.TryGetValue(id, out var eventDelegate))
             {
                 throw new SerializationException($"ClassID: {id} - Not registered.");
             }
@@ -181,11 +182,11 @@ namespace Sobee.Messaging
             try
             {
                 eventDelegate.Invoke(args.sender, args.eventArgs);
-                Log.Information("Invoked event for {Type} (ID: {Id})", args.eventArgs.message.GetType().FullName, id);
+                _log.Information("Invoked event for {Type} (ID: {Id})", args.eventArgs.message.GetType().FullName, id);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Event invocation failed for ClassID: {Id}", id);
+                _log.Error(ex, "Event invocation failed for ClassID: {Id}", id);
                 throw new SerializationException($"ClassID: {id} - Event failed.");
             }
         }

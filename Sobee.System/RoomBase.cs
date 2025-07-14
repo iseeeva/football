@@ -6,12 +6,11 @@ namespace Sobee.System
     public class RoomBase : Component
     {
         private readonly ILogger log = Logging.Get<RoomBase>();
+        private bool _isDisposed;
 
-        public Guid Id { get; private set; }
-
-        public RoomBase(Guid Id)
+        public RoomBase()
         {
-            this.Id = Id;
+
         }
 
         public override async Task Update()
@@ -19,10 +18,21 @@ namespace Sobee.System
 
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            log.Information("{id} disposing.", Id);
-            GC.SuppressFinalize(this);
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+
+                if (disposing)
+                {
+                    log.Information("{id} disposing.", this.Id);
+
+                    log.Information("{id} disposed.", this.Id);
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

@@ -4,9 +4,10 @@ using Sobee.Messaging;
 
 namespace Sobee.System.Common
 {
-    public class RoomManager
+    public class RoomManager : Component
     {
-        private readonly ILogger log = Logging.Get<RoomManager>();
+        private readonly ILogger _log = Logging.Get<RoomManager>();
+        private bool _isDisposed;
 
         private readonly List<Room> Rooms = new();
         private readonly MessageDispatch Dispatch;
@@ -16,10 +17,21 @@ namespace Sobee.System.Common
             Dispatch = dispatch ?? throw new ArgumentNullException(nameof(dispatch));
         }
 
-        public async Task Update()
+        public override async Task Update()
         {
-            var updateTasks = Rooms.Select(room => room.Update());
-            await Task.WhenAll(updateTasks);
+            if (_isDisposed) return;
+
+            try
+            {
+                var updateTasks = Rooms.Select(room => room.Update());
+                await Task.WhenAll(updateTasks);
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Error during room update: {message}", ex.Message);
+                this.Dispose();
+                throw;
+            }
         }
 
         public bool Add(Room room)
@@ -31,12 +43,12 @@ namespace Sobee.System.Common
             {
                 if (Rooms.Any(c => c.Id == room.Id))
                 {
-                    log.Warning("Room {id} already exists.", room.Id);
+                    _log.Warning("Room {id} already exists.", room.Id);
                     return false;
                 }
 
                 Rooms.Add(room);
-                log.Information("Room {id} added.", room.Id);
+                _log.Information("Room {id} added.", room.Id);
             }
 
             return true;
@@ -46,17 +58,12 @@ namespace Sobee.System.Common
         {
             try
             {
-                Guid uniqueId;
-
-                do uniqueId = Guid.NewGuid();
-                while (Rooms.Any(c => c.Id == uniqueId));
-
-                var room = new Room(uniqueId, Dispatch);
+                Room room = new Room(Dispatch);
 
                 lock (Rooms)
                 {
                     Rooms.Add(room);
-                    log.Information("Room {id} added.", room.Id);
+                    _log.Information("Room {id} created.", room.Id);
                 }
 
                 return room;
@@ -76,12 +83,12 @@ namespace Sobee.System.Common
             {
                 if (!Rooms.Contains(room))
                 {
-                    log.Warning("Room {id} not found.", room.Id);
+                    _log.Warning("Room {id} not found.", room.Id);
                     return false;
                 }
 
                 Rooms.Remove(room);
-                log.Information("Room {id} removed.", room.Id);
+                _log.Information("Room {id} removed.", room.Id);
 
                 return true;
             }
@@ -98,10 +105,30 @@ namespace Sobee.System.Common
                 }
 
                 Rooms.Remove(room);
-                log.Information("Room {id} removed.", room.Id);
+                _log.Information("Room {id} removed.", room.Id);
 
                 return true;
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+
+                if (disposing)
+                {
+                    _log.Debug("Disposing {id} with {count} rooms.", this.Id, Rooms.Count);
+
+                    Rooms.ForEach(room => room.Dispose());
+                    Rooms.Clear();
+
+                    _log.Debug("{id} disposed.", this.Id);
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }
