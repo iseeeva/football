@@ -30,6 +30,7 @@ namespace Sobee.Messaging
 
         public override Task Update()
         {
+            if (_isDisposed) return Task.CompletedTask;
             if (!_session.IsConnected) return Task.CompletedTask;
 
             try
@@ -48,7 +49,7 @@ namespace Sobee.Messaging
 
         public virtual void SendMessage(Message message)
         {
-            ArgumentNullException.ThrowIfNull(message);
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             try
             {
@@ -69,6 +70,7 @@ namespace Sobee.Messaging
 
         public virtual void SetDispatchSource(MessageDispatch dispatcher)
         {
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
             _receiveHelper = new MessageHelper(_receiveStream, dispatcher.GetDispatcher(), dispatcher.GetMessageTypeToIdDelegate());
             _sendHelper = new MessageHelper(_sendStream, dispatcher.GetDispatcher(), dispatcher.GetMessageTypeToIdDelegate());
@@ -76,6 +78,8 @@ namespace Sobee.Messaging
 
         private void ProcessIncomingMessages()
         {
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
             byte[]? array;
             while ((array = _queue.DequeueReceiveData()) != null)
             {
@@ -114,25 +118,23 @@ namespace Sobee.Messaging
 
         protected override void Dispose(bool disposing)
         {
-            if (!_isDisposed)
+            if (_isDisposed) return;
+            _isDisposed = true;
+
+            if (disposing)
             {
-                _isDisposed = true;
+                _log.Debug("{id} disposing.", this.Id);
 
-                if (disposing)
-                {
-                    _log.Debug("{id} disposing.", this.Id);
+                _receiveHelper?.Dispose();
+                _receiveStream.Dispose();
+                _sendHelper?.Dispose();
+                _sendStream.Dispose();
 
-                    _receiveHelper?.Dispose();
-                    _receiveStream.Dispose();
-                    _sendHelper?.Dispose();
-                    _sendStream.Dispose();
+                //_dispatcher?.Dispose();
+                _queue.Dispose();
+                _session.Dispose();
 
-                    //_dispatcher?.Dispose();
-                    _queue.Dispose();
-                    _session.Dispose();
-
-                    _log.Debug("{id} disposed.", this.Id);
-                }
+                _log.Debug("{id} disposed.", this.Id);
             }
 
             base.Dispose(disposing);

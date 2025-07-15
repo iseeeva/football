@@ -175,7 +175,7 @@ namespace Sobee.System.Common
                 {
                     _log.Debug("Disposing {id} with {count} clients.", this.Id, Clients.Count);
 
-                    Clients.ForEach(room => room.Dispose());
+                    Clients.ForEach(client => client.Dispose());
                     Clients.Clear();
 
                     _log.Debug("{id} disposed.", this.Id);

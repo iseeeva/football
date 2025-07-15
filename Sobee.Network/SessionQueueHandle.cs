@@ -2,202 +2,208 @@
 using System.Net.Sockets;
 using Serilog;
 using Sobee.Common;
-using Sobee.Network;
 
-public class SessionQueueHandle : Component
+namespace Sobee.Network
 {
-    private readonly ILogger _log = Logging.Get<SessionQueueHandle>();
-    private readonly SemaphoreSlim _sendSemaphore = new SemaphoreSlim(1, 1);
-    private bool _isDisposed;
-
-    private readonly Session _session;
-
-    public static int MaxSendingSize { get; private set; } = 32768;
-    public static int MaxReceivingSize { get; private set; } = 4096;
-
-    private readonly ConcurrentQueue<byte[]> _sendQueue = new ConcurrentQueue<byte[]>();
-    private readonly ConcurrentQueue<byte[]> _receiveQueue = new ConcurrentQueue<byte[]>();
-
-    private readonly byte[] _receiveBuffer = new byte[MaxReceivingSize];
-    private int _receiveBufferOffset;
-
-    public long totalReceive { get; private set; }
-    public long totalBytesReceive { get; private set; }
-    public long totalSent { get; private set; }
-    public long totalBytesSent { get; private set; }
-    public long totalQueued => _sendQueue.Count + _receiveQueue.Count;
-
-    public SessionQueueHandle(Session session)
+    public class SessionQueueHandle : Component
     {
-        try
+        private readonly ILogger _log = Logging.Get<SessionQueueHandle>();
+        private bool _isDisposed;
+
+        private readonly SemaphoreSlim _sendSemaphore = new(1, 1);
+        private readonly CancellationTokenSource _cts = new();
+
+        private readonly ConcurrentQueue<byte[]> _sendQueue = new();
+        private readonly ConcurrentQueue<byte[]> _receiveQueue = new();
+
+        private readonly byte[] _receiveBuffer = new byte[MaxReceivingSize];
+        private int _receiveBufferOffset;
+
+        private readonly Session _session;
+
+        public static int MaxSendingSize { get; private set; } = 32768;
+        public static int MaxReceivingSize { get; private set; } = 4096;
+
+        public long TotalReceive { get; private set; }
+        public long TotalBytesReceive { get; private set; }
+        public long TotalSent { get; private set; }
+        public long TotalBytesSent { get; private set; }
+        public long TotalQueued => _sendQueue.Count + _receiveQueue.Count;
+
+        public SessionQueueHandle(Session session)
         {
             _session = session ?? throw new ArgumentNullException(nameof(session));
-            _ = StartReceivingAsync();
+            _ = StartReceivingAsync(_cts.Token);
 
             _log.Debug("{id} initialized.", this.Id);
         }
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message, ex);
-        }
-    }
 
-    public override async Task Update()
-    {
-        try
+        public override async Task Update()
         {
+            if (_isDisposed) return;
+            if (!_session.IsConnected) return;
+
             await ProcessSendQueueAsync();
         }
-        catch (Exception ex)
+
+        private async Task ProcessSendQueueAsync()
         {
-            throw new Exception(ex.Message, ex);
-        }
-    }
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+            if (!_session.IsConnected) return;
 
-    private async Task ProcessSendQueueAsync()
-    {
-        if (!_session.IsConnected) return;
+            await _sendSemaphore.WaitAsync();
 
-        await _sendSemaphore.WaitAsync();
-
-        try
-        {
-            while (_sendQueue.TryDequeue(out var message))
+            try
             {
-                try
+                while (_sendQueue.TryDequeue(out var message))
                 {
-                    await _session.Socket.SendAsync(new ArraySegment<byte>(message), SocketFlags.None);
-                    totalBytesSent += message.Length;
-                    totalSent++;
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(ex.Message, ex);
+                    await _session.Socket.SendAsync(message, SocketFlags.None);
+                    TotalBytesSent += message.Length;
+                    TotalSent++;
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message, ex);
-        }
-        finally
-        {
-            _sendSemaphore.Release();
-        }
-    }
-
-    public void EnqueueSendData(byte[] data)
-    {
-        if (data == null || data.Length == 0)
-        {
-            _log.Warning("Attempted to enqueue an empty or null message.");
-            return;
-        }
-
-        var header = BitConverter.GetBytes(data.Length);
-        var messageWithHeader = new byte[header.Length + data.Length];
-        Buffer.BlockCopy(header, 0, messageWithHeader, 0, header.Length);
-        Buffer.BlockCopy(data, 0, messageWithHeader, header.Length, data.Length);
-        _sendQueue.Enqueue(messageWithHeader);
-    }
-
-    public byte[]? DequeueSendData()
-    {
-        return _sendQueue.TryDequeue(out var message) ? message : null;
-    }
-
-    private async Task StartReceivingAsync(CancellationToken cancellationToken = default)
-    {
-        if (!_session.IsConnected) return;
-
-        try
-        {
-            while (_session.IsConnected && !cancellationToken.IsCancellationRequested)
+            catch (SocketException ex)
             {
-                int bytesRead = await _session.Socket.ReceiveAsync(
-                    new ArraySegment<byte>(_receiveBuffer, _receiveBufferOffset, _receiveBuffer.Length - _receiveBufferOffset),
-                    SocketFlags.None,
-                    cancellationToken
-                );
+                _log.Error(ex, "Socket send failed.");
+            }
+            finally
+            {
+                _sendSemaphore.Release();
+            }
+        }
 
-                if (bytesRead == 0)
-                {
-                    break;
-                }
+        public void EnqueueSendData(byte[] data)
+        {
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
 
-                _receiveBufferOffset += bytesRead;
-                while (_receiveBufferOffset > 4)
+            if (data == null || data.Length == 0)
+            {
+                _log.Warning("Attempted to enqueue empty or null send data.");
+                return;
+            }
+
+            if (data.Length > MaxSendingSize)
+            {
+                _log.Warning("Send data size exceeds maximum allowed size.");
+                return;
+            }
+
+            var header = BitConverter.GetBytes(data.Length);
+            var message = new byte[header.Length + data.Length];
+            Buffer.BlockCopy(header, 0, message, 0, header.Length);
+            Buffer.BlockCopy(data, 0, message, header.Length, data.Length);
+
+            _sendQueue.Enqueue(message);
+        }
+
+        public byte[]? DequeueSendData()
+        {
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+            return _sendQueue.TryDequeue(out var message) ? message : null;
+        }
+
+        private async Task StartReceivingAsync(CancellationToken cancellationToken)
+        {
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
+            try
+            {
+                while (_session.IsConnected && !cancellationToken.IsCancellationRequested)
                 {
-                    int messageLength = BitConverter.ToInt32(_receiveBuffer, 0);
-                    if (messageLength > MaxReceivingSize || messageLength <= 0)
+                    var segment = new ArraySegment<byte>(_receiveBuffer, _receiveBufferOffset, MaxReceivingSize - _receiveBufferOffset);
+                    int bytesRead = await _session.Socket.ReceiveAsync(segment, SocketFlags.None, cancellationToken);
+
+                    if (bytesRead == 0) break;
+
+                    _receiveBufferOffset += bytesRead;
+
+                    while (_receiveBufferOffset >= 4)
                     {
-                        //throw new Exception("Message length out of range"));
-                        return;
+                        int messageLength = BitConverter.ToInt32(_receiveBuffer, 0);
+
+                        if (messageLength <= 0 || messageLength > MaxReceivingSize)
+                        {
+                            _log.Error("Received invalid message length: {length}", messageLength);
+                            return;
+                        }
+
+                        int totalLength = 4 + messageLength;
+                        if (_receiveBufferOffset < totalLength)
+                            break;
+
+                        var message = new byte[messageLength];
+                        Buffer.BlockCopy(_receiveBuffer, 4, message, 0, messageLength);
+                        Buffer.BlockCopy(_receiveBuffer, totalLength, _receiveBuffer, 0, _receiveBufferOffset - totalLength);
+
+                        _receiveBufferOffset -= totalLength;
+                        TotalReceive++;
+                        TotalBytesReceive += message.Length;
+
+                        _receiveQueue.Enqueue(message);
                     }
-
-                    int totalLength = 4 + messageLength;
-                    if (_receiveBufferOffset < totalLength) break;
-
-                    byte[] message = new byte[messageLength];
-                    Array.Copy(_receiveBuffer, 4, message, 0, messageLength);
-                    Array.Copy(_receiveBuffer, totalLength, _receiveBuffer, 0, _receiveBufferOffset - totalLength);
-
-                    _receiveBufferOffset -= totalLength;
-                    totalBytesReceive += message.Length;
-                    totalReceive++;
-
-                    EnqueueReceiveData(message);
                 }
             }
+            catch (SocketException ex)
+            {
+                _log.Error(ex, "Socket receive failed.");
+            }
+            catch (OperationCanceledException)
+            {
+                _log.Debug("Receiving stopped on {id}.", this.Id);
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex, "Unexpected receive error.");
+            }
         }
-        catch (Exception ex)
+
+        public void EnqueueReceiveData(byte[] data)
         {
-            throw new Exception(ex.Message, ex);
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+
+            if (data == null || data.Length == 0)
+            {
+                _log.Warning("Attempted to enqueue empty or null received data.");
+                return;
+            }
+
+            _receiveQueue.Enqueue(data);
         }
-    }
 
-    public void EnqueueReceiveData(byte[] data)
-    {
-        if (data == null || data.Length == 0)
+        public byte[]? DequeueReceiveData()
         {
-            _log.Warning("Attempted to enqueue an empty or null received message.");
-            return;
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+            return _receiveQueue.TryDequeue(out var message) ? message : null;
         }
 
-        _receiveQueue.Enqueue(data);
-    }
-
-    public byte[]? DequeueReceiveData()
-    {
-        return _receiveQueue.TryDequeue(out var message) ? message : null;
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (!_isDisposed)
+        protected override void Dispose(bool disposing)
         {
+            if (_isDisposed) return;
             _isDisposed = true;
 
             if (disposing)
             {
                 _log.Debug("{id} disposing.", this.Id);
 
-                _session.Dispose();
+                _cts.Cancel();
+                _cts.Dispose();
+
                 _sendSemaphore.Dispose();
+                _session.Dispose();
 
                 _sendQueue.Clear();
-                totalSent = 0;
-                totalBytesSent = 0;
-
                 _receiveQueue.Clear();
+
+                TotalSent = 0;
+                TotalBytesSent = 0;
+                TotalReceive = 0;
+                TotalBytesReceive = 0;
                 _receiveBufferOffset = 0;
-                totalReceive = 0;
-                totalBytesReceive = 0;
 
                 _log.Debug("{id} disposed.", this.Id);
             }
-        }
 
-        base.Dispose(disposing);
+            base.Dispose(disposing);
+        }
     }
 }
