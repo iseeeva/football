@@ -1,5 +1,6 @@
 ﻿// Token: 0x0200000B RID: 11
 using System.Numerics;
+using Sobee.Serialization;
 
 public class BinaryReader
 {
@@ -195,7 +196,7 @@ public class BinaryReader
     }
 
     // Token: 0x06000047 RID: 71 RVA: 0x00002E70 File Offset: 0x00001070
-    public IDeserialize method_25()
+    public ISerialize method_25()
     {
         MessageHelper gclass = new MessageHelper(this.stream_0, this.gdelegate1_0, this.gdelegate2_0);
         return gclass.ReadMessage();

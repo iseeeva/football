@@ -1,6 +1,8 @@
-﻿namespace Sobee.Messages.Common
+﻿using Sobee.Serialization;
+
+namespace Sobee.Messages.Common
 {
-    public class MatchEntry : IDeserialize
+    public class MatchEntry : ISerialize
     {
         private int EntryId;
 
@@ -48,7 +50,7 @@
             return value >= 1 && value <= 22;
         }
 
-        public void Deserialize(BinaryWriter writer)
+        public void Serialize(BinaryWriter writer)
         {
             writer.method_9(EntryId);
         }

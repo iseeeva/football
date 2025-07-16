@@ -189,8 +189,20 @@ namespace Sobee.Messages.Common
         // Token: 0x0600022B RID: 555 RVA: 0x00003F3D File Offset: 0x0000213D
         public GClass166(int int_4)
         {
+            ScoreHome = 0;
+            ScoreAway = 0;
+            MatchTime = 0.0;
+            MatchPhase = MatchPhase.FirstHalf;
+            int_0 = 0;
+            int_1 = 0;
+            int_2 = 0;
+            int_3 = 0;
             bool_0 = new bool[int_4];
             bool_1 = new bool[int_4];
+            byte_2 = 0;
+            byte_3 = 0;
+            short_0 = 0;
+            short_1 = 0;
         }
 
         // Token: 0x0600022C RID: 556 RVA: 0x0000B458 File Offset: 0x00009658
@@ -231,7 +243,7 @@ namespace Sobee.Messages.Common
         }
 
         // Token: 0x0600022E RID: 558 RVA: 0x0000B59C File Offset: 0x0000979C
-        public override void Deserialize(BinaryWriter gclass316_0)
+        public override void Serialize(BinaryWriter gclass316_0)
         {
             gclass316_0.method_2(ScoreHome);
             gclass316_0.method_2(ScoreAway);
@@ -251,25 +263,6 @@ namespace Sobee.Messages.Common
             gclass316_0.method_2(byte_3);
             gclass316_0.method_8(short_0);
             gclass316_0.method_8(short_1);
-        }
-
-        // Token: 0x0600022F RID: 559 RVA: 0x0000B66C File Offset: 0x0000986C
-        public void Clear()
-        {
-            ScoreHome = 0;
-            ScoreAway = 0;
-            MatchTime = 0.0;
-            MatchPhase = MatchPhase.FirstHalf;
-            int_0 = 0;
-            int_1 = 0;
-            int_2 = 0;
-            int_3 = 0;
-            bool_0 = new bool[bool_0.Length];
-            bool_1 = new bool[bool_1.Length];
-            byte_2 = 0;
-            byte_3 = 0;
-            short_0 = 0;
-            short_1 = 0;
         }
 
         // Token: 0x040005DF RID: 1503

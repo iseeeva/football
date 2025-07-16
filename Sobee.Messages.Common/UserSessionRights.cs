@@ -65,7 +65,7 @@ namespace Sobee.Messages.Common
         }
 
         // Token: 0x06000010 RID: 16 RVA: 0x00005DD0 File Offset: 0x00003FD0
-        public override void Deserialize(BinaryWriter archive)
+        public override void Serialize(BinaryWriter archive)
         {
             Type typeFromHandle = typeof(UserSessionRights);
             FieldInfo[] fields = typeFromHandle.GetFields();

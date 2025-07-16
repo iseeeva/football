@@ -1,4 +1,6 @@
-﻿public class MessageHelper
+﻿using Sobee.Serialization;
+
+public class MessageHelper
 {
     // Token: 0x06000029 RID: 41 RVA: 0x000021A4 File Offset: 0x000003A4
     public MessageHelper(Stream stream_0, GDelegate1 gdelegate1_1, GDelegate2 gdelegate2_1)
@@ -10,16 +12,16 @@
     }
 
     // Token: 0x0600002A RID: 42 RVA: 0x00002C30 File Offset: 0x00000E30
-    public void WriteMessage(IDeserialize ginterface7_0)
+    public void WriteMessage(ISerialize ginterface7_0)
     {
         ushort num = this.gdelegate2_0(ginterface7_0.GetType());
         num ^= 7779;
         this.gclass316_0.method_15(num);
-        ginterface7_0.Deserialize(this.gclass316_0);
+        ginterface7_0.Serialize(this.gclass316_0);
     }
 
     // Token: 0x0600002B RID: 43 RVA: 0x00002C70 File Offset: 0x00000E70
-    public IDeserialize ReadMessage()
+    public ISerialize ReadMessage()
     {
         if (this.gclass315_0 == null)
         {
@@ -27,7 +29,7 @@
         }
         ushort num = this.gclass315_0.method_15();
         num ^= 7779;
-        return (IDeserialize)this.gdelegate1_0(num, this.gclass315_0);
+        return (ISerialize)this.gdelegate1_0(num, this.gclass315_0);
     }
 
     // Token: 0x0600002C RID: 44 RVA: 0x000021D6 File Offset: 0x000003D6

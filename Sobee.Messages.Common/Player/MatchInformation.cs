@@ -95,9 +95,9 @@ namespace Sobee.Messages.Common.Player
             xmlCode = gclass315_0.method_14();
         }
 
-        public override void Deserialize(BinaryWriter gclass316_0)
+        public override void Serialize(BinaryWriter gclass316_0)
         {
-            base.Deserialize(gclass316_0);
+            base.Serialize(gclass316_0);
             gclass316_0.method_9(MatchID);
             gclass316_0.method_9(PlayerID);
             gclass316_0.method_14(PlayerName);

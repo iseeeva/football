@@ -124,9 +124,6 @@ namespace Sobee.Messages.Common.Match
 
         public Information()
         {
-            var gg1 = new GClass166(0);
-            gg1.Clear();
-
             this.HomeTeam = new List<Player.MatchInformation>(11);
             this.AwayTeam = new List<Player.MatchInformation>(11);
             this.HomeSpectator = new List<Player.MatchInformation>(11);
@@ -136,7 +133,7 @@ namespace Sobee.Messages.Common.Match
             this.BallVelocity = new Vector3(0, 0, 0);
             this.matchStateType_0 = MatchStateType.Positioning;
             this.matchFieldPositioning_0 = MatchFieldPositioning.Kickoff;
-            this.gclass166_0 = gg1;
+            this.gclass166_0 = new GClass166(0);
             this.gclass170_0 = GClass170.Default();
             this.gclass167_0 = GClass167.Default();
             this.double_0 = 0.0;
@@ -273,10 +270,10 @@ namespace Sobee.Messages.Common.Match
             string_1 = string_3;
         }
 
-        public override void Deserialize(BinaryWriter gclass316_0)
+        public override void Serialize(BinaryWriter gclass316_0)
         {
-            base.Deserialize(gclass316_0);
-            Actor.Deserialize(gclass316_0);
+            base.Serialize(gclass316_0);
+            Actor.Serialize(gclass316_0);
             gclass316_0.method_15((ushort)HomeTeam.Count);
             for (int i = 0; i < HomeTeam.Count; i++)
             {

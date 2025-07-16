@@ -1,6 +1,8 @@
-﻿namespace Sobee.Messages.Common
+﻿using Sobee.Serialization;
+
+namespace Sobee.Messages.Common
 {
-    public struct MatchActor : IDeserialize
+    public class MatchActor : ISerialize
     {
         public sbyte Camera;
         public sbyte Actioner;
@@ -20,7 +22,7 @@
             Mark = reader.method_9();
         }
 
-        public void Deserialize(BinaryWriter writer)
+        public void Serialize(BinaryWriter writer)
         {
             writer.method_11(Camera);
             writer.method_11(Actioner);

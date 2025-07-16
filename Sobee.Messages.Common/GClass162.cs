@@ -50,7 +50,7 @@ namespace Sobee.Messages.Common
         }
 
         // Token: 0x06000155 RID: 341 RVA: 0x00003358 File Offset: 0x00001558
-        public override void Deserialize(BinaryWriter gclass316_0)
+        public override void Serialize(BinaryWriter gclass316_0)
         {
             gclass316_0.method_14(string_0);
             gclass316_0.method_2((byte)matchUIEventType_0);

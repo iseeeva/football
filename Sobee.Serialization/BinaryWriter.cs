@@ -1,6 +1,7 @@
 ﻿
 // Token: 0x0200000C RID: 12
 using System.Numerics;
+using Sobee.Serialization;
 
 public class BinaryWriter
 {
@@ -202,7 +203,7 @@ public class BinaryWriter
     }
 
     // Token: 0x06000062 RID: 98 RVA: 0x00003118 File Offset: 0x00001318
-    public void method_25(IDeserialize ginterface7_0)
+    public void method_25(ISerialize ginterface7_0)
     {
         MessageHelper gclass = new MessageHelper(this.stream_0, this.gdelegate1_0, this.gdelegate2_0);
         gclass.WriteMessage(ginterface7_0);

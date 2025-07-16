@@ -18,9 +18,9 @@ namespace Sobee.Messages.Common.Chat
             squad = reader.method_9();
         }
 
-        public override void Deserialize(BinaryWriter writer)
+        public override void Serialize(BinaryWriter writer)
         {
-            base.Deserialize(writer);
+            base.Serialize(writer);
             writer.method_9(squad);
         }
     }

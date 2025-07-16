@@ -116,9 +116,9 @@ namespace Sobee.Messages.Common.Player
         }
 
         // Token: 0x06000304 RID: 772 RVA: 0x0000D2C4 File Offset: 0x0000B4C4
-        public override void Deserialize(BinaryWriter gclass316_0)
+        public override void Serialize(BinaryWriter gclass316_0)
         {
-            base.Deserialize(gclass316_0);
+            base.Serialize(gclass316_0);
             gclass316_0.method_23(version_0);
             gclass316_0.method_10(long_0);
             gclass316_0.method_14(string_0);
@@ -127,7 +127,7 @@ namespace Sobee.Messages.Common.Player
             gclass316_0.method_9(int_1);
             gclass316_0.method_14(string_3);
             gclass316_0.method_14(string_4);
-            matchEntry.Deserialize(gclass316_0);
+            matchEntry.Serialize(gclass316_0);
             gclass316_0.method_14(string_5);
             gclass316_0.method_1(bool_0);
         }
