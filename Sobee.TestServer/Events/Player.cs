@@ -25,9 +25,9 @@ namespace Sobee.TestServer.Events
             //var matchInfo = new Messages.Player.PlayerMatchInformation(
             //    Client.Information.Entry.EntryId,
             //    Client.Information.Entry.EntryId,
-            //    $"Player{2}",
+            //    $"Test",
             //    new Messages.Player.PlayerAppearance(),
-            //    Client.Information.Entry.ToSitting(),
+            //    StadiumSitting.HomePlayer,
             //    (sbyte)Client.Information.Entry.ToSquad(true),
             //    new Vector2(0, 0),
             //    new Vector3(0, 0, 0),
@@ -36,21 +36,7 @@ namespace Sobee.TestServer.Events
             //    "<XMLData><Script></Script></XMLData>"
             //);
 
-            //switch (Client.Information.Entry.ToSitting())
-            //{
-            //    case StadiumSitting.HomePlayer:
-            //        Room.Information.HomeTeam.Add(matchInfo);
-            //        break;
-
-            //    case StadiumSitting.AwayPlayer:
-            //        Room.Information.AwayTeam.Add(matchInfo);
-            //        break;
-
-            //    default:
-            //        _log.Warning($"Invalid StadiumSitting for Player {Client.Id}");
-            //        Client.Disconnect();
-            //        return;
-            //}
+            //Room.Information.HomeTeam.Add(matchInfo);
 
             //Room.Broadcast(new Messages.Player.PlayerJoined(matchInfo));
             //Room.Broadcast(new Messages.Chat.ChatSystemMessage(
@@ -58,16 +44,16 @@ namespace Sobee.TestServer.Events
             //    Messages.Chat.ChatSystemMessageType.SCT
             //));
 
-            //Room.Information.Actor.Camera = (sbyte)Client.Information.Entry.ToSquad();
+            //Room.Information.Actor.Camera = (sbyte)Client.Information.Entry.ToSquad(true);
             //Room.Information.Actor.Mark = (sbyte)Client.Information.Entry.EntryId;
 
-            //Client.Broadcast(Room.Information);
+            Client.Broadcast(Room.Information);
 
-            //_ = Task.Delay(2500).ContinueWith(_ =>
-            //{
-            //    Client.Broadcast(new Messages.Chat.ChatSystemMessage($"Room: {Room.Id}", Messages.Chat.ChatSystemMessageType.General));
-            //    Client.Broadcast(new Messages.Chat.ChatSystemMessage($"Client: {Client.Id}", Messages.Chat.ChatSystemMessageType.General));
-            //});
+            _ = Task.Delay(2500).ContinueWith(_ =>
+            {
+                Client.Broadcast(new Messages.Chat.ChatSystemMessage($"Room: {Room.Id}", Messages.Chat.ChatSystemMessageType.General));
+                Client.Broadcast(new Messages.Chat.ChatSystemMessage($"Client: {Client.Id}", Messages.Chat.ChatSystemMessageType.General));
+            });
 
             //_ = Task.Delay(10000).ContinueWith(_ =>
             //{

@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Collections.Concurrent;
+using System.Net.Sockets;
 using Serilog;
 using Sobee.Common;
 using Sobee.Messaging;
@@ -10,7 +11,7 @@ namespace Sobee.TestServer.Common
         private static readonly ILogger _log = Logging.Get<ClientManager>();
         private bool _isDisposed;
 
-        private readonly List<Client> Clients = [];
+        private readonly ConcurrentDictionary<Guid, Client> Clients = new();
         private readonly MessageDispatch Dispatch;
 
         public ClientManager(MessageDispatch dispatch)
@@ -19,41 +20,22 @@ namespace Sobee.TestServer.Common
             _log.Debug("{id} initialized.", Id);
         }
 
-        public override Task Update(double delta)
+        public override async Task Update(double delta)
         {
             try
             {
-                lock (Clients)
+                // Remove disconnected clients
+                var disconnected = Clients.Values.Where(c => !c.IsConnected).ToList();
+                foreach (var client in disconnected)
                 {
-                    List<Client> disconnectedClients = new();
-
-                    foreach (var client in Clients.ToList())
-                    {
-                        if (!client.IsConnected)
-                        {
-                            disconnectedClients.Add(client);
-                        }
-                    }
-
-                    foreach (var client in disconnectedClients)
-                    {
-                        _log.Information("Client {id} removing due disconnection.", client.Id);
-
-                        client.Dispose();
-                        Clients.Remove(client);
-                    }
+                    _log.Information("Client {id} removing due to disconnection.", client.Id);
+                    Remove(client);  // Thread-safe removal
+                    client.Dispose();
                 }
 
-                lock (Clients)
-                {
-                    foreach (var client in Clients.ToList())
-                    {
-                        if (client.IsConnected)
-                        {
-                            client.Update(delta);
-                        }
-                    }
-                }
+                // Update remaining clients
+                var updateTasks = Clients.Values.Select(c => c.Update(delta));
+                await Task.WhenAll(updateTasks);
             }
             catch (Exception ex)
             {
@@ -61,53 +43,42 @@ namespace Sobee.TestServer.Common
                 Dispose();
                 throw;
             }
-
-            return Task.CompletedTask;
         }
 
         public bool Add(Client client)
         {
             if (client == null)
-                throw new ArgumentNullException(nameof(client), "Client cannot be null.");
+                throw new ArgumentNullException(nameof(client));
 
-            lock (Clients)
+            client.messageHandle.SetDispatchSource(Dispatch);
+
+            if (!Clients.TryAdd(client.Id, client))
             {
-                if (Clients.Any(c => c.Id == client.Id))
-                {
-                    _log.Warning("Client {id} already exists.", client.Id);
-                    return false;
-                }
-
-                client.messageHandle.SetDispatchSource(Dispatch);
-                Clients.Add(client);
-
-                _log.Information("Client {id} ({endPoint}) added.", client.Id, client.Socket.RemoteEndPoint);
+                _log.Warning("Client {id} already exists.", client.Id);
+                return false;
             }
 
+            _log.Information("Client {id} ({endPoint}) added.", client.Id, client.Socket.RemoteEndPoint);
             return true;
         }
 
         public bool Add(Socket socket)
         {
             if (socket == null)
-                throw new ArgumentNullException(nameof(socket), "Socket cannot be null.");
+                throw new ArgumentNullException(nameof(socket));
 
             try
             {
-                Guid uniqueId;
-
-                do uniqueId = Guid.NewGuid();
-                while (Clients.Any(c => c.Id == uniqueId));
-
-                var client = new Client(socket); // TODO: SessionType need to be defined properly with Database
+                var client = new Client(socket); // TODO: Define SessionType properly with Database
                 client.messageHandle.SetDispatchSource(Dispatch);
 
-                lock (Clients)
+                if (!Clients.TryAdd(client.Id, client))
                 {
-                    Clients.Add(client);
-                    _log.Information("Client {id} ({endPoint}) added.", client.Id, client.Socket.RemoteEndPoint);
+                    _log.Warning("Client {id} could not be added.", client.Id);
+                    return false;
                 }
 
+                _log.Information("Client {id} ({endPoint}) added.", client.Id, client.Socket.RemoteEndPoint);
                 return true;
             }
             catch (Exception ex)
@@ -119,62 +90,43 @@ namespace Sobee.TestServer.Common
         public bool Remove(Client client)
         {
             if (client == null)
-                throw new ArgumentNullException(nameof(client), "Client cannot be null.");
+                throw new ArgumentNullException(nameof(client));
 
-            lock (Clients)
+            if (!Clients.TryRemove(client.Id, out _))
             {
-                if (!Clients.Contains(client))
-                {
-                    _log.Warning("Client {id} not found.", client.Id);
-                    return false;
-                }
-
-                Clients.Remove(client);
-                _log.Information("Client {id} ({endPoint}) removed.", client.Id, client.Socket.RemoteEndPoint);
-
-                return true;
+                _log.Warning("Client {id} not found.", client.Id);
+                return false;
             }
+
+            _log.Information("Client {id} ({endPoint}) removed.", client.Id, client.Socket.RemoteEndPoint);
+            return true;
         }
 
         public bool Remove(Guid clientId)
         {
-            lock (Clients)
-            {
-                var client = Clients.FirstOrDefault(c => c.Id == clientId);
-                if (client == null)
-                {
-                    return false;
-                }
+            if (!Clients.TryRemove(clientId, out _))
+                return false;
 
-                Clients.Remove(client);
-                _log.Information("Client {id} ({endPoint}) removed.", client.Id, client.Socket.RemoteEndPoint);
-
-                return true;
-            }
+            _log.Information("Client {id} removed.", clientId);
+            return true;
         }
 
         public void Broadcast(Message message)
         {
             ArgumentNullException.ThrowIfNull(message);
 
-            lock (Clients)
+            foreach (var client in Clients.Values)
             {
-                foreach (var client in Clients)
-                {
-                    client.messageHandle.SendMessage(message);
-                }
+                client.messageHandle.SendMessage(message);
             }
         }
 
         public bool Contains(Client client)
         {
             if (client == null)
-                throw new ArgumentNullException(nameof(client), "Client cannot be null.");
+                throw new ArgumentNullException(nameof(client));
 
-            lock (Clients)
-            {
-                return Clients.Contains(client);
-            }
+            return Clients.ContainsKey(client.Id);
         }
 
         public int Count => Clients.Count;
@@ -189,9 +141,12 @@ namespace Sobee.TestServer.Common
                 {
                     _log.Debug("Disposing {id} with {count} clients.", Id, Clients.Count);
 
-                    Clients.ForEach(client => client.Dispose());
-                    Clients.Clear();
+                    foreach (var client in Clients.Values)
+                    {
+                        client.Dispose();
+                    }
 
+                    Clients.Clear();
                     _log.Debug("{id} disposed.", Id);
                 }
             }

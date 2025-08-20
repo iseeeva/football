@@ -54,17 +54,16 @@ namespace Sobee.TestServer
                 ClientsDispatch = new MessageDispatch(this);
                 ClientsDispatch.RegisterMessagesFromAssemblyName("Sobee.TestServer.Messages");
                 ClientsDispatch.RegisterMessageEvent(typeof(Messages.Player.PlayerInformation), Events.Player.Information);
+                Clients = new ClientManager(ClientsDispatch);
 
                 RoomsDispatch = new MessageDispatch(this);
                 RoomsDispatch.RegisterMessagesFromAssemblyName("Sobee.TestServer.Messages");
                 RoomsDispatch.RegisterMessageEvent(typeof(Messages.Chat.ChatMessage), Events.Chat.Messaging);
                 RoomsDispatch.RegisterMessageEvent(typeof(Messages.Player.PlayerMovePressed), Events.Player.MovePressed);
-
-                Clients = new ClientManager(ClientsDispatch);
                 Rooms = new RoomManager(RoomsDispatch);
 
                 _ = Task.Run(() => Start(Cancellation.Token));
-                _ = Task.Run(() => Tick());
+                _ = Task.Run(() => Tick(Cancellation.Token));
 
                 _log.Information("{id} ({port}) initialized.", Id, Port);
             }
@@ -133,11 +132,11 @@ namespace Sobee.TestServer
             }
         }
 
-        private async Task Tick()
+        private async Task Tick(CancellationToken cancellationToken)
         {
             double previous = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {

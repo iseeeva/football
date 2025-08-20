@@ -12,6 +12,8 @@ namespace Sobee.TestServer.Common
         public readonly ClientManager Clients;
         public Messages.Match.MatchInformation Information = new Messages.Match.MatchInformation();
 
+        public readonly static int MAX_IDLE_TIME = 60 * 1000;
+
         public Room(MessageDispatch dispatch) : base()
         {
             Clients = new ClientManager(dispatch);

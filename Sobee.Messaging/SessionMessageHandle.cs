@@ -4,37 +4,32 @@ using Sobee.Network;
 
 namespace Sobee.Messaging
 {
-    public class SessionMessageHandle : Component
+    public class SessionMessageHandle : SessionQueueHandle
     {
         private static readonly ILogger _log = Logging.Get<SessionMessageHandle>();
         private bool _isDisposed;
 
         private MessageDispatch? _dispatcher;
 
-        private readonly SessionQueueHandle _queue;
-        private readonly Session _session;
-
         private MessageHelper? _receiveHelper;
-        private readonly MemoryStream _receiveStream = new MemoryStream(SessionQueueHandle.MaxReceivingSize);
+        private readonly MemoryStream _receiveStream = new MemoryStream(MaxReceivingSize);
 
         private MessageHelper? _sendHelper;
-        private readonly MemoryStream _sendStream = new MemoryStream(SessionQueueHandle.MaxSendingSize);
+        private readonly MemoryStream _sendStream = new MemoryStream(MaxSendingSize);
 
-        public SessionMessageHandle(SessionQueueHandle queueHandle, Session session)
+        public SessionMessageHandle(Session session) : base(session)
         {
-            _session = session ?? throw new ArgumentNullException(nameof(session));
-            _queue = queueHandle;
-
             _log.Debug("{id} initialized.", this.Id);
         }
 
         public override Task Update(double delta)
         {
             if (_isDisposed) return Task.CompletedTask;
-            if (!_session.IsConnected) return Task.CompletedTask;
+            if (!Session.IsConnected) return Task.CompletedTask;
 
             try
             {
+                _ = ProcessSendQueueAsync();
                 ProcessIncomingMessages();
             }
             catch (Exception ex)
@@ -58,7 +53,7 @@ namespace Sobee.Messaging
 
                 PrepareStream(_sendStream);
                 _sendHelper.WriteMessage(message);
-                _queue.EnqueueSendData(_sendStream.GetBuffer());
+                EnqueueSendData(_sendStream.GetBuffer());
                 message.byteLength = (int)_sendStream.Length;
             }
             catch (Exception ex)
@@ -81,7 +76,7 @@ namespace Sobee.Messaging
             ObjectDisposedException.ThrowIf(_isDisposed, this);
 
             byte[]? array;
-            while ((array = _queue.DequeueReceiveData()) != null)
+            while ((array = DequeueReceiveData()) != null)
             {
                 try
                 {
@@ -95,7 +90,7 @@ namespace Sobee.Messaging
                     if (_dispatcher == null)
                         throw new InvalidOperationException($"{nameof(_dispatcher)} is not initialized.");
 
-                    _dispatcher.DispatchToMessageEvent(new MessageDelegateArgs(_dispatcher.Owner, new MessageEventArgs(_session, message)));
+                    _dispatcher.DispatchToMessageEvent(new MessageDelegateArgs(_dispatcher.Owner, new MessageEventArgs(Session, message)));
                 }
                 catch (Exception ex)
                 {
@@ -129,10 +124,7 @@ namespace Sobee.Messaging
                 _receiveStream.Dispose();
                 _sendHelper?.Dispose();
                 _sendStream.Dispose();
-
                 //_dispatcher?.Dispose();
-                _queue.Dispose();
-                _session.Dispose();
 
                 _log.Debug("{id} disposed.", this.Id);
             }

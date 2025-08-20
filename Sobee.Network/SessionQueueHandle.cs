@@ -19,7 +19,7 @@ namespace Sobee.Network
         private readonly byte[] _receiveBuffer = new byte[MaxReceivingSize];
         private int _receiveBufferOffset;
 
-        private readonly Session _session;
+        protected readonly Session Session;
 
         public static int MaxSendingSize { get; private set; } = 32768;
         public static int MaxReceivingSize { get; private set; } = 4096;
@@ -32,24 +32,26 @@ namespace Sobee.Network
 
         public SessionQueueHandle(Session session)
         {
-            _session = session ?? throw new ArgumentNullException(nameof(session));
+            Session = session ?? throw new ArgumentNullException(nameof(session));
             _ = StartReceivingAsync(_cts.Token);
 
             _log.Debug("{id} initialized.", this.Id);
         }
 
-        public override async Task Update(double delta)
+        public override Task Update(double delta)
         {
-            if (_isDisposed) return;
-            if (!_session.IsConnected) return;
+            if (_isDisposed) return Task.CompletedTask;
+            if (!Session.IsConnected) return Task.CompletedTask;
 
-            await ProcessSendQueueAsync();
+            _ = ProcessSendQueueAsync();
+            return Task.CompletedTask;
         }
 
-        private async Task ProcessSendQueueAsync()
+
+        protected async Task ProcessSendQueueAsync()
         {
             ObjectDisposedException.ThrowIf(_isDisposed, this);
-            if (!_session.IsConnected) return;
+            if (!Session.IsConnected) return;
 
             await _sendSemaphore.WaitAsync();
 
@@ -57,7 +59,7 @@ namespace Sobee.Network
             {
                 while (_sendQueue.TryDequeue(out var message))
                 {
-                    await _session.Socket.SendAsync(message, SocketFlags.None);
+                    await Session.Socket.SendAsync(message, SocketFlags.None);
                     TotalBytesSent += message.Length;
                     TotalSent++;
                 }
@@ -108,10 +110,10 @@ namespace Sobee.Network
 
             try
             {
-                while (_session.IsConnected && !cancellationToken.IsCancellationRequested)
+                while (Session.IsConnected && !cancellationToken.IsCancellationRequested)
                 {
                     var segment = new ArraySegment<byte>(_receiveBuffer, _receiveBufferOffset, MaxReceivingSize - _receiveBufferOffset);
-                    int bytesRead = await _session.Socket.ReceiveAsync(segment, SocketFlags.None, cancellationToken);
+                    int bytesRead = await Session.Socket.ReceiveAsync(segment, SocketFlags.None, cancellationToken);
 
                     if (bytesRead == 0) break;
 
@@ -189,7 +191,7 @@ namespace Sobee.Network
                 _cts.Dispose();
 
                 _sendSemaphore.Dispose();
-                _session.Dispose();
+                Session.Dispose();
 
                 _sendQueue.Clear();
                 _receiveQueue.Clear();

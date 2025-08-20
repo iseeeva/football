@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using System.Collections.Concurrent;
+using Serilog;
 using Sobee.Common;
 using Sobee.Messaging;
 
@@ -9,7 +10,7 @@ namespace Sobee.TestServer.Common
         private static readonly ILogger _log = Logging.Get<RoomManager>();
         private bool _isDisposed;
 
-        private readonly List<Room> Rooms = new();
+        private readonly ConcurrentDictionary<Guid, Room> Rooms = new();
         private readonly MessageDispatch Dispatch;
 
         public RoomManager(MessageDispatch dispatch)
@@ -24,7 +25,19 @@ namespace Sobee.TestServer.Common
 
             try
             {
-                var updateTasks = Rooms.Select(room => room.Update(delta));
+                var inactiveRooms = Rooms.Values.Where(room =>
+                    room.Clients.Count == 0 &&
+                    ((DateTime.Now - room.CreatedAt).TotalMilliseconds > Room.MAX_IDLE_TIME)
+                ).ToList();
+
+                foreach (var room in inactiveRooms)
+                {
+                    _log.Information("Room {id} removing due to inactivity.", room.Id);
+                    Remove(room);
+                    room.Dispose();
+                }
+
+                var updateTasks = Rooms.Values.Select(room => room.Update(delta));
                 await Task.WhenAll(updateTasks);
             }
             catch (Exception ex)
@@ -40,18 +53,13 @@ namespace Sobee.TestServer.Common
             if (room == null)
                 throw new ArgumentNullException(nameof(room), "Room cannot be null.");
 
-            lock (Rooms)
+            if (!Rooms.TryAdd(room.Id, room))
             {
-                if (Rooms.Any(c => c.Id == room.Id))
-                {
-                    _log.Warning("Room {id} already exists.", room.Id);
-                    return false;
-                }
-
-                Rooms.Add(room);
-                _log.Information("Room {id} added.", room.Id);
+                _log.Warning("Room {id} already exists.", room.Id);
+                return false;
             }
 
+            _log.Information("Room {id} added.", room.Id);
             return true;
         }
 
@@ -61,12 +69,12 @@ namespace Sobee.TestServer.Common
             {
                 Room room = new Room(Dispatch);
 
-                lock (Rooms)
+                if (!Rooms.TryAdd(room.Id, room))
                 {
-                    Rooms.Add(room);
-                    _log.Information("Room {id} created.", room.Id);
+                    throw new Exception($"Room {room.Id} could not be added.");
                 }
 
+                _log.Information("Room {id} created.", room.Id);
                 return room;
             }
             catch (Exception ex)
@@ -80,36 +88,25 @@ namespace Sobee.TestServer.Common
             if (room == null)
                 throw new ArgumentNullException(nameof(room), "Room cannot be null.");
 
-            lock (Rooms)
+            if (!Rooms.TryRemove(room.Id, out _))
             {
-                if (!Rooms.Contains(room))
-                {
-                    _log.Warning("Room {id} not found.", room.Id);
-                    return false;
-                }
-
-                Rooms.Remove(room);
-                _log.Information("Room {id} removed.", room.Id);
-
-                return true;
+                _log.Warning("Room {id} not found.", room.Id);
+                return false;
             }
+
+            _log.Information("Room {id} removed.", room.Id);
+            return true;
         }
 
         public bool Remove(Guid roomId)
         {
-            lock (Rooms)
+            if (!Rooms.TryRemove(roomId, out _))
             {
-                var room = Rooms.FirstOrDefault(c => c.Id == roomId);
-                if (room == null)
-                {
-                    return false;
-                }
-
-                Rooms.Remove(room);
-                _log.Information("Room {id} removed.", room.Id);
-
-                return true;
+                return false;
             }
+
+            _log.Information("Room {id} removed.", roomId);
+            return true;
         }
 
         public Room? FindRoomByClient(Client client)
@@ -117,10 +114,7 @@ namespace Sobee.TestServer.Common
             if (client == null)
                 throw new ArgumentNullException(nameof(client), "Client cannot be null.");
 
-            lock (Rooms)
-            {
-                return Rooms.FirstOrDefault(room => room.Clients.Contains(client));
-            }
+            return Rooms.Values.FirstOrDefault(room => room.Clients.Contains(client));
         }
 
         public int Count => Rooms.Count;
@@ -135,9 +129,12 @@ namespace Sobee.TestServer.Common
                 {
                     _log.Debug("Disposing {id} with {count} rooms.", Id, Rooms.Count);
 
-                    Rooms.ForEach(room => room.Dispose());
-                    Rooms.Clear();
+                    foreach (var room in Rooms.Values)
+                    {
+                        room.Dispose();
+                    }
 
+                    Rooms.Clear();
                     _log.Debug("{id} disposed.", Id);
                 }
             }

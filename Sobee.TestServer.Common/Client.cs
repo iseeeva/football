@@ -18,9 +18,9 @@ namespace Sobee.TestServer.Common
             _log.Debug("{id} initialized.", Id);
         }
 
-        public override Task Update(double delta)
+        public override async Task Update(double delta)
         {
-            return base.Update(delta);
+            await base.Update(delta);
         }
 
         public virtual void Broadcast(Message message)

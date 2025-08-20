@@ -11,15 +11,13 @@ namespace Sobee.TestServer.Common
         private static readonly ILogger _log = Logging.Get<ClientBase>();
         private bool _isDisposed;
 
-        public readonly SessionQueueHandle queueHandle;
         public readonly SessionMessageHandle messageHandle;
 
         public ClientBase(Socket socket, SessionType sessionType) : base(socket, sessionType)
         {
             try
             {
-                queueHandle = new SessionQueueHandle(this);
-                messageHandle = new SessionMessageHandle(queueHandle, this);
+                messageHandle = new SessionMessageHandle(this);
             }
             catch (Exception ex)
             {
@@ -31,7 +29,6 @@ namespace Sobee.TestServer.Common
 
         public override async Task Update(double delta)
         {
-            await queueHandle.Update(delta);
             await messageHandle.Update(delta);
             await base.Update(delta);
         }
@@ -46,7 +43,6 @@ namespace Sobee.TestServer.Common
                 {
                     _log.Information("{id} disposing.", Id);
 
-                    queueHandle.Dispose();
                     messageHandle.Dispose();
 
                     _log.Information("{id} disposed.", Id);
