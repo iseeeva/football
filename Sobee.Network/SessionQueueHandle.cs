@@ -7,7 +7,7 @@ namespace Sobee.Network
 {
     public class SessionQueueHandle : Component
     {
-        private readonly ILogger _log = Logging.Get<SessionQueueHandle>();
+        private static readonly ILogger _log = Logging.Get<SessionQueueHandle>();
         private bool _isDisposed;
 
         private readonly SemaphoreSlim _sendSemaphore = new(1, 1);
@@ -38,7 +38,7 @@ namespace Sobee.Network
             _log.Debug("{id} initialized.", this.Id);
         }
 
-        public override async Task Update()
+        public override async Task Update(double delta)
         {
             if (_isDisposed) return;
             if (!_session.IsConnected) return;

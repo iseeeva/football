@@ -6,7 +6,7 @@ namespace Sobee.Messaging
 {
     public class SessionMessageHandle : Component
     {
-        private readonly ILogger _log = Logging.Get<SessionMessageHandle>();
+        private static readonly ILogger _log = Logging.Get<SessionMessageHandle>();
         private bool _isDisposed;
 
         private MessageDispatch? _dispatcher;
@@ -28,7 +28,7 @@ namespace Sobee.Messaging
             _log.Debug("{id} initialized.", this.Id);
         }
 
-        public override Task Update()
+        public override Task Update(double delta)
         {
             if (_isDisposed) return Task.CompletedTask;
             if (!_session.IsConnected) return Task.CompletedTask;

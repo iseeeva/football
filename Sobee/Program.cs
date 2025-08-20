@@ -1,19 +1,20 @@
-﻿// See https://aka.ms/new-console-template for more information
-
+﻿using Serilog;
 using Sobee.Common;
 
 namespace Sobee
 {
     internal class Program
     {
+        private static readonly ILogger _log = Logging.Get<Program>();
+
         private static async Task Main(string[] args)
         {
             //Console.WriteLine("Press Ctrl+C to stop the process.\n");
 
             Logging.Configure();
-            Log.Information("Logging started.");
+            _log.Information("Logging started.");
 
-            Sobee.System.Common.Hub Hub = new(3000);
+            TestServer.Hub Hub = new(3000);
 
             Console.CancelKeyPress += (sender, eventArgs) =>
             {
@@ -22,11 +23,6 @@ namespace Sobee
             };
 
             await Task.Delay(-1);
-        }
-
-        private static Serilog.ILogger Log
-        {
-            get { return Logging.Get<Program>(); }
         }
     }
 }

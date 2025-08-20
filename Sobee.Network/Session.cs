@@ -1,13 +1,12 @@
 ﻿using System.Net.Sockets;
 using Serilog;
 using Sobee.Common;
-using Sobee.Messaging;
 
 namespace Sobee.Network
 {
     public class Session : Component
     {
-        private readonly ILogger _log = Logging.Get<Session>();
+        private static readonly ILogger _log = Logging.Get<Session>();
         private bool _isDisposed;
 
         public readonly Socket Socket;
@@ -48,7 +47,7 @@ namespace Sobee.Network
             }
         }
 
-        public override Task Update()
+        public override Task Update(double delta)
         {
             return Task.CompletedTask;
         }

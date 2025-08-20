@@ -18,7 +18,7 @@
             Dispose(false);
         }
 
-        public virtual Task Update()
+        public virtual Task Update(double delta)
         {
             // Start receiving logic here
             throw new Exception("Update not defined");

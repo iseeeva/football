@@ -9,7 +9,7 @@ namespace Sobee.Messaging
     public sealed class MessageDispatch
     {
         public object Owner { get; private set; }
-        private readonly ILogger _log = Logging.Get<MessageDispatch>();
+        private static readonly ILogger _log = Logging.Get<MessageDispatch>();
 
         private readonly SortedDictionary<ushort, ConstructorInfo> _messageConstructorsById = [];
         private readonly Dictionary<Type, ushort> _messageTypeToId = [];
