@@ -2,25 +2,23 @@
 using System.Runtime.Serialization;
 using Serilog;
 using Sobee.Common;
+using Sobee.Network;
 
 namespace Sobee.Messaging
 {
     // TODO: Dispose pattern
-    public sealed class MessageDispatch
+    public class MessageDispatch : Component
     {
-        public object Owner { get; private set; }
         private static readonly ILogger _log = Logging.Get<MessageDispatch>();
+        private bool _isDisposed;
+
+        public SessionType SessionType { get; set; }
 
         private readonly SortedDictionary<ushort, ConstructorInfo> _messageConstructorsById = [];
         private readonly Dictionary<Type, ushort> _messageTypeToId = [];
         private readonly Dictionary<ushort, MessageDelegate> _messageIdToEvent = [];
         private readonly Dictionary<Type, int> _messageTypeToIndex = [];
         private readonly HashSet<ushort> _usedMessageIds = [];
-
-        public MessageDispatch(object owner)
-        {
-            this.Owner = owner ?? throw new ArgumentNullException(nameof(owner));
-        }
 
         public IEnumerable<KeyValuePair<ushort, ConstructorInfo>> GetAllRegisteredConstructors() => _messageConstructorsById;
 
@@ -31,6 +29,11 @@ namespace Sobee.Messaging
         public int GetRegisteredMessageCount() => _messageTypeToId.Count;
 
         public IEnumerable<KeyValuePair<Type, int>> GetAllTypeIndexes() => _messageTypeToIndex;
+
+        public virtual Session CreateSession(SocketWrapper gclass297_0)
+        {
+            throw new NotImplementedException("Create session function has not been implemented.");
+        }
 
         public int GetMessageIndex(Type type)
         {
@@ -171,9 +174,9 @@ namespace Sobee.Messaging
             }
         }
 
-        public void DispatchToMessageEvent(MessageDelegateArgs args)
+        public void DispatchToMessageEvent(MessageEventArgs args)
         {
-            var id = GetMessageTypeId(args.eventArgs.message.GetType());
+            var id = GetMessageTypeId(args.message.GetType());
             if (!_messageIdToEvent.TryGetValue(id, out var eventDelegate))
             {
                 throw new SerializationException($"ClassID: {id} - Not registered.");
@@ -181,14 +184,30 @@ namespace Sobee.Messaging
 
             try
             {
-                eventDelegate.Invoke(args.sender, args.eventArgs);
-                _log.Information("Invoked event for {Type} (ID: {Id})", args.eventArgs.message.GetType().FullName, id);
+                eventDelegate.Invoke(args.handler, args.message);
+                _log.Information("Invoked event for {Type} (ID: {Id})", args.message.GetType().FullName, id);
             }
             catch (Exception ex)
             {
                 _log.Error(ex, "Event invocation failed for ClassID: {Id}", id);
                 throw new SerializationException($"ClassID: {id} - Event failed.");
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+
+                if (disposing)
+                {
+                    // Dispose managed state.
+
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

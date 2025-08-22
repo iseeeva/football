@@ -1,22 +1,23 @@
 ﻿using System.Collections.Concurrent;
-using System.Net.Sockets;
 using Serilog;
 using Sobee.Common;
 using Sobee.Messaging;
+using Sobee.Network;
+using Sobee.TestServer.Common;
 
-namespace Sobee.TestServer.Common
+namespace Sobee.TestServer
 {
-    public class ClientManager : Component
+    public class PlayerManager : Component
     {
-        private static readonly ILogger _log = Logging.Get<ClientManager>();
+        private static readonly ILogger _log = Logging.Get<PlayerManager>();
         private bool _isDisposed;
 
-        private readonly ConcurrentDictionary<Guid, Client> Clients = new();
-        private readonly MessageDispatch Dispatch;
+        private readonly RoomCommunication _comm;
+        private readonly ConcurrentDictionary<Guid, Player> Players = new();
 
-        public ClientManager(MessageDispatch dispatch)
+        public PlayerManager(RoomCommunication commReference)
         {
-            Dispatch = dispatch ?? throw new ArgumentNullException(nameof(dispatch));
+            _comm = commReference ?? throw new ArgumentNullException(nameof(commReference));
             _log.Debug("{id} initialized.", Id);
         }
 
@@ -24,17 +25,15 @@ namespace Sobee.TestServer.Common
         {
             try
             {
-                // Remove disconnected clients
-                var disconnected = Clients.Values.Where(c => !c.IsConnected).ToList();
+                var disconnected = Players.Values.Where(c => !c.IsActive).ToList();
                 foreach (var client in disconnected)
                 {
                     _log.Information("Client {id} removing due to disconnection.", client.Id);
-                    Remove(client);  // Thread-safe removal
+                    Remove(client);
                     client.Dispose();
                 }
 
-                // Update remaining clients
-                var updateTasks = Clients.Values.Select(c => c.Update(delta));
+                var updateTasks = Players.Values.Select(c => c.Update(delta));
                 await Task.WhenAll(updateTasks);
             }
             catch (Exception ex)
@@ -45,40 +44,22 @@ namespace Sobee.TestServer.Common
             }
         }
 
-        public bool Add(Client client)
-        {
-            if (client == null)
-                throw new ArgumentNullException(nameof(client));
-
-            client.messageHandle.SetDispatchSource(Dispatch);
-
-            if (!Clients.TryAdd(client.Id, client))
-            {
-                _log.Warning("Client {id} already exists.", client.Id);
-                return false;
-            }
-
-            _log.Information("Client {id} ({endPoint}) added.", client.Id, client.Socket.RemoteEndPoint);
-            return true;
-        }
-
-        public bool Add(Socket socket)
+        public bool Add(SocketWrapper socket)
         {
             if (socket == null)
                 throw new ArgumentNullException(nameof(socket));
 
             try
             {
-                var client = new Client(socket); // TODO: Define SessionType properly with Database
-                client.messageHandle.SetDispatchSource(Dispatch);
+                var client = new Player(socket, _comm); // TODO: Define SessionType properly with Database
 
-                if (!Clients.TryAdd(client.Id, client))
+                if (!Players.TryAdd(client.Id, client))
                 {
                     _log.Warning("Client {id} could not be added.", client.Id);
                     return false;
                 }
 
-                _log.Information("Client {id} ({endPoint}) added.", client.Id, client.Socket.RemoteEndPoint);
+                _log.Information("Client {id} ({endPoint}) added.", client.Id);
                 return true;
             }
             catch (Exception ex)
@@ -87,24 +68,24 @@ namespace Sobee.TestServer.Common
             }
         }
 
-        public bool Remove(Client client)
+        public bool Remove(Player client)
         {
             if (client == null)
                 throw new ArgumentNullException(nameof(client));
 
-            if (!Clients.TryRemove(client.Id, out _))
+            if (!Players.TryRemove(client.Id, out _))
             {
                 _log.Warning("Client {id} not found.", client.Id);
                 return false;
             }
 
-            _log.Information("Client {id} ({endPoint}) removed.", client.Id, client.Socket.RemoteEndPoint);
+            _log.Information("Client {id} ({endPoint}) removed.", client.Id);
             return true;
         }
 
         public bool Remove(Guid clientId)
         {
-            if (!Clients.TryRemove(clientId, out _))
+            if (!Players.TryRemove(clientId, out _))
                 return false;
 
             _log.Information("Client {id} removed.", clientId);
@@ -115,21 +96,21 @@ namespace Sobee.TestServer.Common
         {
             ArgumentNullException.ThrowIfNull(message);
 
-            foreach (var client in Clients.Values)
+            foreach (var client in Players.Values)
             {
-                client.messageHandle.SendMessage(message);
+                client.SendMessage(message);
             }
         }
 
-        public bool Contains(Client client)
+        public bool Contains(Player client)
         {
             if (client == null)
                 throw new ArgumentNullException(nameof(client));
 
-            return Clients.ContainsKey(client.Id);
+            return Players.ContainsKey(client.Id);
         }
 
-        public int Count => Clients.Count;
+        public int Count => Players.Count;
 
         protected override void Dispose(bool disposing)
         {
@@ -139,14 +120,14 @@ namespace Sobee.TestServer.Common
 
                 if (disposing)
                 {
-                    _log.Debug("Disposing {id} with {count} clients.", Id, Clients.Count);
+                    _log.Debug("Disposing {id} with {count} clients.", Id, Players.Count);
 
-                    foreach (var client in Clients.Values)
+                    foreach (var client in Players.Values)
                     {
                         client.Dispose();
                     }
 
-                    Clients.Clear();
+                    Players.Clear();
                     _log.Debug("{id} disposed.", Id);
                 }
             }

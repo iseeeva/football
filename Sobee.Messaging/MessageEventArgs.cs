@@ -1,6 +1,4 @@
-﻿using Sobee.Network;
-
-namespace Sobee.Messaging
+﻿namespace Sobee.Messaging
 {
     public class MessageEventArgs : EventArgs
     {

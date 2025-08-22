@@ -1,9 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using Serilog;
 using Sobee.Common;
-using Sobee.Messaging;
 
-namespace Sobee.TestServer.Common
+namespace Sobee.TestServer
 {
     public class RoomManager : Component
     {
@@ -11,11 +10,9 @@ namespace Sobee.TestServer.Common
         private bool _isDisposed;
 
         private readonly ConcurrentDictionary<Guid, Room> Rooms = new();
-        private readonly MessageDispatch Dispatch;
 
-        public RoomManager(MessageDispatch dispatch)
+        public RoomManager()
         {
-            Dispatch = dispatch ?? throw new ArgumentNullException(nameof(dispatch));
             _log.Debug("{id} initialized.", Id);
         }
 
@@ -26,8 +23,8 @@ namespace Sobee.TestServer.Common
             try
             {
                 var inactiveRooms = Rooms.Values.Where(room =>
-                    room.Clients.Count == 0 &&
-                    ((DateTime.Now - room.CreatedAt).TotalMilliseconds > Room.MAX_IDLE_TIME)
+                    room.Players.Count == 0 &&
+                    (DateTime.Now - room.CreatedAt).TotalMilliseconds > Room.MAX_IDLE_TIME
                 ).ToList();
 
                 foreach (var room in inactiveRooms)
@@ -67,7 +64,7 @@ namespace Sobee.TestServer.Common
         {
             try
             {
-                Room room = new Room(Dispatch);
+                Room room = new Room();
 
                 if (!Rooms.TryAdd(room.Id, room))
                 {
@@ -109,12 +106,12 @@ namespace Sobee.TestServer.Common
             return true;
         }
 
-        public Room? FindRoomByClient(Client client)
+        public Room? FindRoomByClient(Player client)
         {
             if (client == null)
                 throw new ArgumentNullException(nameof(client), "Client cannot be null.");
 
-            return Rooms.Values.FirstOrDefault(room => room.Clients.Contains(client));
+            return Rooms.Values.FirstOrDefault(room => room.Players.Contains(client));
         }
 
         public int Count => Rooms.Count;

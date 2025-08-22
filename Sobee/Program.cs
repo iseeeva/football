@@ -15,6 +15,7 @@ namespace Sobee
             _log.Information("Logging started.");
 
             TestServer.Hub Hub = new(3000);
+            Hub.Start();
 
             Console.CancelKeyPress += (sender, eventArgs) =>
             {

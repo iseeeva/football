@@ -4,7 +4,7 @@ using Sobee.Serialization;
 namespace Sobee.Messaging
 {
     [GAttribute0(1)]
-    public class Message : ISerialize
+    public class Message : IMessage
     {
         // Token: 0x06000059 RID: 89 RVA: 0x00002598 File Offset: 0x00000798
         public virtual bool vmethod_0()

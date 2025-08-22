@@ -1,35 +1,40 @@
 ﻿using Serilog;
 using Sobee.Common;
 using Sobee.Messaging;
+using Sobee.Network;
+using Sobee.TestServer.Common;
 
-namespace Sobee.TestServer.Common
+namespace Sobee.TestServer
 {
-    public class Room : RoomBase
+    public class Room : Component
     {
         private static readonly ILogger _log = Logging.Get<Room>();
         private bool _isDisposed;
 
-        public readonly ClientManager Clients;
+        private RoomCommunication Communication { get; set; } = new RoomCommunication();
+
+        public readonly PlayerManager Players;
         public Messages.Match.MatchInformation Information = new Messages.Match.MatchInformation();
 
         public readonly static int MAX_IDLE_TIME = 60 * 1000;
 
-        public Room(MessageDispatch dispatch) : base()
+        public Room() : base()
         {
-            Clients = new ClientManager(dispatch);
+            Communication.SessionType = SessionType.Game;
+            Players = new PlayerManager(Communication);
             _log.Debug("{id} initialized.", Id);
         }
 
         public void Broadcast(Message message)
         {
-            Clients.Broadcast(message);
+            Players.Broadcast(message);
         }
 
         public override async Task Update(double delta)
         {
-            if (Clients != null)
+            if (Players != null)
             {
-                await Clients.Update(delta);
+                await Players.Update(delta);
             }
 
             await base.Update(delta);
@@ -44,7 +49,7 @@ namespace Sobee.TestServer.Common
                 if (disposing)
                 {
                     _log.Debug("{id} disposing.", Id);
-                    Clients.Dispose();
+                    Players.Dispose();
                     _log.Debug("{id} disposed.", Id);
                 }
             }

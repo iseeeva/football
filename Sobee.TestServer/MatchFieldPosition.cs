@@ -4,7 +4,7 @@ using Sobee.Common;
 using Sobee.Serialization.GameServer;
 using Sobee.TestServer.Messages;
 
-namespace Sobee.TestServer.Common
+namespace Sobee.TestServer
 {
     public class MatchFieldPosition
     {
@@ -67,8 +67,8 @@ namespace Sobee.TestServer.Common
             ApplyTeamPositions(room.Information.HomeTeam, positioning.Home);
             ApplyTeamPositions(room.Information.AwayTeam, positioning.Away);
 
-            room.Clients.Broadcast(
-                new Messages.PositioningCutscene(
+            room.Players.Broadcast(
+                new PositioningCutscene(
                     fieldType,
                     positioning.Home.Positions, positioning.Away.Positions,
                     positioning.Home.Directions, positioning.Away.Directions,

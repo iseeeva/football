@@ -1,25 +1,24 @@
 ﻿using Serilog;
 using Sobee.Common;
 using Sobee.Messaging;
-using Sobee.TestServer.Common;
 
-namespace Sobee.TestServer.Events
+namespace Sobee.TestServer.GameEvents
 {
-    public class Player
+    public class PlayerEvent
     {
-        private static readonly ILogger _log = Logging.Get<Player>();
+        private static readonly ILogger _log = Logging.Get<PlayerEvent>();
 
-        public static void Information(object sender, MessageEventArgs e)
+        public static void Information(object? sender, MessageEventArgs e)
         {
             if (sender is not Hub Hub) return;
-            if (e.handler is not Client Client) return;
+            if (e.handler is not Player Client) return;
             if (e.message is not Messages.Player.PlayerInformation ReceivedInfo) return;
 
             Client.Information = ReceivedInfo;
-            Hub.Clients.Remove(Client);
+            //Hub.Players.Remove(Client);
 
-            var Room = Hub.Rooms.Create();
-            Room.Clients.Add(Client);
+            //var Room = Hub.Rooms.Create();
+            //Room.Players.Add(Client._socket);
 
             //// TODO: Temporary player match information
             //var matchInfo = new Messages.Player.PlayerMatchInformation(
@@ -47,13 +46,13 @@ namespace Sobee.TestServer.Events
             //Room.Information.Actor.Camera = (sbyte)Client.Information.Entry.ToSquad(true);
             //Room.Information.Actor.Mark = (sbyte)Client.Information.Entry.EntryId;
 
-            Client.Broadcast(Room.Information);
+            //client.sendmessage(room.ınformation);
 
-            _ = Task.Delay(2500).ContinueWith(_ =>
-            {
-                Client.Broadcast(new Messages.Chat.ChatSystemMessage($"Room: {Room.Id}", Messages.Chat.ChatSystemMessageType.General));
-                Client.Broadcast(new Messages.Chat.ChatSystemMessage($"Client: {Client.Id}", Messages.Chat.ChatSystemMessageType.General));
-            });
+            //_ = task.delay(2500).continuewith(_ =>
+            //{
+            //    client.sendmessage(new messages.chat.chatsystemmessage($"room: {room.ıd}", messages.chat.chatsystemmessagetype.general));
+            //    client.sendmessage(new messages.chat.chatsystemmessage($"client: {client.ıd}", messages.chat.chatsystemmessagetype.general));
+            //});
 
             //_ = Task.Delay(10000).ContinueWith(_ =>
             //{
@@ -64,10 +63,10 @@ namespace Sobee.TestServer.Events
             _log.Information($"{Client.Id} - {ReceivedInfo}");
         }
 
-        public static void MovePressed(object sender, MessageEventArgs e)
+        public static void MovePressed(object? sender, MessageEventArgs e)
         {
             if (sender is not Hub Hub) return;
-            if (e.handler is not Client Client) return;
+            if (e.handler is not Player Client) return;
             if (e.message is not Messages.Player.PlayerMovePressed Move1) return;
         }
     }
