@@ -1,20 +1,22 @@
 ﻿using Serilog;
 using Sobee.Common;
 using Sobee.Messaging;
+using Sobee.TestServer.Messages.Auth;
+using Sobee.TestServer.Messages.Player;
 
 namespace Sobee.TestServer.GameEvents
 {
-    public class PlayerEvent
+    public class UserEvent
     {
-        private static readonly ILogger _log = Logging.Get<PlayerEvent>();
+        private static readonly ILogger _log = Logging.Get<UserEvent>();
 
-        public static void Information(object? sender, MessageEventArgs e)
+        public static void UserInformation(object? sender, MessageEventArgs e)
         {
             if (sender is not Hub Hub) return;
-            if (e.handler is not Player Client) return;
-            if (e.message is not Messages.Player.PlayerInformation ReceivedInfo) return;
+            if (e.handler is not User Client) return;
+            if (e.message is not AuthInformation ReceivedInfo) return;
 
-            Client.Information = ReceivedInfo;
+            //Client.Information = ReceivedInfo;
             //Hub.Players.Remove(Client);
 
             //var Room = Hub.Rooms.Create();
@@ -63,11 +65,11 @@ namespace Sobee.TestServer.GameEvents
             _log.Information($"{Client.Id} - {ReceivedInfo}");
         }
 
-        public static void MovePressed(object? sender, MessageEventArgs e)
+        public static void UserMovePressed(object? sender, MessageEventArgs e)
         {
             if (sender is not Hub Hub) return;
-            if (e.handler is not Player Client) return;
-            if (e.message is not Messages.Player.PlayerMovePressed Move1) return;
+            if (e.handler is not User Client) return;
+            if (e.message is not PlayerMovePressed Move1) return;
         }
     }
 }

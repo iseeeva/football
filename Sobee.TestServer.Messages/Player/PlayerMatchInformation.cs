@@ -2,6 +2,7 @@
 using System.Numerics;
 using System.Text;
 using Sobee.Messaging;
+using Sobee.Serialization;
 using Sobee.TestServer.Messages.Match;
 
 namespace Sobee.TestServer.Messages.Player
@@ -9,8 +10,8 @@ namespace Sobee.TestServer.Messages.Player
     [GAttribute0(10483)]
     public class PlayerMatchInformation : Message
     {
-        public int MatchID { get; set; }
-        public int PlayerID { get; set; }
+        public Guid MatchId { get; set; }
+        public Guid PlayerId { get; set; }
         public string PlayerName { get; set; }
         public string UserName { get; set; } = string.Empty;
         public int Stamina { get; set; }
@@ -36,8 +37,9 @@ namespace Sobee.TestServer.Messages.Player
 
         public PlayerMatchInformation()
         {
-            MatchID = -1;
-            PlayerID = -1;
+            // TODO: Remove hardcoded values when possible.
+            //MatchId = -1;
+            //PlayerId = -1;
             PlayerName = string.Empty;
             UserName = string.Empty;
             Stamina = 120;
@@ -63,16 +65,16 @@ namespace Sobee.TestServer.Messages.Player
         }
 
         public PlayerMatchInformation(
-            int matchId,
-            int playerId, string playerName, PlayerAppearance appearance,
+            Guid matchId,
+            Guid playerId, string playerName, PlayerAppearance appearance,
             StadiumSitting stadiumSitting, sbyte squadNumber,
             Vector2 position, Vector3 velocity, Vector2 direction,
             MatchCard cardStatus,
             string xmlCode
             )
         {
-            MatchID = matchId;
-            PlayerID = playerId;
+            MatchId = matchId;
+            PlayerId = playerId;
             PlayerName = playerName;
             Appearance = appearance;
             StadiumSitting = stadiumSitting;
@@ -86,8 +88,8 @@ namespace Sobee.TestServer.Messages.Player
 
         public PlayerMatchInformation(BinaryReader reader)
         {
-            MatchID = reader.method_9();
-            PlayerID = reader.method_9();
+            MatchId = GuidConverter.ConvertFromInt(reader.method_9());
+            PlayerId = GuidConverter.ConvertFromInt(reader.method_9());
             PlayerName = reader.method_14();
             Stamina = reader.method_9();
             StadiumSitting = (StadiumSitting)reader.method_9();
@@ -132,8 +134,8 @@ namespace Sobee.TestServer.Messages.Player
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
-            writer.method_9(MatchID);
-            writer.method_9(PlayerID);
+            writer.method_9(GuidConverter.ConvertToInt(MatchId));
+            writer.method_9(GuidConverter.ConvertToInt(PlayerId));
             writer.method_14(PlayerName);
             writer.method_9(Stamina);
             writer.method_9((int)StadiumSitting);
@@ -181,7 +183,7 @@ namespace Sobee.TestServer.Messages.Player
 
         public override string ToString()
         {
-            return $"MatchID:{MatchID} PlayerID:{PlayerID} PlayerName:{PlayerName} UserName:{UserName} " +
+            return $"MatchID:{MatchId} PlayerID:{PlayerId} PlayerName:{PlayerName} UserName:{UserName} " +
                    $"StdSit:{StadiumSitting} SquadNumber:{SquadNumber} CardStatus:{CardStatus} ";
         }
     }

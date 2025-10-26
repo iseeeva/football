@@ -20,8 +20,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sobee.Tasks", "Sobee.Tasks\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sobee.TestServer.Messages", "Sobee.TestServer.Messages\Sobee.TestServer.Messages.csproj", "{F8D68E0F-2333-42EB-50D5-E5F586434167}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sobee.TestServer.Common", "Sobee.TestServer.Common\Sobee.TestServer.Common.csproj", "{FA3DE961-4E52-454C-AEC1-F3236FBA015A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sobee.TestServer", "Sobee.TestServer\Sobee.TestServer.csproj", "{DC31DBBB-CE20-4B32-A4F9-EAD6271D5A23}"
 EndProject
 Global
@@ -58,10 +56,6 @@ Global
 		{F8D68E0F-2333-42EB-50D5-E5F586434167}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8D68E0F-2333-42EB-50D5-E5F586434167}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8D68E0F-2333-42EB-50D5-E5F586434167}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FA3DE961-4E52-454C-AEC1-F3236FBA015A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FA3DE961-4E52-454C-AEC1-F3236FBA015A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FA3DE961-4E52-454C-AEC1-F3236FBA015A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FA3DE961-4E52-454C-AEC1-F3236FBA015A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DC31DBBB-CE20-4B32-A4F9-EAD6271D5A23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DC31DBBB-CE20-4B32-A4F9-EAD6271D5A23}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC31DBBB-CE20-4B32-A4F9-EAD6271D5A23}.Release|Any CPU.ActiveCfg = Release|Any CPU

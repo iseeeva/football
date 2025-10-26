@@ -9,13 +9,24 @@ namespace Sobee
 
         private static async Task Main(string[] args)
         {
-            //Console.WriteLine("Press Ctrl+C to stop the process.\n");
+            // PLAN: Planlanan islem semasi asagidaki gibidir.
+            // ====================================================
+
+            // AuthRoom: Auth bekleyenlerin bulundugu oda
+            // => Ne yapacak?: Gelen kullanicinin auth bilgisini kontrol edip dogruysa MatchRoom'a yonlendirecek.
+            // ==================================
+            // Eventler:
+            // => AuthInformation: Gelen auth bilgisini kontrol eder. eger dogruysa istenen MatchRoom.AuthInformation'a gonderir.
+
+            // MatchRoom: Mac odasi
+            // => Ne yapacak?: Gelen kullaniciyi kontrol edip maca baglayacak.
+            // ==================================
+            // => AuthInformation (auth bilgisini AuthRoom.AuthInformation'dan alir. yeni kullanici icin odayi kontrol eder.)
 
             Logging.Configure();
             _log.Information("Logging started.");
 
             TestServer.Hub Hub = new(3000);
-            Hub.Start();
 
             Console.CancelKeyPress += (sender, eventArgs) =>
             {

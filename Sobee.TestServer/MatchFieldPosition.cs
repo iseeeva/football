@@ -3,6 +3,7 @@ using Serilog;
 using Sobee.Common;
 using Sobee.Serialization.GameServer;
 using Sobee.TestServer.Messages;
+using Sobee.TestServer.Messages.Player;
 
 namespace Sobee.TestServer
 {
@@ -49,36 +50,36 @@ namespace Sobee.TestServer
             _ => 0f
         };
 
-        public static void ChangePosition(Room room, MatchFieldPositioning fieldType)
-        {
-            ArgumentNullException.ThrowIfNull(room);
+        //public static void ChangePosition(Room room, MatchFieldPositioning fieldType)
+        //{
+        //    ArgumentNullException.ThrowIfNull(room);
 
-            var positioning = CreatePosition(room.Information.ScenarioInfo.ScenarioType, fieldType);
+        //    var positioning = CreatePosition(room.Information.ScenarioInfo.ScenarioType, fieldType);
 
-            if (positioning is null)
-            {
-                _log.Error("Room [{RoomId}]: Positioning {FieldType} not found.", room.Id, fieldType);
-                return;
-            }
+        //    if (positioning is null)
+        //    {
+        //        _log.Error("Room [{RoomId}]: Positioning {FieldType} not found.", room.Id, fieldType);
+        //        return;
+        //    }
 
-            room.Information.MatchState = Messages.Match.MatchStateType.Positioning;
-            room.Information.FieldPositioning = fieldType;
+        //    room.Information.MatchState = Messages.Match.MatchStateType.Positioning;
+        //    room.Information.FieldPositioning = fieldType;
 
-            ApplyTeamPositions(room.Information.HomeTeam, positioning.Home);
-            ApplyTeamPositions(room.Information.AwayTeam, positioning.Away);
+        //    ApplyTeamPositions(room.Information.HomeTeam, positioning.Home);
+        //    ApplyTeamPositions(room.Information.AwayTeam, positioning.Away);
 
-            room.Players.Broadcast(
-                new PositioningCutscene(
-                    fieldType,
-                    positioning.Home.Positions, positioning.Away.Positions,
-                    positioning.Home.Directions, positioning.Away.Directions,
-                    positioning.Home.Animations, positioning.Away.Animations
-                )
-            );
-            _log.Debug($"Room {room.Id} positioned for {fieldType}.");
-        }
+        //    room.Players.Broadcast(
+        //        new PositioningCutscene(
+        //            fieldType,
+        //            positioning.Home.Positions, positioning.Away.Positions,
+        //            positioning.Home.Directions, positioning.Away.Directions,
+        //            positioning.Home.Animations, positioning.Away.Animations
+        //        )
+        //    );
+        //    _log.Debug($"Room {room.Id} positioned for {fieldType}.");
+        //}
 
-        private static void ApplyTeamPositions(List<Messages.Player.PlayerMatchInformation> team, Team teamPositions)
+        private static void ApplyTeamPositions(List<PlayerMatchInformation> team, Team teamPositions)
         {
             foreach (var player in team)
             {

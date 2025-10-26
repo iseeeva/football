@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
 using System.Runtime.Serialization;
 using Serilog;
 using Sobee.Common;
@@ -6,17 +7,16 @@ using Sobee.Network;
 
 namespace Sobee.Messaging
 {
-    // TODO: Dispose pattern
     public class MessageDispatch : Component
     {
         private static readonly ILogger _log = Logging.Get<MessageDispatch>();
         private bool _isDisposed;
 
-        public SessionType SessionType { get; set; }
+        public SessionType CommunicationType { get; protected set; }
 
         private readonly SortedDictionary<ushort, ConstructorInfo> _messageConstructorsById = [];
         private readonly Dictionary<Type, ushort> _messageTypeToId = [];
-        private readonly Dictionary<ushort, MessageDelegate> _messageIdToEvent = [];
+        private readonly ConcurrentDictionary<int, Delegate> _messageIdToEvent = new();
         private readonly Dictionary<Type, int> _messageTypeToIndex = [];
         private readonly HashSet<ushort> _usedMessageIds = [];
 
@@ -105,16 +105,21 @@ namespace Sobee.Messaging
             }
         }
 
-        public void RegisterMessageEvent(Type messageType, MessageDelegate messageEvent)
+        public void RegisterMessageEvent<T>(MessageDelegate<T> messageEvent) where T : Message
         {
-            var id = GetMessageTypeId(messageType);
+            ArgumentNullException.ThrowIfNull(messageEvent);
 
-            if (_messageIdToEvent.ContainsKey(id))
-            {
-                _log.Warning("Message event already registered for ID {Id}, overwriting...", id);
-            }
+            var id = GetMessageTypeId(typeof(T));
 
-            _messageIdToEvent[id] = messageEvent;
+            _messageIdToEvent.AddOrUpdate(
+                id,
+                _ => messageEvent,
+                (_, existing) =>
+                {
+                    _log.Warning("Message event already registered for ID {Id}, combining delegates...", id);
+                    return Delegate.Combine(existing, messageEvent);
+                }
+            );
         }
 
         public void RegisterMessageType(ushort messageId, Type type)
@@ -177,6 +182,7 @@ namespace Sobee.Messaging
         public void DispatchToMessageEvent(MessageEventArgs args)
         {
             var id = GetMessageTypeId(args.message.GetType());
+
             if (!_messageIdToEvent.TryGetValue(id, out var eventDelegate))
             {
                 throw new SerializationException($"ClassID: {id} - Not registered.");
@@ -184,15 +190,20 @@ namespace Sobee.Messaging
 
             try
             {
-                eventDelegate.Invoke(args.handler, args.message);
-                _log.Information("Invoked event for {Type} (ID: {Id})", args.message.GetType().FullName, id);
+                eventDelegate.DynamicInvoke(args.handler, args.message);
+
+                _log.Information(
+                    "Invoked event for {Type} (ID: {Id})",
+                    args.message.GetType().FullName, id
+                );
             }
             catch (Exception ex)
             {
                 _log.Error(ex, "Event invocation failed for ClassID: {Id}", id);
-                throw new SerializationException($"ClassID: {id} - Event failed.");
+                throw new SerializationException($"ClassID: {id} - Event failed.", ex);
             }
         }
+
 
         protected override void Dispose(bool disposing)
         {

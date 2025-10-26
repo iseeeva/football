@@ -2,42 +2,32 @@
 using Sobee.Common;
 using Sobee.Messaging;
 using Sobee.Network;
-using Sobee.TestServer.Common;
 
 namespace Sobee.TestServer
 {
-    public class Room : Component
+    public class Room<T> : Communication where T : Session
     {
-        private static readonly ILogger _log = Logging.Get<Room>();
+        private static readonly ILogger _log = Logging.Get<Room<T>>();
         private bool _isDisposed;
 
-        private RoomCommunication Communication { get; set; } = new RoomCommunication();
-
-        public readonly PlayerManager Players;
-        public Messages.Match.MatchInformation Information = new Messages.Match.MatchInformation();
-
-        public readonly static int MAX_IDLE_TIME = 60 * 1000;
+        protected readonly SessionManager<T> _sessions;
 
         public Room() : base()
         {
-            Communication.SessionType = SessionType.Game;
-            Players = new PlayerManager(Communication);
-            _log.Debug("{id} initialized.", Id);
-        }
+            _log.Debug("{id} initializing.", Id);
 
-        public void Broadcast(Message message)
-        {
-            Players.Broadcast(message);
+            CommunicationType = SessionType.Game;
+            _sessions = new SessionManager<T>(this);
+
+            _log.Debug("{id} initialized.", Id);
         }
 
         public override async Task Update(double delta)
         {
-            if (Players != null)
+            if (_sessions != null)
             {
-                await Players.Update(delta);
+                await _sessions.Update(delta);
             }
-
-            await base.Update(delta);
         }
 
         protected override void Dispose(bool disposing)
@@ -49,7 +39,7 @@ namespace Sobee.TestServer
                 if (disposing)
                 {
                     _log.Debug("{id} disposing.", Id);
-                    Players.Dispose();
+                    _sessions.Dispose();
                     _log.Debug("{id} disposed.", Id);
                 }
             }

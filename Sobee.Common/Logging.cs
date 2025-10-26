@@ -21,7 +21,7 @@ namespace Sobee.Common
         public static ILogger Get<T>()
         {
             return Log.ForContext<T>()
-                      .ForContext("Prefix", typeof(T).FullName ?? "Unknown");
+                      .ForContext("Prefix", typeof(T).Name ?? "Unknown");
         }
     }
 }

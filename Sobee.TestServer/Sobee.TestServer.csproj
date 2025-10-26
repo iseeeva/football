@@ -10,7 +10,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Sobee.Messaging\Sobee.Messaging.csproj" />
     <ProjectReference Include="..\Sobee.Network\Sobee.Network.csproj" />
-    <ProjectReference Include="..\Sobee.TestServer.Common\Sobee.TestServer.Common.csproj" />
     <ProjectReference Include="..\Sobee.TestServer.Messages\Sobee.TestServer.Messages.csproj" />
   </ItemGroup>
 

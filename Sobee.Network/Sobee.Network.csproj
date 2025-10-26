@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sobee.Common\Sobee.Common.csproj" />
+    <ProjectReference Include="..\Sobee.Serialization\Sobee.Serialization.csproj" />
     <ProjectReference Include="..\Sobee.Tasks\Sobee.Tasks.csproj" />
   </ItemGroup>
 

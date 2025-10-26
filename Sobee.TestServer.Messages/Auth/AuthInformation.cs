@@ -1,10 +1,10 @@
 ﻿using Sobee.Messaging;
 using Sobee.TestServer.Messages.Match;
 
-namespace Sobee.TestServer.Messages.Player
+namespace Sobee.TestServer.Messages.Auth
 {
     [GAttribute0(29475)]
-    public sealed class PlayerInformation : Message
+    public sealed class AuthInformation : Message
     {
         public Version Version { get; }
         public long Unknown { get; }
@@ -18,7 +18,7 @@ namespace Sobee.TestServer.Messages.Player
         public string Session { get; }
         public bool Autorun { get; }
 
-        public PlayerInformation(BinaryReader reader) : base(reader)
+        public AuthInformation(BinaryReader reader) : base(reader)
         {
             Version = reader.method_24();
             Unknown = reader.method_10();
@@ -33,7 +33,7 @@ namespace Sobee.TestServer.Messages.Player
             Autorun = reader.method_1();
         }
 
-        public PlayerInformation(
+        public AuthInformation(
             Version version,
             long unknown,
             string password,
@@ -71,7 +71,7 @@ namespace Sobee.TestServer.Messages.Player
 
         public override string ToString()
         {
-            return $"Ver: {Version} MP: {Unknown} Pass: {Password} EntryID: {Entry.EntryId} WEB: {Session} Auto: {Autorun}";
+            return $"Ver: {Version} MP: {Unknown} Pass: {Password} EntryID: {Entry.EntryNumber} WEB: {Session} Auto: {Autorun}";
         }
     }
 }

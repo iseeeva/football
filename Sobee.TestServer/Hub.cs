@@ -2,23 +2,27 @@
 using System.Net;
 using System.Net.Sockets;
 using Sobee.Common;
+using Sobee.Network;
+using Sobee.TestServer.Auth;
+using Sobee.TestServer.Match;
 
 namespace Sobee.TestServer
 {
     public class Hub : Component
     {
-        public readonly int Port;
+        private static readonly Serilog.ILogger _log = Logging.Get<Hub>();
+        private bool _isDisposed;
 
         private readonly CancellationTokenSource _cancellation = new();
         private readonly Stopwatch _stopwatch = new();
 
+        public readonly int Port;
         private readonly Socket _socket;
-        private readonly AuthManager _authManager = new();
+
+        private readonly AuthRoom _authRoom; // Authentication room
+        public readonly MatchRoomManager MatchRoomManager = new(); // Match rooms
 
         private const double TargetFrameTimeMilliseconds = 1000.0 / 100.0;
-
-        private static readonly Serilog.ILogger _log = Logging.Get<Hub>();
-        private bool _isDisposed;
 
         public Hub(int port)
         {
@@ -27,23 +31,14 @@ namespace Sobee.TestServer
             else
                 throw new ArgumentOutOfRangeException(nameof(port), $"{nameof(port)} ({port}) must be in the valid port range.");
 
-            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        }
-
-        public void Start()
-        {
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(Hub));
-            }
-
             try
             {
                 _log.Information("{id} initializing...", Id);
-
+                _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 _socket.Bind(new IPEndPoint(IPAddress.Loopback, Port));
                 _socket.Listen(100);
 
+                _authRoom = new AuthRoom(this);
                 _ = Task.Run(() => AcceptClientsAsync(_cancellation.Token), _cancellation.Token);
                 _ = Task.Run(() => TickAsync(_cancellation.Token), _cancellation.Token);
 
@@ -65,8 +60,9 @@ namespace Sobee.TestServer
                 try
                 {
                     Socket clientSocket = await _socket.AcceptAsync(cancellationToken);
+
                     _log.Information("New client connected: {remoteEp}", clientSocket.RemoteEndPoint);
-                    _authManager.Add(clientSocket);
+                    _authRoom.TryAddUser(new SocketWrapper(clientSocket));
                 }
                 catch (OperationCanceledException)
                 {
@@ -122,7 +118,8 @@ namespace Sobee.TestServer
 
         public override async Task Update(double delta)
         {
-            await _authManager.Update(delta);
+            await _authRoom.Update(delta);
+            await MatchRoomManager.Update(delta);
         }
 
         public void Stop()
@@ -149,8 +146,7 @@ namespace Sobee.TestServer
                         Stop();
 
                         _socket.Dispose();
-
-                        _authManager.Dispose();
+                        _authRoom.Dispose();
                         _cancellation.Dispose();
                     }
                     catch (Exception ex)
