@@ -7,65 +7,84 @@ namespace Sobee.TestServer.Messages
     [GAttribute0(30461)]
     public class PositioningCutscene : Message
     {
+        private static readonly int MAX_TEAM_SIZE = ScenarioInfo.MAX_TEAM_SIZE;
 
         public MatchFieldPositioning PositioningType { get; private set; }
 
-        public List<Vector2> HomePositions { get; } = new List<Vector2>(ScenarioInfo.MAX_TEAM_SIZE);
-        public List<Vector2> AwayPositions { get; } = new List<Vector2>(ScenarioInfo.MAX_TEAM_SIZE);
+        public Vector2[] HomePositions { get; } = new Vector2[MAX_TEAM_SIZE];
+        public Vector2[] AwayPositions { get; } = new Vector2[MAX_TEAM_SIZE];
 
-        public List<float> HomeDirections { get; } = new List<float>(ScenarioInfo.MAX_TEAM_SIZE);
-        public List<float> AwayDirections { get; } = new List<float>(ScenarioInfo.MAX_TEAM_SIZE);
+        public float[] HomeDirections { get; } = new float[MAX_TEAM_SIZE];
+        public float[] AwayDirections { get; } = new float[MAX_TEAM_SIZE];
 
-        public List<AnimationType> HomeAnimations { get; } = new List<AnimationType>(ScenarioInfo.MAX_TEAM_SIZE);
-        public List<AnimationType> AwayAnimations { get; } = new List<AnimationType>(ScenarioInfo.MAX_TEAM_SIZE);
+        public AnimationType[] HomeAnimations { get; } = new AnimationType[MAX_TEAM_SIZE];
+        public AnimationType[] AwayAnimations { get; } = new AnimationType[MAX_TEAM_SIZE];
 
+        // ---------------------------------------------------------
+        // BINARY READER CONSTRUCTOR
+        // ---------------------------------------------------------
         public PositioningCutscene(BinaryReader reader) : base(reader)
         {
             PositioningType = (MatchFieldPositioning)reader.method_9();
 
-            for (int i = 0; i < HomePositions.Capacity; i++)
-                HomePositions.Add(reader.method_19());
+            for (int i = 0; i < MAX_TEAM_SIZE; i++)
+                HomePositions[i] = reader.method_19();
 
-            for (int i = 0; i < AwayPositions.Capacity; i++)
-                AwayPositions.Add(reader.method_19());
+            for (int i = 0; i < MAX_TEAM_SIZE; i++)
+                AwayPositions[i] = reader.method_19();
 
-            for (int i = 0; i < HomeDirections.Capacity; i++)
-                HomeDirections.Add(reader.method_12());
+            for (int i = 0; i < MAX_TEAM_SIZE; i++)
+                HomeDirections[i] = reader.method_12();
 
-            for (int i = 0; i < AwayDirections.Capacity; i++)
-                AwayDirections.Add(reader.method_12());
+            for (int i = 0; i < MAX_TEAM_SIZE; i++)
+                AwayDirections[i] = reader.method_12();
 
-            for (int i = 0; i < HomeAnimations.Capacity; i++)
-                HomeAnimations.Add((AnimationType)reader.method_15());
+            for (int i = 0; i < MAX_TEAM_SIZE; i++)
+                HomeAnimations[i] = (AnimationType)reader.method_15();
 
-            for (int i = 0; i < AwayAnimations.Capacity; i++)
-                AwayAnimations.Add((AnimationType)reader.method_15());
+            for (int i = 0; i < MAX_TEAM_SIZE; i++)
+                AwayAnimations[i] = (AnimationType)reader.method_15();
         }
 
+        // ---------------------------------------------------------
+        // CUSTOM CONSTRUCTOR (ARRAYS ONLY)
+        // ---------------------------------------------------------
         public PositioningCutscene(
             MatchFieldPositioning type,
-            IEnumerable<Vector2> homePositions,
-            IEnumerable<Vector2> awayPositions,
-            IEnumerable<Vector2> homeDirectionVectors,
-            IEnumerable<Vector2> awayDirectionVectors,
-            IEnumerable<AnimationType> homeAnimations,
-            IEnumerable<AnimationType> awayAnimations)
+            Vector2[] homePositions,
+            Vector2[] awayPositions,
+            Vector2[] homeDirectionVectors,
+            Vector2[] awayDirectionVectors,
+            AnimationType[] homeAnimations,
+            AnimationType[] awayAnimations)
         {
+            if (homePositions.Length != MAX_TEAM_SIZE ||
+                awayPositions.Length != MAX_TEAM_SIZE ||
+                homeDirectionVectors.Length != MAX_TEAM_SIZE ||
+                awayDirectionVectors.Length != MAX_TEAM_SIZE ||
+                homeAnimations.Length != MAX_TEAM_SIZE ||
+                awayAnimations.Length != MAX_TEAM_SIZE)
+            {
+                throw new ArgumentException($"All arrays must have {MAX_TEAM_SIZE} elements.");
+            }
+
             PositioningType = type;
 
-            HomePositions.AddRange(homePositions);
-            AwayPositions.AddRange(awayPositions);
+            Array.Copy(homePositions, HomePositions, MAX_TEAM_SIZE);
+            Array.Copy(awayPositions, AwayPositions, MAX_TEAM_SIZE);
+            Array.Copy(homeAnimations, HomeAnimations, MAX_TEAM_SIZE);
+            Array.Copy(awayAnimations, AwayAnimations, MAX_TEAM_SIZE);
 
-            HomeAnimations.AddRange(homeAnimations);
-            AwayAnimations.AddRange(awayAnimations);
+            for (int i = 0; i < MAX_TEAM_SIZE; i++)
+                HomeDirections[i] = GClass97.smethod_15(homeDirectionVectors[i].Y, homeDirectionVectors[i].X);
 
-            foreach (var vec in homeDirectionVectors)
-                HomeDirections.Add(GClass97.smethod_15(vec.Y, vec.X));
-
-            foreach (var vec in awayDirectionVectors)
-                AwayDirections.Add(GClass97.smethod_15(vec.Y, vec.X));
+            for (int i = 0; i < MAX_TEAM_SIZE; i++)
+                AwayDirections[i] = GClass97.smethod_15(awayDirectionVectors[i].Y, awayDirectionVectors[i].X);
         }
 
+        // ---------------------------------------------------------
+        // SERIALIZATION
+        // ---------------------------------------------------------
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
@@ -91,19 +110,24 @@ namespace Sobee.TestServer.Messages
                 writer.method_15((ushort)anim);
         }
 
-        public List<Vector2> GetHomeDirections()
+        // ---------------------------------------------------------
+        // GET DIRECTION VECTORS
+        // ---------------------------------------------------------
+        public Vector2[] GetHomeDirectionVectors()
         {
-            var result = new List<Vector2>(HomeDirections.Count);
-            foreach (var angle in HomeDirections)
-                result.Add(new Vector2(GClass97.smethod_11(angle), GClass97.smethod_10(angle)));
+            var result = new Vector2[MAX_TEAM_SIZE];
+            for (int i = 0; i < MAX_TEAM_SIZE; i++)
+                result[i] = new Vector2(GClass97.smethod_11(HomeDirections[i]),
+                                        GClass97.smethod_10(HomeDirections[i]));
             return result;
         }
 
-        public List<Vector2> GetAwayDirections()
+        public Vector2[] GetAwayDirectionVectors()
         {
-            var result = new List<Vector2>(AwayDirections.Count);
-            foreach (var angle in AwayDirections)
-                result.Add(new Vector2(GClass97.smethod_11(angle), GClass97.smethod_10(angle)));
+            var result = new Vector2[MAX_TEAM_SIZE];
+            for (int i = 0; i < MAX_TEAM_SIZE; i++)
+                result[i] = new Vector2(GClass97.smethod_11(AwayDirections[i]),
+                                        GClass97.smethod_10(AwayDirections[i]));
             return result;
         }
 

@@ -20,7 +20,7 @@ namespace Sobee.TestServer
         public Communication() : base()
         {
             RegisterMessagesFromAssemblyName("Sobee.TestServer.Messages");
-            RegisterMessageEvent<Messages.Latency>(OnReceivedMessage);
+            RegisterMessageEvent<Messages.LatencyMessage>(OnReceivedMessage);
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Sobee.TestServer
                 if (map.TryGetValue(typeof(T), out var handler))
                 {
                     handler.Invoke(this, new MessageEventArgs(sender, message));
-                    _log.Debug("{commId}, invoked session handler ({type}) for session {id}.", Id, typeof(T).Name, sender.Id);
+                    //_log.Debug("{commId}, invoked session handler ({type}) for session {id}.", Id, typeof(T).Name, sender.Id);
                 }
             }
         }

@@ -43,6 +43,6 @@ namespace Sobee.TestServer.Messages.Match
 
         public int ToSquad(bool splited = false) => ToSquad(EntryNumber, splited);
 
-        public static bool InRange(int value) => value >= 1 && value <= 22;
+        public static bool InRange(int entryId) => entryId >= 1 && entryId <= 22;
     }
 }

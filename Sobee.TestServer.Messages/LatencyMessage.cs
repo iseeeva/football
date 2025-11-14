@@ -4,7 +4,7 @@ namespace Sobee.TestServer.Messages
 {
     // Token: 0x02000007 RID: 7
     [GAttribute0(2)]
-    public class Latency : Message
+    public class LatencyMessage : Message
     {
         // Token: 0x06000061 RID: 97 RVA: 0x000025C2 File Offset: 0x000007C2
         public float method_0()
@@ -19,13 +19,13 @@ namespace Sobee.TestServer.Messages
         }
 
         // Token: 0x06000063 RID: 99 RVA: 0x000025CA File Offset: 0x000007CA
-        public Latency(float float_1)
+        public LatencyMessage(float float_1)
         {
             this.float_0 = float_1;
         }
 
         // Token: 0x06000064 RID: 100 RVA: 0x000025D9 File Offset: 0x000007D9
-        public Latency(BinaryReader reader) : base(reader)
+        public LatencyMessage(BinaryReader reader) : base(reader)
         {
             this.float_0 = reader.method_12();
         }

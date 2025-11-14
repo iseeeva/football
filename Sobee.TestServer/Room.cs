@@ -15,19 +15,17 @@ namespace Sobee.TestServer
         public Room() : base()
         {
             _log.Debug("{id} initializing.", Id);
-
             CommunicationType = SessionType.Game;
-            _sessions = new SessionManager<T>(this);
-
+            _sessions = CreateSessionManager();
             _log.Debug("{id} initialized.", Id);
         }
 
+        protected virtual SessionManager<T> CreateSessionManager()
+            => new(this);
+
         public override async Task Update(double delta)
         {
-            if (_sessions != null)
-            {
-                await _sessions.Update(delta);
-            }
+            await _sessions.Update(delta);
         }
 
         protected override void Dispose(bool disposing)

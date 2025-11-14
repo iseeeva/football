@@ -1,7 +1,10 @@
 ﻿using Serilog;
 using Sobee.Common;
+using Sobee.Messaging;
 using Sobee.Network;
+using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Auth;
+using Sobee.TestServer.Messages.Chat;
 
 namespace Sobee.TestServer.Match
 {
@@ -12,6 +15,10 @@ namespace Sobee.TestServer.Match
 
         public AuthInformation? AuthInformation;
 
+        // Client, mac ekranina geldiginda true olacak.
+        // Maci etkileyen baska birsey yapilmadigi surece true kalacak.
+        public bool IsReadyForMatch;
+
         public MatchPlayer(
             AuthInformation authInformation,
             SocketWrapper userSocket,
@@ -21,7 +28,9 @@ namespace Sobee.TestServer.Match
             SessionType = SessionType.User;
             AuthInformation = authInformation;
 
-            //userComm.AddSessionHandler<Messages.Auth.AuthInformation>(this, new EventHandler<MessageEventArgs>(GameEvents.TestEvent.SessionTest));
+            communication.AddSessionHandler<HeartbeatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchPlayerEvent.HeartbeatMessageReceived));
+            communication.AddSessionHandler<ChatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchPlayerEvent.ChatMessageReceived));
+
             _log.Debug("{id} initialized.", Id);
         }
 

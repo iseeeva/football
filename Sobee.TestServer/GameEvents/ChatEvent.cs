@@ -14,7 +14,7 @@ namespace Sobee.TestServer.GameEvents
             if (e.handler is not User Client) return;
             if (e.message is not Messages.Chat.ChatMessage Message) return;
 
-            _log.Information($"{Client.Id} - {Message.Text}");
+            _log.Information($"{Client.Id} - {Message.MessageText}");
         }
     }
 }

@@ -1,10 +1,11 @@
 ﻿using Serilog;
 using Sobee.Common;
+using Sobee.Messaging;
 using Sobee.Network;
 
 namespace Sobee.TestServer
 {
-    public class User : Client
+    public class User : Session
     {
         private static readonly ILogger _log = Logging.Get<User>();
         private bool _isDisposed;
@@ -13,6 +14,11 @@ namespace Sobee.TestServer
         {
             SessionType = SessionType.User;
             _log.Debug("{id} initialized.", Id);
+        }
+
+        public override Task Update(double delta)
+        {
+            return base.Update(delta);
         }
 
         protected override void Dispose(bool disposing)

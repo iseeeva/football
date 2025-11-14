@@ -4,27 +4,27 @@ namespace Sobee.TestServer.Messages.Chat
     [GAttribute0(21144)]
     public class ChatMessage : ChatBase
     {
-        public string Text { get; }
+        public string MessageText { get; }
 
-        public ChatMessage(int squad, string text) : base(squad)
+        public ChatMessage(Guid teamId, string text) : base(teamId)
         {
-            Text = text;
+            MessageText = text;
         }
 
         public ChatMessage(BinaryReader reader) : base(reader)
         {
-            Text = reader.method_14();
+            MessageText = reader.method_14();
         }
 
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
-            writer.method_14(Text);
+            writer.method_14(MessageText);
         }
 
         public override string ToString()
         {
-            return $"{SquadNumber} - {Text}";
+            return $"{TeamId} - {MessageText}";
         }
     }
 }

@@ -1,7 +1,10 @@
 ﻿using System.ComponentModel;
 using System.IO.Compression;
 using System.Text;
+using Serilog;
+using Sobee.Common;
 using Sobee.Messaging;
+using Sobee.TestServer.Messages.Match;
 
 namespace Sobee.TestServer.Messages
 {
@@ -10,6 +13,8 @@ namespace Sobee.TestServer.Messages
     [GAttribute0(26929)]
     public class ScenarioInfo : Message
     {
+        private static readonly ILogger _log = Logging.Get<ScenarioInfo>();
+
         // Token: 0x06000363 RID: 867 RVA: 0x00004D46 File Offset: 0x00002F46
         public ScenarioType method_0()
         {
@@ -37,16 +42,20 @@ namespace Sobee.TestServer.Messages
         public ScenarioInfo()
         {
             // TODO: Remove hardcoded values when possible
+            ScenarioType = ScenarioType.ScenarioMatch1v1;
+            var (homeTeamSize, awayTeamSize) = GetScenarioTeamCapacity(ScenarioType);
+
             team1Color = 2;
             team1Name = "Teams.Home.Name.Full";
             team1ShortName = "Teams.Home.Name.Short";
-            team1Size = MAX_TEAM_SIZE;
+            team1Size = homeTeamSize;
+
             team2Color = 3;
             team2Name = "Teams.Away.Name.Full";
             team2ShortName = "Teams.Away.Name.Short";
-            team2Size = MAX_TEAM_SIZE;
+            team2Size = awayTeamSize;
+
             xmlCode = "<XMLData><Script></Script></XMLData>";
-            ScenarioType = ScenarioType.ScenarioMatch;
         }
 
         // Token: 0x06000369 RID: 873 RVA: 0x0000D69C File Offset: 0x0000B89C
@@ -164,7 +173,59 @@ namespace Sobee.TestServer.Messages
             gclass316_0.method_14(xmlCode);
         }
 
-        public bool IsTeamMatch()
+        public (int homeTeamSize, int awayTeamSize) GetScenarioTeamCapacity()
+        {
+            return GetScenarioTeamCapacity(ScenarioType);
+        }
+
+        public static (int homeTeamSize, int awayTeamSize) GetScenarioTeamCapacity(ScenarioType scenarioType)
+        {
+            return scenarioType switch
+            {
+                ScenarioType.ScenarioMatch1v0 => (1, 0),
+                ScenarioType.ScenarioMatch1v1 => (1, 1),
+                ScenarioType.ScenarioMatch2v2 => (2, 2),
+                ScenarioType.ScenarioMatch3v3 => (3, 3),
+                ScenarioType.ScenarioMatch6v6 => (6, 6),
+                ScenarioType.ScenarioMatch => (11, 11),
+                _ => (1, 0),
+            };
+        }
+
+        public StadiumSitting GetScenarioSittingFromEntry(int entryId)
+        {
+            return GetScenarioSittingFromEntry(ScenarioType, entryId);
+        }
+
+        public static StadiumSitting GetScenarioSittingFromEntry(ScenarioType scenarioType, int entryId)
+        {
+            if (!MatchEntry.InRange(entryId))
+            {
+                _log.Warning("[GetScenarioSittingFromEntry] entryId not in MatchEntry range: {EntryId}", entryId);
+                return StadiumSitting.Invalid;
+            }
+
+            var (homeTeamSize, awayTeamSize) = GetScenarioTeamCapacity(scenarioType);
+
+            if (entryId <= MAX_TEAM_SIZE) // Home
+            {
+                return entryId <= homeTeamSize
+                    ? StadiumSitting.HomePlayer
+                    : StadiumSitting.HomeSpectator;
+            }
+            else if (entryId <= MAX_TEAM_SIZE * 2) // Away
+            {
+                return entryId - MAX_TEAM_SIZE <= awayTeamSize
+                    ? StadiumSitting.AwayPlayer
+                    : StadiumSitting.AwaySpectator;
+            }
+            else
+            {
+                return StadiumSitting.Invalid;
+            }
+        }
+
+        public bool IsMatchScenario()
         {
             return ScenarioType == ScenarioType.ScenarioMatch ||
                    ScenarioType == ScenarioType.ScenarioMatch1v0 ||
@@ -174,16 +235,10 @@ namespace Sobee.TestServer.Messages
                    ScenarioType == ScenarioType.ScenarioMatch6v6;
         }
 
-        public bool IsSpecialScenario() => !IsTeamMatch();
+        public bool IsSpecialScenario() => !IsMatchScenario();
 
         public bool IsMatch1v1() =>
             ScenarioType == ScenarioType.ScenarioMatch1v0 || ScenarioType == ScenarioType.ScenarioMatch1v1;
-
-        public bool IsMatch() =>
-            ScenarioType == ScenarioType.ScenarioMatch1v0 ||
-            ScenarioType == ScenarioType.ScenarioMatch1v1 ||
-            ScenarioType == ScenarioType.ScenarioMatch2v2 ||
-            ScenarioType == ScenarioType.ScenarioMatch3v3;
 
         public static readonly int MAX_TEAM_SIZE = 11;
 

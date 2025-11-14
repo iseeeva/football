@@ -26,7 +26,7 @@ namespace Sobee.TestServer.Messages.Match
         public ScenarioInfo ScenarioInfo { get; private set; }
         public GClass171 Class171 { get; private set; }
         public GClass167 Class167 { get; private set; }
-        public GClass156 Class156 { get; private set; }
+        public TeamIdInfo TeamIdInfo { get; private set; }
         public List<GClass163> List163 { get; private set; }
         public List<GClass172> List172 { get; private set; }
 
@@ -58,7 +58,7 @@ namespace Sobee.TestServer.Messages.Match
             ScenarioInfo = new ScenarioInfo();
             Class171 = new GClass171();
             Class167 = new GClass167();
-            Class156 = new GClass156();
+            TeamIdInfo = new TeamIdInfo();
             List163 = new List<GClass163>();
             List172 = new List<GClass172>();
 
@@ -124,7 +124,7 @@ namespace Sobee.TestServer.Messages.Match
             {
                 SomeStrings2.Add(gclass315_0.method_14());
             }
-            Class156 = (GClass156)gclass315_0.method_25();
+            TeamIdInfo = (TeamIdInfo)gclass315_0.method_25();
             num = gclass315_0.method_15();
             List163 = new List<GClass163>(num);
             for (int num2 = 0; num2 < num; num2++)
@@ -159,7 +159,7 @@ namespace Sobee.TestServer.Messages.Match
             double double_1,
             float float_1,
             IEnumerable<string> ienumerable_4,
-            IEnumerable<string> ienumerable_5, GClass156 gclass156_1,
+            IEnumerable<string> ienumerable_5, TeamIdInfo gclass156_1,
             IEnumerable<GClass163> ienumerable_6, IEnumerable<GClass172> ienumerable_7,
             UserSessionRights userSessionRights_1,
             GClass171 gclass171_1,
@@ -183,7 +183,7 @@ namespace Sobee.TestServer.Messages.Match
             SomeFloat = float_1;
             SomeStrings1 = new List<string>(ienumerable_4);
             SomeStrings2 = new List<string>(ienumerable_5);
-            Class156 = gclass156_1;
+            TeamIdInfo = gclass156_1;
             List163 = new List<GClass163>(ienumerable_6);
             List172 = new List<GClass172>(ienumerable_7);
             SessionRights = userSessionRights_1;
@@ -235,7 +235,7 @@ namespace Sobee.TestServer.Messages.Match
             {
                 gclass316_0.method_14(SomeStrings2[n]);
             }
-            gclass316_0.method_25(Class156);
+            gclass316_0.method_25(TeamIdInfo);
             gclass316_0.method_15((ushort)List163.Count);
             for (int num = 0; num < List163.Count; num++)
             {
@@ -266,6 +266,16 @@ namespace Sobee.TestServer.Messages.Match
         public List<PlayerMatchInformation> GetAllPlayers()
         {
             return [.. HomeTeam, .. AwayTeam, .. HomeSpectator, .. AwaySpectator];
+        }
+
+        public PlayerMatchInformation? GetPlayer(int squadNumber)
+        {
+            foreach (var player in GetAllPlayers())
+            {
+                if (player.SquadNumber == squadNumber)
+                    return player;
+            }
+            return null;
         }
 
         public PlayerMatchInformation? GetPlayer(Guid playerId)

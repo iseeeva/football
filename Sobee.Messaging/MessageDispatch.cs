@@ -181,11 +181,12 @@ namespace Sobee.Messaging
 
         public void DispatchToMessageEvent(MessageEventArgs args)
         {
-            var id = GetMessageTypeId(args.message.GetType());
+            var messageId = GetMessageTypeId(args.message.GetType());
 
-            if (!_messageIdToEvent.TryGetValue(id, out var eventDelegate))
+            if (!_messageIdToEvent.TryGetValue(messageId, out var eventDelegate))
             {
-                throw new SerializationException($"ClassID: {id} - Not registered.");
+                _log.Error("Session {sessionId} tried invoke event for message ({messageId}) but its not registered.", args.handler.Id, messageId);
+                return;
             }
 
             try
@@ -194,13 +195,13 @@ namespace Sobee.Messaging
 
                 _log.Information(
                     "Invoked event for {Type} (ID: {Id})",
-                    args.message.GetType().FullName, id
+                    args.message.GetType().FullName, messageId
                 );
             }
             catch (Exception ex)
             {
-                _log.Error(ex, "Event invocation failed for ClassID: {Id}", id);
-                throw new SerializationException($"ClassID: {id} - Event failed.", ex);
+                _log.Error(ex, "Event invocation failed for ClassID: {Id}", messageId);
+                throw new SerializationException($"ClassID: {messageId} - Event failed.", ex);
             }
         }
 

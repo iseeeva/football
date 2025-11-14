@@ -85,7 +85,7 @@ namespace Sobee.TestServer.Match
 
                 var expiredRooms = _rooms
                     .Where(x =>
-                        x.Value.PlayerCount == 0 &&
+                        x.Value.Players.Count == 0 &&
                         (now - x.Value.CreatedAt).TotalMilliseconds > MatchRoom.MAX_IDLE_TIME.TotalMilliseconds)
                     .Select(x => x.Key)
                     .ToList();

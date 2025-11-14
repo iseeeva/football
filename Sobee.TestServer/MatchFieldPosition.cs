@@ -2,6 +2,7 @@
 using Serilog;
 using Sobee.Common;
 using Sobee.Serialization.GameServer;
+using Sobee.TestServer.Match;
 using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Player;
 
@@ -10,20 +11,29 @@ namespace Sobee.TestServer
     public class MatchFieldPosition
     {
         private static readonly ILogger _log = Logging.Get<MatchFieldPosition>();
+        private static readonly int MaxTeamSize = ScenarioInfo.MAX_TEAM_SIZE;
 
         public class Team
         {
-            public List<Vector2> Positions { get; }
-            public List<Vector2> Directions { get; }
-            public List<AnimationType> Animations { get; }
+            public Vector2[] Positions { get; }
+            public Vector2[] Directions { get; }
+            public AnimationType[] Animations { get; }
 
-            public Team(List<Vector2> positions, Vector2 defaultDirection, AnimationType defaultAnimation)
+            public Team(Vector2[] positions, Vector2 defaultDirection, AnimationType defaultAnimation)
             {
-                ArgumentNullException.ThrowIfNull(positions);
-                var positionList = positions.ToList();
-                Positions = positionList;
-                Directions = positionList.Select(_ => defaultDirection).ToList();
-                Animations = positionList.Select(_ => defaultAnimation).ToList();
+                if (positions.Length != MaxTeamSize)
+                    throw new ArgumentException($"Positions array must have {MaxTeamSize} elements.");
+
+                Positions = new Vector2[MaxTeamSize];
+                Array.Copy(positions, Positions, MaxTeamSize);
+
+                Directions = new Vector2[MaxTeamSize];
+                for (int i = 0; i < MaxTeamSize; i++)
+                    Directions[i] = defaultDirection;
+
+                Animations = new AnimationType[MaxTeamSize];
+                for (int i = 0; i < MaxTeamSize; i++)
+                    Animations[i] = defaultAnimation;
             }
         }
 
@@ -31,15 +41,21 @@ namespace Sobee.TestServer
         public Team Away { get; }
 
         public MatchFieldPosition(
-            List<Vector2> homePositions,
-            List<Vector2> awayPositions,
+            IList<Vector2> homePositions,
+            IList<Vector2> awayPositions,
             Vector2 homeDirection,
             Vector2 awayDirection,
             AnimationType homeAnimation = AnimationType.WaitIdle1,
             AnimationType awayAnimation = AnimationType.WaitIdle1)
         {
-            Home = new Team(homePositions, homeDirection, homeAnimation);
-            Away = new Team(awayPositions, awayDirection, awayAnimation);
+            if (homePositions.Count != MaxTeamSize ||
+                awayPositions.Count != MaxTeamSize)
+            {
+                throw new ArgumentException($"Home/Away position lists must each have {MaxTeamSize} elements.");
+            }
+
+            Home = new Team(homePositions.ToArray(), homeDirection, homeAnimation);
+            Away = new Team(awayPositions.ToArray(), awayDirection, awayAnimation);
         }
 
         public static float StartDirection(ScenarioType scenarioType) => scenarioType switch
@@ -50,96 +66,104 @@ namespace Sobee.TestServer
             _ => 0f
         };
 
-        //public static void ChangePosition(Room room, MatchFieldPositioning fieldType)
-        //{
-        //    ArgumentNullException.ThrowIfNull(room);
+        public static void ChangePosition(MatchRoom room, MatchFieldPositioning fieldType)
+        {
+            if (room is null) throw new ArgumentNullException(nameof(room));
 
-        //    var positioning = CreatePosition(room.Information.ScenarioInfo.ScenarioType, fieldType);
+            var positioning = CreatePosition(room.MatchInformation.ScenarioInfo.ScenarioType, fieldType);
 
-        //    if (positioning is null)
-        //    {
-        //        _log.Error("Room [{RoomId}]: Positioning {FieldType} not found.", room.Id, fieldType);
-        //        return;
-        //    }
+            if (positioning is null)
+            {
+                _log.Error("Room [{RoomId}]: Positioning {FieldType} not found.", room.Id, fieldType);
+                return;
+            }
 
-        //    room.Information.MatchState = Messages.Match.MatchStateType.Positioning;
-        //    room.Information.FieldPositioning = fieldType;
+            room.MatchInformation.MatchState = Messages.Match.MatchStateType.Positioning;
+            room.MatchInformation.FieldPositioning = fieldType;
 
-        //    ApplyTeamPositions(room.Information.HomeTeam, positioning.Home);
-        //    ApplyTeamPositions(room.Information.AwayTeam, positioning.Away);
+            ApplyTeamPositions(room.MatchInformation.HomeTeam, positioning.Home);
+            ApplyTeamPositions(room.MatchInformation.AwayTeam, positioning.Away);
 
-        //    room.Players.Broadcast(
-        //        new PositioningCutscene(
-        //            fieldType,
-        //            positioning.Home.Positions, positioning.Away.Positions,
-        //            positioning.Home.Directions, positioning.Away.Directions,
-        //            positioning.Home.Animations, positioning.Away.Animations
-        //        )
-        //    );
-        //    _log.Debug($"Room {room.Id} positioned for {fieldType}.");
-        //}
+            room.Players.SendMessage(
+                new PositioningCutscene(
+                    fieldType,
+                    positioning.Home.Positions,
+                    positioning.Away.Positions,
+                    positioning.Home.Directions,
+                    positioning.Away.Directions,
+                    positioning.Home.Animations,
+                    positioning.Away.Animations
+                )
+            );
+
+            _log.Debug($"Room {room.Id} positioned for {fieldType}.");
+        }
 
         private static void ApplyTeamPositions(List<PlayerMatchInformation> team, Team teamPositions)
         {
-            foreach (var player in team)
+            for (int i = 0; i < team.Count; i++)
             {
-                player.Position = teamPositions.Positions[player.SquadNumber];
-                player.Direction = teamPositions.Directions[player.SquadNumber];
+                team[i].Position = teamPositions.Positions[i];
+                team[i].Direction = teamPositions.Directions[i];
             }
         }
 
-        #region Positions 
-        public static MatchFieldPosition? CreatePosition(ScenarioType scenarioType, MatchFieldPositioning fieldType) => scenarioType switch
-        {
-            ScenarioType.ScenarioMatch => fieldType switch
+        public static MatchFieldPosition? CreatePosition(ScenarioType scenarioType, MatchFieldPositioning fieldType) =>
+            scenarioType switch
             {
-                MatchFieldPositioning.Kickoff => Create11v11(scenarioType),
-                _ => throw new ArgumentException($"Invalid field type {fieldType} for scenario {scenarioType}.")
-            },
-            _ => throw new ArgumentException($"Invalid scenario type {scenarioType}.")
-        };
+                ScenarioType.ScenarioMatch => fieldType switch
+                {
+                    MatchFieldPositioning.Kickoff => Create11v11(scenarioType),
+                    _ => throw new ArgumentException($"Invalid field type {fieldType} for scenario {scenarioType}.")
+                },
+                ScenarioType.ScenarioMatch1v1 => fieldType switch
+                {
+                    MatchFieldPositioning.Kickoff => Create11v11(scenarioType),
+                    _ => throw new ArgumentException($"Invalid field type {fieldType} for scenario {scenarioType}.")
+                },
+                _ => throw new ArgumentException($"Invalid scenario type {scenarioType}.")
+            };
 
         public static MatchFieldPosition Create11v11(ScenarioType scenarioType)
         {
-            var homePositions = new List<Vector2>
+            var homePositions = new[]
             {
-                new(-4160, 20),    // Goalkeeper
-                new(-3140, -1900), // Left Full-back
-                new(-3140, 1860),  // Right Full-back
-                new(-3300, -20),   // Left Center-back
-                new(-1960, 960),   // Right Center-back
-                new(-1940, -720),  // Left Midfielder
-                new(-1140, -2360), // Right Midfielder
-                new(-1040, 80),    // Center Midfielder 1
-                new(-140, -200),   // Center Midfielder 2
-                new(-480, 1780),   // Left Forward
-                new(-180, 260)     // Right Forward
+                new Vector2(-4160, 20),
+                new Vector2(-3140, -1900),
+                new Vector2(-3140, 1860),
+                new Vector2(-3300, -20),
+                new Vector2(-1960, 960),
+                new Vector2(-1940, -720),
+                new Vector2(-1140, -2360),
+                new Vector2(-1040, 80),
+                new Vector2(-140, -200),
+                new Vector2(-480, 1780),
+                new Vector2(0, 0)
             };
 
-            var awayPositions = new List<Vector2>
+            var awayPositions = new[]
             {
-                new(4200, 20),    // Goalkeeper
-                new(3140, 1900),  // Left Full-back
-                new(3140, -1880), // Right Full-back
-                new(3380, 20),    // Left Center-back
-                new(2320, -840),  // Right Center-back
-                new(2320, 780),   // Left Midfielder
-                new(1260, 2320),  // Right Midfielder
-                new(1060, 80),    // Center Midfielder 1
-                new(220, 980),    // Center Midfielder 2
-                new(260, -980),   // Left Forward
-                new(1180, -2340)  // Right Forward
+                new Vector2(4200, 20),
+                new Vector2(3140, 1900),
+                new Vector2(3140, -1880),
+                new Vector2(3380, 20),
+                new Vector2(2320, -840),
+                new Vector2(2320, 780),
+                new Vector2(1260, 2320),
+                new Vector2(1060, 80),
+                new Vector2(220, 980),
+                new Vector2(260, -980),
+                new Vector2(1180, -2340)
             };
 
-            var direction = StartDirection(scenarioType);
+            float dir = StartDirection(scenarioType);
 
             return new MatchFieldPosition(
                 homePositions,
                 awayPositions,
-                new Vector2(direction, 0),
-                new Vector2(-direction, 0)
+                new Vector2(dir, 0),
+                new Vector2(-dir, 0)
             );
         }
-        #endregion
     }
 }

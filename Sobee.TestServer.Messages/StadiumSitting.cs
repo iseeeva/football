@@ -1,7 +1,7 @@
 ﻿namespace Sobee.TestServer.Messages
 {
     // Token: 0x0200001D RID: 29
-    public enum StadiumSitting
+    public enum StadiumSitting : int
     {
         // Token: 0x0400041B RID: 1051
         Invalid,

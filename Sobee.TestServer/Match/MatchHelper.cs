@@ -29,7 +29,7 @@ namespace Sobee.TestServer.Match
                   matchPlayer.Id,
                   $"Temporary {authUser.AuthInformation.Entry.EntryNumber}",
                   new PlayerAppearance(),
-                  StadiumSitting.HomePlayer,
+                  matchRoom.MatchInformation.ScenarioInfo.GetScenarioSittingFromEntry(authUser.AuthInformation.Entry.EntryNumber),
                   (sbyte)authUser.AuthInformation.Entry.ToSquad(true),
                   new Vector2(0, 0),
                   new Vector3(0, 0, 0),
@@ -43,7 +43,7 @@ namespace Sobee.TestServer.Match
 
         public bool TryAssignPlayerInfoToMatchInfo(PlayerMatchInformation playerInformation)
         {
-            if (matchRoom.PlayerCount > MatchRoom.MAX_PLAYER)
+            if (matchRoom.Players.Count > MatchRoom.MAX_PLAYER)
                 return false;
 
             if (matchRoom.MatchInformation.HasPlayer((x) =>

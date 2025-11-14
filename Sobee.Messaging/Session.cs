@@ -124,6 +124,35 @@ namespace Sobee.Messaging
             OnMessageSent(this, message);
         }
 
+        public async Task<Message> WaitForMessage(Func<Message, bool> filter, int timeoutMs = -1)
+        {
+            var tcs = new TaskCompletionSource<Message>();
+
+            void Handler(object? sender, MessageEventArgs args)
+            {
+                if (filter(args.message))
+                {
+                    MessageReceived -= Handler;
+                    tcs.TrySetResult(args.message);
+                }
+            }
+
+            MessageReceived += Handler;
+
+            if (timeoutMs > 0)
+            {
+                var timeoutTask = Task.Delay(timeoutMs);
+                var completedTask = await Task.WhenAny(tcs.Task, timeoutTask);
+                if (completedTask == timeoutTask)
+                {
+                    MessageReceived -= Handler;
+                    throw new TimeoutException("WaitForMessage timed out");
+                }
+            }
+
+            return await tcs.Task;
+        }
+
         protected virtual void OnSerializationError(SerializationException ex)
         {
             SerializationError?.Invoke(this, new UnhandledExceptionEventArgs(ex, false));

@@ -1,4 +1,6 @@
-﻿namespace Sobee.Messaging
+﻿using Sobee.Messaging;
+
+namespace Sobee.TestServer.Messages
 {
     // Token: 0x02000006 RID: 6
     [GAttribute0(3)]

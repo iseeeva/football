@@ -22,7 +22,7 @@ namespace Sobee.TestServer
         private readonly AuthRoom _authRoom; // Authentication room
         public readonly MatchRoomManager MatchRoomManager = new(); // Match rooms
 
-        private const double TargetFrameTimeMilliseconds = 1000.0 / 100.0;
+        private const double TargetFrameTimeMilliseconds = 1000.0 / 60.0;
 
         public Hub(int port)
         {
@@ -62,7 +62,7 @@ namespace Sobee.TestServer
                     Socket clientSocket = await _socket.AcceptAsync(cancellationToken);
 
                     _log.Information("New client connected: {remoteEp}", clientSocket.RemoteEndPoint);
-                    _authRoom.TryAddUser(new SocketWrapper(clientSocket));
+                    _authRoom.Users.TryAdd(new SocketWrapper(clientSocket));
                 }
                 catch (OperationCanceledException)
                 {

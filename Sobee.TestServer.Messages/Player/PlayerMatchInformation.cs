@@ -38,8 +38,8 @@ namespace Sobee.TestServer.Messages.Player
         public PlayerMatchInformation()
         {
             // TODO: Remove hardcoded values when possible.
-            //MatchId = -1;
-            //PlayerId = -1;
+            MatchId = Guid.Empty;
+            PlayerId = Guid.Empty;
             PlayerName = string.Empty;
             UserName = string.Empty;
             Stamina = 120;
