@@ -44,8 +44,8 @@ public class SessionManager<T> : Component where T : Session
 
         session.Start();
         SessionAdded?.Invoke(session);
-
         _log.Information("Session {id} added.", session.Id);
+
         return true;
     }
 

@@ -16,6 +16,9 @@ namespace Sobee.TestServer.Messages.Player
         public string UserName { get; set; } = string.Empty;
         public int Stamina { get; set; }
         public StadiumSitting StadiumSitting { get; set; }
+        /// <summary>
+        /// (splited)
+        /// </summary>
         public sbyte SquadNumber { get; set; }
         public bool Moving { get; set; }
         public PlayerAppearance Appearance { get; set; }

@@ -42,7 +42,7 @@ namespace Sobee.TestServer.Messages
         public ScenarioInfo()
         {
             // TODO: Remove hardcoded values when possible
-            ScenarioType = ScenarioType.ScenarioMatch1v1;
+            ScenarioType = ScenarioType.ScenarioMatch;
             var (homeTeamSize, awayTeamSize) = GetScenarioTeamCapacity(ScenarioType);
 
             team1Color = 2;

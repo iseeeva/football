@@ -155,16 +155,19 @@ namespace Sobee.Messaging
 
         protected virtual void OnSerializationError(SerializationException ex)
         {
+            _log.Error(ex, "{id} serialization error", Id);
             SerializationError?.Invoke(this, new UnhandledExceptionEventArgs(ex, false));
         }
 
         protected virtual void OnMessageReceived(object sender, Message message)
         {
+            _log.Debug("{id} received: {messageType}", Id, message.GetType().Name);
             MessageReceived?.Invoke(this, new MessageEventArgs(this, message));
         }
 
         protected virtual void OnMessageSent(object sender, Message message)
         {
+            _log.Debug("{id} sent: {messageType}", Id, message.GetType().Name);
             MessageSent?.Invoke(this, new MessageEventArgs(this, message));
         }
 

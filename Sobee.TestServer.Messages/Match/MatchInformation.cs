@@ -15,14 +15,14 @@ namespace Sobee.TestServer.Messages.Match
         public List<PlayerMatchInformation> HomeSpectator { get; private set; }
         public List<PlayerMatchInformation> AwaySpectator { get; private set; }
 
-        public Vector3 BallPosition { get; private set; }
-        public Vector3 BallVelocity { get; private set; }
+        public Vector3 BallPosition { get; set; }
+        public Vector3 BallVelocity { get; set; }
 
         public MatchStateType MatchState { get; set; }
         public MatchFieldPositioning FieldPositioning { get; set; }
 
         public UserSessionRights SessionRights { get; private set; }
-        public PhaseInfo Class166 { get; private set; }
+        public PhaseInfo PhaseInfo { get; private set; }
         public ScenarioInfo ScenarioInfo { get; private set; }
         public GClass171 Class171 { get; private set; }
         public GClass167 Class167 { get; private set; }
@@ -54,7 +54,7 @@ namespace Sobee.TestServer.Messages.Match
             FieldPositioning = MatchFieldPositioning.Kickoff;
 
             SessionRights = new UserSessionRights();
-            Class166 = new PhaseInfo(0);
+            PhaseInfo = new PhaseInfo(0);
             ScenarioInfo = new ScenarioInfo();
             Class171 = new GClass171();
             Class167 = new GClass167();
@@ -107,7 +107,7 @@ namespace Sobee.TestServer.Messages.Match
             BallVelocity = gclass315_0.method_20();
             MatchState = (MatchStateType)gclass315_0.method_9();
             FieldPositioning = (MatchFieldPositioning)gclass315_0.method_9();
-            Class166 = (PhaseInfo)gclass315_0.method_25();
+            PhaseInfo = (PhaseInfo)gclass315_0.method_25();
             ScenarioInfo = (ScenarioInfo)gclass315_0.method_25();
             Class167 = (GClass167)gclass315_0.method_25();
             SomeFloat = gclass315_0.method_12();
@@ -176,7 +176,7 @@ namespace Sobee.TestServer.Messages.Match
             BallVelocity = vector3_3;
             MatchState = matchStateType_1;
             FieldPositioning = matchFieldPositioning_1;
-            Class166 = gclass166_1;
+            PhaseInfo = gclass166_1;
             ScenarioInfo = gclass170_1;
             Class167 = gclass167_1;
             SomeDouble = double_1;
@@ -220,7 +220,7 @@ namespace Sobee.TestServer.Messages.Match
             gclass316_0.method_20(BallVelocity);
             gclass316_0.method_9((int)MatchState);
             gclass316_0.method_9((int)FieldPositioning);
-            gclass316_0.method_25(Class166);
+            gclass316_0.method_25(PhaseInfo);
             gclass316_0.method_25(ScenarioInfo);
             gclass316_0.method_25(Class167);
             gclass316_0.method_12(SomeFloat);
@@ -287,6 +287,18 @@ namespace Sobee.TestServer.Messages.Match
             }
 
             return null;
+        }
+
+        public List<PlayerMatchInformation> GetTeam(StadiumSitting stadiumSitting)
+        {
+            return stadiumSitting switch
+            {
+                StadiumSitting.HomePlayer => HomeTeam,
+                StadiumSitting.AwayPlayer => AwayTeam,
+                StadiumSitting.HomeSpectator => HomeSpectator,
+                StadiumSitting.AwaySpectator => AwaySpectator,
+                _ => throw new ArgumentException($"Invalid stadium sitting: {stadiumSitting}"),
+            };
         }
 
         public bool HasPlayer(Func<PlayerMatchInformation, bool> predicate)

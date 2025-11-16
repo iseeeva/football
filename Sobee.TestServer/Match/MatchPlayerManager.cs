@@ -1,9 +1,15 @@
-﻿using Sobee.TestServer.Auth;
+﻿using Sobee.Common;
+using Sobee.TestServer.Auth;
 
 namespace Sobee.TestServer.Match
 {
     public class MatchPlayerManager : SessionManager<MatchPlayer>
     {
+        private static readonly Serilog.ILogger _log = Logging.Get<MatchPlayerManager>();
+
+        // TODO: Odadan cikan oyuncularin kontrol edilmesi lazim.
+        // Socket cokmesi, timeout olmasi vs. icin
+
         private readonly MatchRoom _matchRoom;
         private readonly MatchHelper _matchHelper;
 
@@ -19,32 +25,55 @@ namespace Sobee.TestServer.Match
 
         public bool TryAddPlayer(AuthUser authUser)
         {
-            if (!_matchHelper.TryGeneratePlayer(authUser, out var player, out var info))
+            if (_matchHelper.TryGeneratePlayer(authUser, out var matchPlayer, out var matchPlayerInfo))
+                authUser.Dispose();
+            else
                 return false;
 
-            authUser.Dispose();
+            if (_matchRoom.MatchInformation.GetTeam(matchPlayerInfo.StadiumSitting).Any(
+                p => p.PlayerId == matchPlayerInfo.PlayerId ||
+                p.SquadNumber == matchPlayerInfo.SquadNumber
+            ))
+                return false;
 
-            if (!TryAdd(player))
+            if (TryAdd(matchPlayer))
             {
-                player.Disconnect();
+                if (!_matchHelper.TryAssignPlayerInfoToMatchInfo(matchPlayerInfo))
+                {
+                    if (!TryRemovePlayer(matchPlayer.Id))
+                    {
+                        _log.Error("{managerId}, failed to remove player after failing to assign player info. PlayerId: {playerId}", Id, matchPlayer.Id);
+                        _matchRoom.Dispose();
+                    }
+
+                    return false;
+                }
+            }
+            else
+            {
+                matchPlayer.Disconnect();
                 return false;
             }
 
-            _matchHelper.TryAssignPlayerInfoToMatchInfo(info);
-            PlayerJoined?.Invoke(_matchRoom, player);
+            PlayerJoined?.Invoke(_matchRoom, matchPlayer);
             return true;
         }
 
         public bool TryRemovePlayer(Guid id)
         {
-            if (!TryGet(id, out var player))
+            if (!TryRemove(id, out var matchPlayer))
                 return false;
 
-            if (!TryRemove(id, out _))
+            if (!_matchHelper.TryRemovePlayerInfoFromMatchInfo(matchPlayer))
+            {
+                _log.Error("{managerId}, failed to remove player info after removing player. PlayerId: {playerId}", Id, matchPlayer.Id);
+                _matchRoom.Dispose();
                 return false;
+            }
 
-            _matchHelper.TryRemovePlayerInfoFromMatchInfo(player);
-            PlayerLeft?.Invoke(_matchRoom, player);
+            matchPlayer.Disconnect();
+
+            PlayerLeft?.Invoke(_matchRoom, matchPlayer);
             return true;
         }
     }

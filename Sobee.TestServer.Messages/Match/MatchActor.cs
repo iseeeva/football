@@ -4,8 +4,19 @@ namespace Sobee.TestServer.Messages.Match
 {
     public class MatchActor : ISerialize
     {
+        /// <summary>
+        /// Squad number (not splited) of the actor for camera 
+        /// </summary>
         public sbyte Camera;
+
+        /// <summary>
+        /// Squad number (not splited) of the actor who have ball
+        /// </summary>
         public sbyte Actioner;
+
+        /// <summary>
+        /// Entry number of the actor for map mark
+        /// </summary>
         public int Mark;
 
         public MatchActor(sbyte camera, sbyte actioner, int mark)

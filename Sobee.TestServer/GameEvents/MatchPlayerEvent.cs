@@ -1,5 +1,6 @@
 ﻿using Sobee.Common;
 using Sobee.Serialization.GameServer;
+using Sobee.TestServer.Helpers;
 using Sobee.TestServer.Match;
 using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Chat;
@@ -33,7 +34,7 @@ namespace Sobee.TestServer.GameEvents
             switch (chatMessage.MessageText)
             {
                 case "kickoff":
-                    MatchFieldPosition.ChangePosition(matchRoom, MatchFieldPositioning.Kickoff);
+                    PositioningHelper.ChangePosition(matchRoom, MatchFieldPositioning.Kickoff);
                     return;
             }
 

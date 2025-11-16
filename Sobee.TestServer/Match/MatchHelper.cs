@@ -46,10 +46,10 @@ namespace Sobee.TestServer.Match
             if (matchRoom.Players.Count > MatchRoom.MAX_PLAYER)
                 return false;
 
-            if (matchRoom.MatchInformation.HasPlayer((x) =>
-                    x.PlayerId == playerInformation.PlayerId ||
-                    x.SquadNumber == playerInformation.SquadNumber
-            ))
+            if (matchRoom.MatchInformation.GetTeam(playerInformation.StadiumSitting).Any(
+                    p => p.PlayerId == playerInformation.PlayerId ||
+                    p.SquadNumber == playerInformation.SquadNumber
+               ))
                 return false;
 
             switch (playerInformation.StadiumSitting)
