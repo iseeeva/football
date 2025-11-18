@@ -15,11 +15,11 @@ namespace Sobee.TestServer.Messages.Match
         public List<PlayerMatchInformation> HomeSpectator { get; private set; }
         public List<PlayerMatchInformation> AwaySpectator { get; private set; }
 
-        public Vector3 BallPosition { get; set; }
-        public Vector3 BallVelocity { get; set; }
+        public Vector3 BallPosition;
+        public Vector3 BallVelocity;
 
-        public MatchStateType MatchState { get; set; }
-        public MatchFieldPositioning FieldPositioning { get; set; }
+        public MatchStateType MatchState;
+        public MatchFieldPositioning FieldPositioning;
 
         public UserSessionRights SessionRights { get; private set; }
         public PhaseInfo PhaseInfo { get; private set; }

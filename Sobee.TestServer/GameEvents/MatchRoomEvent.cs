@@ -29,7 +29,7 @@ namespace Sobee.TestServer.GameEvents
             matchRoom.Players.SendMessage(new Messages.Player.PlayerJoined(matchInformation));
             matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage(
                 $"{matchInformation.PlayerName} connected. (total player: {matchRoom.Players.Count})",
-                Messages.Chat.ChatSystemMessageType.SCT
+                Messages.Chat.ChatSystemMessageType.Anounce
             ));
 
             // TODO: Set camera and mark to the joining player for their own view

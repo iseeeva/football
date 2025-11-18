@@ -3,6 +3,7 @@ using Sobee.Common;
 using Sobee.Messaging;
 using Sobee.Network;
 using Sobee.TestServer.Messages;
+using Sobee.TestServer.Messages.Ball;
 using Sobee.TestServer.Messages.Chat;
 using Sobee.TestServer.Messages.Match;
 
@@ -29,8 +30,14 @@ namespace Sobee.TestServer.Match
 
             // Communication 
             CommunicationType = SessionType.Game;
+
+            // === Player Messages ===
             RegisterMessageEvent<ChatMessage>(OnReceivedMessage);
             RegisterMessageEvent<HeartbeatMessage>(OnReceivedMessage);
+
+            // === Match Messages ===
+            RegisterMessageEvent<BallActionerHit>(OnReceivedMessage);
+            AddGlobalHandler<BallActionerHit>(new EventHandler<MessageEventArgs>(GameEvents.MatchBallEvent.ActionerHitReceived));
 
             _log.Debug("{id} initialized.", Id);
         }

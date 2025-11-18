@@ -13,7 +13,7 @@ namespace Sobee.TestServer.Match
         private static readonly ILogger _log = Logging.Get<MatchPlayer>();
         private bool _isDisposed;
 
-        public AuthInformation? AuthInformation;
+        public AuthInformation AuthInformation;
 
         // Client, mac ekranina geldiginda true olacak.
         // Maci etkileyen baska birsey yapilmadigi surece true kalacak.

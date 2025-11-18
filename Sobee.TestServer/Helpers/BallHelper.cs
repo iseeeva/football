@@ -6,6 +6,15 @@ namespace Sobee.TestServer.Helpers
     public class BallHelper
     {
         public static readonly double BallBoundryZ = 11.254;
+        public static readonly int BallMaxSpeed = 2000;
+
+        //public Epsilon: number = 10
+        //public Gravity: number = (-9.81 * 100) * 2.5
+        //public Reduction: number = 0.985
+        //public Collision: boolean = true
+        //public Radius: number = 30
+        //public Speed: number = 2000
+        //public Boundry: Binary.Types.Vector3 = new Binary.Types.Vector3(0, 0, 11.254)
 
         public static void GetBall(MatchRoom matchRoom, sbyte squadNumber, float speed)
         {
