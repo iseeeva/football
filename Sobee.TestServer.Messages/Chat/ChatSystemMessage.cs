@@ -1,8 +1,9 @@
 ﻿using Sobee.Messaging;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Chat
 {
-    [GAttribute0(33995)]
+    [MessageAttribute(33995)]
     public class ChatSystemMessage : Message
     {
         private string Text { get; }

@@ -1,9 +1,10 @@
 ﻿using Sobee.Messaging;
+using Sobee.Serialization;
 using Sobee.TestServer.Messages.Match;
 
 namespace Sobee.TestServer.Messages.Auth
 {
-    [GAttribute0(29475)]
+    [MessageAttribute(29475)]
     public sealed class AuthInformation : Message
     {
         public Version Version { get; }

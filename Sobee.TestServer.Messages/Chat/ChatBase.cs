@@ -3,7 +3,7 @@ using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Chat
 {
-    [GAttribute0(13335)]
+    [MessageAttribute(13335)]
     public abstract class ChatBase : Message
     {
         public Guid TeamId { get; }

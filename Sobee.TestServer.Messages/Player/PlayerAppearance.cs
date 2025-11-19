@@ -1,8 +1,9 @@
 ﻿using Sobee.Messaging;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Player
 {
-    [GAttribute0(8993)]
+    [MessageAttribute(8993)]
     public class PlayerAppearance : Message
     {
         public byte Part0 { get; set; }

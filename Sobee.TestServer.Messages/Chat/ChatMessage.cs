@@ -1,7 +1,8 @@
-﻿// Token: 0x02000083 RID: 131
+﻿using Sobee.Serialization;
+
 namespace Sobee.TestServer.Messages.Chat
 {
-    [GAttribute0(21144)]
+    [MessageAttribute(21144)]
     public class ChatMessage : ChatBase
     {
         public string MessageText { get; }

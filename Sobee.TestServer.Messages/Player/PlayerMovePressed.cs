@@ -1,10 +1,11 @@
 ﻿using System.Numerics;
 using Sobee.Messaging;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Player
 {
     // Token: 0x02000061 RID: 97
-    [GAttribute0(48125)]
+    [MessageAttribute(48125)]
     public class PlayerMovePressed : Message
     {
         public Vector2 Velocity { get; }

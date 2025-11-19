@@ -1,10 +1,11 @@
 ﻿using System.Collections;
 using System.Reflection;
 using Sobee.Messaging;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages
 {
-    [GAttribute0(13602)]
+    [MessageAttribute(13602)]
     public class PlayerRights : Message
     {
         public bool UseBrazilCycleKick { get; set; }

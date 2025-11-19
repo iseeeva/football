@@ -1,9 +1,10 @@
 ﻿using Sobee.Messaging;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages
 {
     // Token: 0x02000007 RID: 7
-    [GAttribute0(2)]
+    [MessageAttribute(2)]
     public class LatencyMessage : Message
     {
         // Token: 0x06000061 RID: 97 RVA: 0x000025C2 File Offset: 0x000007C2

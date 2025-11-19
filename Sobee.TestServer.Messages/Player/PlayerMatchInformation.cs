@@ -7,7 +7,7 @@ using Sobee.TestServer.Messages.Match;
 
 namespace Sobee.TestServer.Messages.Player
 {
-    [GAttribute0(10483)]
+    [MessageAttribute(10483)]
     public class PlayerMatchInformation : Message
     {
         public Guid MatchId { get; set; }

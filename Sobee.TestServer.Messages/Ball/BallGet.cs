@@ -1,9 +1,10 @@
 ﻿using System.Numerics;
 using Sobee.Messaging;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Ball
 {
-    [GAttribute0(12883)]
+    [MessageAttribute(12883)]
     public class BallGet : Message
     {
         public Vector2 GetDirectionAxis()

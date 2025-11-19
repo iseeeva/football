@@ -4,13 +4,14 @@ using System.Text;
 using Serilog;
 using Sobee.Common;
 using Sobee.Messaging;
+using Sobee.Serialization;
 using Sobee.TestServer.Messages.Match;
 
 namespace Sobee.TestServer.Messages
 {
     // Token: 0x02000088 RID: 136
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    [GAttribute0(26929)]
+    [MessageAttribute(26929)]
     public class ScenarioInfo : Message
     {
         private static readonly ILogger _log = Logging.Get<ScenarioInfo>();

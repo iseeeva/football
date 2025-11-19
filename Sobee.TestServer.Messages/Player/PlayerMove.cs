@@ -1,9 +1,10 @@
 ﻿using System.Numerics;
 using Sobee.Messaging;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Player
 {
-    [GAttribute0(18290)]
+    [MessageAttribute(18290)]
     public class PlayerMove : Message
     {
         public sbyte SquadNumber { get; }

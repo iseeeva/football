@@ -1,9 +1,10 @@
 ﻿using System.Numerics;
 using Sobee.Messaging;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Ball
 {
-    [GAttribute0(13196)]
+    [MessageAttribute(13196)]
     public class BallUpdate : Message
     {
         public BallUpdate(BinaryReader gclass315_0) : base(gclass315_0)

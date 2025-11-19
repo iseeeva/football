@@ -1,8 +1,9 @@
 ﻿using Sobee.Messaging;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Player
 {
-    [GAttribute0(9203)]
+    [MessageAttribute(9203)]
     public class PlayerJoined : Message
     {
         public PlayerMatchInformation PlayerInfo { get; }

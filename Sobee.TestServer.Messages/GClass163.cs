@@ -1,10 +1,11 @@
 ﻿using Sobee.Messaging;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages
 {
 
     // Token: 0x0200004F RID: 79
-    [GAttribute0(13698)]
+    [MessageAttribute(13698)]
     public class GClass163 : Message
     {
         // Token: 0x0600017D RID: 381 RVA: 0x00003693 File Offset: 0x00001893

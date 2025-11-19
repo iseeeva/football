@@ -1,9 +1,10 @@
 ﻿using Sobee.Messaging;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages
 {
     // Token: 0x02000006 RID: 6
-    [GAttribute0(3)]
+    [MessageAttribute(3)]
     public class HeartbeatMessage : Message
     {
         // Token: 0x0600005D RID: 93 RVA: 0x000025A5 File Offset: 0x000007A5

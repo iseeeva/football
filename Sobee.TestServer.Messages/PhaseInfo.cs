@@ -1,9 +1,10 @@
 ﻿using Sobee.Messaging;
+using Sobee.Serialization;
 using Sobee.TestServer.Messages.Match;
 
 namespace Sobee.TestServer.Messages
 {
-    [GAttribute0(12908)]
+    [MessageAttribute(12908)]
     public class PhaseInfo : Message
     {
         public byte ScoreHome { get; set; }

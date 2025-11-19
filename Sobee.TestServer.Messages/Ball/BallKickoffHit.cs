@@ -1,9 +1,10 @@
 ﻿using System.Numerics;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Ball
 {
 
-    [GAttribute0(8756)]
+    [MessageAttribute(8756)]
     public class BallKickoffHit : AnimationMessageAbstract
     {
         public BallKickoffHit(BinaryReader gclass315_0) : base(gclass315_0)

@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using Serilog;
 using Sobee.Common;
 using Sobee.Network;
+using Sobee.Serialization;
 
 namespace Sobee.Messaging
 {
@@ -97,10 +98,10 @@ namespace Sobee.Messaging
 
             foreach (var type in types)
             {
-                var attribute = type.GetCustomAttribute<GAttribute0>();
+                var attribute = type.GetCustomAttribute<MessageAttribute>();
                 if (attribute != null)
                 {
-                    RegisterMessageType(attribute.method_0(), type);
+                    RegisterMessageType(attribute.MessageId, type);
                 }
             }
         }
@@ -152,13 +153,13 @@ namespace Sobee.Messaging
 
         public void RegisterMessageType(Type type)
         {
-            var attribute = type.GetCustomAttribute<GAttribute0>();
+            var attribute = type.GetCustomAttribute<MessageAttribute>();
             if (attribute == null)
             {
                 throw new NotImplementedException($"Missing [GAttribute0] on message class: {type.FullName}");
             }
 
-            RegisterMessageType(attribute.method_0(), type);
+            RegisterMessageType(attribute.MessageId, type);
         }
 
         public object DispatchToMessageConstructor(ushort messageId, BinaryReader reader)

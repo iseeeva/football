@@ -1,11 +1,12 @@
 ﻿using System.Numerics;
 using Sobee.Messaging;
+using Sobee.Serialization;
 using Sobee.Serialization.GameServer;
 using Sobee.TestServer.Messages.Player;
 
 namespace Sobee.TestServer.Messages.Match
 {
-    [GAttribute0(12835)]
+    [MessageAttribute(12835)]
     public class MatchInformation : Message
     {
         public MatchActor Actor { get; private set; }

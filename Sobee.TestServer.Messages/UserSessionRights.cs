@@ -2,11 +2,12 @@
 using System.Reflection;
 using System.Text;
 using Sobee.Messaging;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages
 {
     // Token: 0x0200001E RID: 30
-    [GAttribute0(18579)]
+    [MessageAttribute(18579)]
     public class UserSessionRights : Message
     {
         // Token: 0x0600000D RID: 13 RVA: 0x00005BCC File Offset: 0x00003DCC

@@ -1,10 +1,11 @@
 ﻿using System.Numerics;
 using Sobee.Messaging;
+using Sobee.Serialization;
 using Sobee.Serialization.GameServer;
 
 namespace Sobee.TestServer.Messages
 {
-    [GAttribute0(30461)]
+    [MessageAttribute(30461)]
     public class PositioningCutscene : Message
     {
         private static readonly int MAX_TEAM_SIZE = ScenarioInfo.MAX_TEAM_SIZE;

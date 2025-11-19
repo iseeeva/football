@@ -3,7 +3,7 @@ using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages
 {
-    [GAttribute0(4932)]
+    [MessageAttribute(4932)]
     public sealed class TeamIdInfo : Message
     {
         public Guid InvalidId { get; }

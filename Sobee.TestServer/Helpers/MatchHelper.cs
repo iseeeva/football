@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using Sobee.TestServer.Auth;
+using Sobee.TestServer.Match;
 using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Match;
 using Sobee.TestServer.Messages.Player;
 
-namespace Sobee.TestServer.Match
+namespace Sobee.TestServer.Helpers
 {
     public class MatchHelper(MatchRoom matchRoom)
     {

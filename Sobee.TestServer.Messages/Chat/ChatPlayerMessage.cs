@@ -2,7 +2,7 @@
 
 namespace Sobee.TestServer.Messages.Chat
 {
-    [GAttribute0(9210)]
+    [MessageAttribute(9210)]
     public class ChatPlayerMessage : ChatBase
     {
         public Guid PlayerId { get; }
