@@ -34,7 +34,7 @@ public class SessionManager<T> : Component where T : Session
 
     public T this[Guid id] => _sessions[id];
 
-    public bool TryAdd(T session)
+    public virtual bool TryAdd(T session)
     {
         if (!_sessions.TryAdd(session.Id, session))
         {
@@ -49,7 +49,7 @@ public class SessionManager<T> : Component where T : Session
         return true;
     }
 
-    public bool TryRemove(Guid sessionId, [MaybeNullWhen(false)] out T session)
+    public virtual bool TryRemove(Guid sessionId, [MaybeNullWhen(false)] out T session)
     {
         if (!_sessions.TryRemove(sessionId, out session))
         {

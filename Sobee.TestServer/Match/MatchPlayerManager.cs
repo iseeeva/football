@@ -1,4 +1,5 @@
-﻿using Sobee.Common;
+﻿using System.Diagnostics.CodeAnalysis;
+using Sobee.Common;
 using Sobee.TestServer.Auth;
 using Sobee.TestServer.Helpers;
 
@@ -24,7 +25,7 @@ namespace Sobee.TestServer.Match
             _matchHelper = new MatchHelper(_matchRoom);
         }
 
-        public bool TryAddPlayer(AuthUser authUser)
+        public bool TryCreate(AuthUser authUser)
         {
             if (_matchHelper.TryGeneratePlayer(authUser, out var matchPlayer, out var matchPlayerInfo))
                 authUser.Dispose();
@@ -41,7 +42,7 @@ namespace Sobee.TestServer.Match
             {
                 if (!_matchHelper.TryAssignPlayerInfoToMatchInfo(matchPlayerInfo))
                 {
-                    if (!TryRemovePlayer(matchPlayer.Id))
+                    if (!TryRemove(matchPlayer.Id, out _))
                     {
                         _log.Error("{managerId}, failed to remove player after failing to assign player info. PlayerId: {playerId}", Id, matchPlayer.Id);
                         _matchRoom.Dispose();
@@ -60,19 +61,24 @@ namespace Sobee.TestServer.Match
             return true;
         }
 
-        public bool TryRemovePlayer(Guid id)
+        public override bool TryRemove(Guid id, [MaybeNullWhen(false)] out MatchPlayer matchPlayer)
         {
-            if (!TryRemove(id, out var matchPlayer))
-                return false;
+            matchPlayer = this[id];
 
-            if (!_matchHelper.TryRemovePlayerInfoFromMatchInfo(matchPlayer))
+            if (matchPlayer == null)
             {
-                _log.Error("{managerId}, failed to remove player info after removing player. PlayerId: {playerId}", Id, matchPlayer.Id);
-                _matchRoom.Dispose();
+                _log.Error("{managerId}, player not found for removal. PlayerId: {playerId}", Id, id);
+                matchPlayer = null;
                 return false;
             }
 
-            matchPlayer.Disconnect();
+            // Once oyuncu infosunu kaldir, sonra oyuncuyu kaldir.
+            if (!_matchHelper.TryRemovePlayerInfoFromMatchInfo(matchPlayer) || !base.TryRemove(matchPlayer.Id, out _))
+            {
+                _log.Error("{managerId}, failed to remove player. PlayerId: {playerId}", Id, matchPlayer.Id);
+                _matchRoom.Dispose();
+                return false;
+            }
 
             PlayerLeft?.Invoke(_matchRoom, matchPlayer);
             return true;

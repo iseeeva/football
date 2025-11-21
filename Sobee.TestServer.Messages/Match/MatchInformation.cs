@@ -31,7 +31,7 @@ namespace Sobee.TestServer.Messages.Match
         public List<GClass163> List163 { get; private set; }
         public List<GClass172> List172 { get; private set; }
 
-        public float SomeFloat { get; private set; }
+        public float TimeMultiplier { get; private set; }
         public double SomeDouble { get; private set; }
 
         public List<string> SomeStrings1 { get; private set; }
@@ -63,7 +63,7 @@ namespace Sobee.TestServer.Messages.Match
             List163 = new List<GClass163>();
             List172 = new List<GClass172>();
 
-            SomeFloat = 0f;
+            TimeMultiplier = 1f;
             SomeDouble = 0.0;
             SomeStrings1 = new List<string>();
             SomeStrings2 = new List<string>();
@@ -111,7 +111,7 @@ namespace Sobee.TestServer.Messages.Match
             PhaseInfo = (PhaseInfo)gclass315_0.method_25();
             ScenarioInfo = (ScenarioInfo)gclass315_0.method_25();
             Class167 = (GClass167)gclass315_0.method_25();
-            SomeFloat = gclass315_0.method_12();
+            TimeMultiplier = gclass315_0.method_12();
             SomeDouble = gclass315_0.method_7();
             num = gclass315_0.method_15();
             SomeStrings1 = new List<string>(num);
@@ -181,7 +181,7 @@ namespace Sobee.TestServer.Messages.Match
             ScenarioInfo = gclass170_1;
             Class167 = gclass167_1;
             SomeDouble = double_1;
-            SomeFloat = float_1;
+            TimeMultiplier = float_1;
             SomeStrings1 = new List<string>(ienumerable_4);
             SomeStrings2 = new List<string>(ienumerable_5);
             TeamIdInfo = gclass156_1;
@@ -224,7 +224,7 @@ namespace Sobee.TestServer.Messages.Match
             gclass316_0.method_25(PhaseInfo);
             gclass316_0.method_25(ScenarioInfo);
             gclass316_0.method_25(Class167);
-            gclass316_0.method_12(SomeFloat);
+            gclass316_0.method_12(TimeMultiplier);
             gclass316_0.method_7(SomeDouble);
             gclass316_0.method_15((ushort)SomeStrings1.Count);
             for (int m = 0; m < SomeStrings1.Count; m++)

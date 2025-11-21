@@ -77,7 +77,7 @@ namespace Sobee.TestServer.Helpers
             }
         }
 
-        private static void ZeroUnused(List<Vector2> pos, List<Vector2> dir, int count)
+        private static void ApplyDefaultToUnuseds(List<Vector2> pos, List<Vector2> dir, int count)
         {
             for (int i = count; i < MAX_TEAM_SIZE; i++)
             {
@@ -127,8 +127,8 @@ namespace Sobee.TestServer.Helpers
                 );
             }
 
-            ZeroUnused(pos.Home.Positions, pos.Home.Directions, matchInfo.HomeTeam.Count);
-            ZeroUnused(pos.Away.Positions, pos.Away.Directions, matchInfo.AwayTeam.Count);
+            ApplyDefaultToUnuseds(pos.Home.Positions, pos.Home.Directions, matchInfo.HomeTeam.Count);
+            ApplyDefaultToUnuseds(pos.Away.Positions, pos.Away.Directions, matchInfo.AwayTeam.Count);
 
             matchInfo.MatchState = MatchStateType.Positioning;
             matchInfo.FieldPositioning = type;

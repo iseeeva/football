@@ -22,7 +22,7 @@ namespace Sobee.TestServer.Auth
 
             // Bu handler ın bütün sessionlardan gelen mesajları işlemesi gerekiyor.
             RegisterMessageEvent<Messages.Auth.AuthInformation>(OnReceivedMessage);
-            AddGlobalHandler<Messages.Auth.AuthInformation>(new EventHandler<MessageEventArgs>(GameEvents.AuthEvent.AuthInformation));
+            AddGlobalHandler<Messages.Auth.AuthInformation>(new EventHandler<MessageEventArgs>(GameEvents.AuthClientEvent.AuthInformation));
 
             _log.Debug("{id} initialized.", Id);
         }

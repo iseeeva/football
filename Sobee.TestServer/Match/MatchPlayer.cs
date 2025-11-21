@@ -28,8 +28,8 @@ namespace Sobee.TestServer.Match
             SessionType = SessionType.User;
             AuthInformation = authInformation;
 
-            communication.AddSessionHandler<HeartbeatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchPlayerEvent.HeartbeatMessageReceived));
-            communication.AddSessionHandler<ChatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchPlayerEvent.ChatMessageReceived));
+            communication.AddSessionHandler<HeartbeatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.HeartbeatMessageReceived));
+            communication.AddSessionHandler<ChatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerChatEvent.ChatMessageReceived));
 
             _log.Debug("{id} initialized.", Id);
         }

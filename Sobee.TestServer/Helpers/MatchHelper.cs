@@ -2,14 +2,20 @@
 using System.Numerics;
 using Sobee.TestServer.Auth;
 using Sobee.TestServer.Match;
-using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Match;
 using Sobee.TestServer.Messages.Player;
 
 namespace Sobee.TestServer.Helpers
 {
-    public class MatchHelper(MatchRoom matchRoom)
+    public class MatchHelper
     {
+        private readonly MatchRoom _matchRoom;
+
+        public MatchHelper(MatchRoom matchRoom)
+        {
+            _matchRoom = matchRoom;
+        }
+
         public bool TryGeneratePlayer(
             AuthUser authUser,
             [MaybeNullWhen(false)] out MatchPlayer matchPlayer,
@@ -24,13 +30,13 @@ namespace Sobee.TestServer.Helpers
             if (authUser.Socket == null || authUser.AuthInformation == null)
                 return false;
 
-            matchPlayer = new MatchPlayer(authUser.AuthInformation, authUser.Socket, matchRoom);
+            matchPlayer = new MatchPlayer(authUser.AuthInformation, authUser.Socket, _matchRoom);
             playerMatchInformation = new PlayerMatchInformation(
-                  matchRoom.Id,
+                  _matchRoom.Id,
                   matchPlayer.Id,
                   $"Temporary {authUser.AuthInformation.Entry.EntryNumber}",
                   new PlayerAppearance(),
-                  matchRoom.MatchInformation.ScenarioInfo.GetScenarioSittingFromEntry(authUser.AuthInformation.Entry.EntryNumber),
+                  _matchRoom.MatchInformation.ScenarioInfo.GetScenarioSittingFromEntry(authUser.AuthInformation.Entry.EntryNumber),
                   (sbyte)authUser.AuthInformation.Entry.ToSquad(true),
                   new Vector2(0, 0),
                   new Vector3(0, 0, 0),
@@ -44,31 +50,23 @@ namespace Sobee.TestServer.Helpers
 
         public bool TryAssignPlayerInfoToMatchInfo(PlayerMatchInformation playerInformation)
         {
-            if (matchRoom.Players.Count > MatchRoom.MAX_PLAYER)
+            if (_matchRoom.Players.Count > MatchRoom.MAX_PLAYER)
                 return false;
 
-            if (matchRoom.MatchInformation.GetTeam(playerInformation.StadiumSitting).Any(
+            if (_matchRoom.MatchInformation.GetTeam(playerInformation.StadiumSitting).Any(
                     p => p.PlayerId == playerInformation.PlayerId ||
                     p.SquadNumber == playerInformation.SquadNumber
                ))
                 return false;
 
-            switch (playerInformation.StadiumSitting)
+            try
             {
-                case StadiumSitting.HomePlayer:
-                    matchRoom.MatchInformation.HomeTeam.Add(playerInformation);
-                    break;
-                case StadiumSitting.HomeSpectator:
-                    matchRoom.MatchInformation.HomeSpectator.Add(playerInformation);
-                    break;
-                case StadiumSitting.AwayPlayer:
-                    matchRoom.MatchInformation.AwayTeam.Add(playerInformation);
-                    break;
-                case StadiumSitting.AwaySpectator:
-                    matchRoom.MatchInformation.AwaySpectator.Add(playerInformation);
-                    break;
-                case StadiumSitting.Invalid:
-                    return false;
+                var team = _matchRoom.MatchInformation.GetTeam(playerInformation.StadiumSitting);
+                team?.Add(playerInformation);
+            }
+            catch
+            {
+                return false;
             }
 
             return true;
@@ -79,27 +77,20 @@ namespace Sobee.TestServer.Helpers
             if (player.AuthInformation == null)
                 return false;
 
-            var playerInfo = matchRoom.MatchInformation.GetPlayer(player.Id);
-            if (playerInfo == null)
+            var playerInformation = _matchRoom.MatchInformation.GetPlayer(player.Id);
+            if (playerInformation == null)
                 return false;
 
-            switch (playerInfo.StadiumSitting)
+            try
             {
-                case StadiumSitting.HomePlayer:
-                    matchRoom.MatchInformation.HomeTeam.Remove(playerInfo);
-                    break;
-                case StadiumSitting.HomeSpectator:
-                    matchRoom.MatchInformation.HomeSpectator.Remove(playerInfo);
-                    break;
-                case StadiumSitting.AwayPlayer:
-                    matchRoom.MatchInformation.AwayTeam.Remove(playerInfo);
-                    break;
-                case StadiumSitting.AwaySpectator:
-                    matchRoom.MatchInformation.AwaySpectator.Remove(playerInfo);
-                    break;
-                case StadiumSitting.Invalid:
-                    return false;
+                var team = _matchRoom.MatchInformation.GetTeam(playerInformation.StadiumSitting);
+                team?.Remove(playerInformation);
             }
+            catch
+            {
+                return false;
+            }
+
             return true;
         }
     }

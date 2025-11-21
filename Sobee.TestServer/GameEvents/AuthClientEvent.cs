@@ -6,9 +6,9 @@ using Sobee.TestServer.Messages.Auth;
 
 namespace Sobee.TestServer.GameEvents
 {
-    public class AuthEvent
+    public class AuthClientEvent
     {
-        private static readonly ILogger _log = Logging.Get<AuthEvent>();
+        private static readonly ILogger _log = Logging.Get<AuthClientEvent>();
 
         public static void AuthInformation(object? sender, MessageEventArgs e)
         {
@@ -29,7 +29,7 @@ namespace Sobee.TestServer.GameEvents
             }
 
             var matchRoom = hub.MatchRoomManager.Create();
-            if (!matchRoom.Players.TryAddPlayer(authUser))
+            if (!matchRoom.Players.TryCreate(authUser))
                 _log.Error("[TEMPORARY] Failed to add auth user {authId} to match room.", authUser.Id);
             #endregion
 

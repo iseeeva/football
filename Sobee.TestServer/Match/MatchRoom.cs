@@ -2,6 +2,7 @@
 using Sobee.Common;
 using Sobee.Messaging;
 using Sobee.Network;
+using Sobee.TestServer.MatchComponents;
 using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Ball;
 using Sobee.TestServer.Messages.Chat;
@@ -15,6 +16,7 @@ namespace Sobee.TestServer.Match
         private bool _isDisposed;
 
         public MatchPlayerManager Players => (MatchPlayerManager)_sessions;
+        public readonly ComponentManager<MatchComponent> Components = new();
         public readonly MatchInformation MatchInformation = new();
 
         // Constants
@@ -26,18 +28,23 @@ namespace Sobee.TestServer.Match
             _log.Debug("{id} initializing.", Id);
 
             // Events
-            Players.PlayerJoined += GameEvents.MatchRoomEvent.PlayerJoined;
+            Players.PlayerJoined += GameEvents.MatchServerEvent.PlayerJoined;
 
             // Communication 
             CommunicationType = SessionType.Game;
+
+            // Component
+            Components.AddComponent(new MatchBallComponent(this));
 
             // === Player Messages ===
             RegisterMessageEvent<ChatMessage>(OnReceivedMessage);
             RegisterMessageEvent<HeartbeatMessage>(OnReceivedMessage);
 
             // === Match Messages ===
+            RegisterMessageEvent<MatchRunningAlert>(OnReceivedMessage);
+            AddGlobalHandler<MatchRunningAlert>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientEvent.MatchRunningAlertReceived));
             RegisterMessageEvent<BallActionerHit>(OnReceivedMessage);
-            AddGlobalHandler<BallActionerHit>(new EventHandler<MessageEventArgs>(GameEvents.MatchBallEvent.ActionerHitReceived));
+            AddGlobalHandler<BallActionerHit>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.ActionerHitReceived));
 
             _log.Debug("{id} initialized.", Id);
         }
@@ -66,6 +73,7 @@ namespace Sobee.TestServer.Match
                 Players.SendMessage(new LatencyMessage((float)delta)); // TODO: Calisiyor ama dogru yer mi emin degilim
             }
 
+            await Components.Update(delta);
             await base.Update(delta);
         }
 

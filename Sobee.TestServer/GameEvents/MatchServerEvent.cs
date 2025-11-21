@@ -4,9 +4,9 @@ using Sobee.TestServer.Messages;
 
 namespace Sobee.TestServer.GameEvents
 {
-    public class MatchRoomEvent
+    public class MatchServerEvent
     {
-        private static readonly Serilog.ILogger _log = Logging.Get<MatchRoomEvent>();
+        private static readonly Serilog.ILogger _log = Logging.Get<MatchServerEvent>();
 
         public static void PlayerJoined(MatchRoom matchRoom, MatchPlayer matchPlayer)
         {
@@ -22,7 +22,7 @@ namespace Sobee.TestServer.GameEvents
             if (matchInformation == null)
             {
                 _log.Warning("[PlayerJoined] MatchPlayer {playerId} not found in MatchRoom {matchId}.", matchPlayer.Id, matchRoom.Id);
-                matchRoom.Players.TryRemovePlayer(matchPlayer.Id);
+                matchRoom.Players.TryRemove(matchPlayer.Id, out _);
                 return;
             }
 
@@ -51,16 +51,5 @@ namespace Sobee.TestServer.GameEvents
                 //MatchBeginning(matchRoom);
             });
         }
-
-        //public static void MatchBeginning(MatchRoom matchRoom)
-        //{
-        //    if (matchRoom == null)
-        //    {
-        //        _log.Warning("[MatchBeginning] matchRoom is null.");
-        //        return;
-        //    }
-
-        //    _log.Information($"[MatchBeginning] invoked.");
-        //}
     }
 }
