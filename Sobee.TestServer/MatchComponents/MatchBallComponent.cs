@@ -8,6 +8,8 @@ namespace Sobee.TestServer.MatchComponents
 {
     public class MatchBallComponent : MatchComponent
     {
+        // TODO: Event sistemine geri donmek iyi mi olurdu?
+
         private readonly Serilog.ILogger _log = Logging.Get<MatchBallComponent>();
         private bool _isDisposed;
 
@@ -39,7 +41,7 @@ namespace Sobee.TestServer.MatchComponents
         /// <summary>
         /// Boundary for the ball
         /// </summary>
-        public static readonly Vector3 BallBoundry = new Vector3(0, 0, 11.254f);
+        public readonly Vector3 BallBoundry = new(0, 0, 11.254f);
 
         public MatchBallComponent(MatchRoom room) : base(room)
         {

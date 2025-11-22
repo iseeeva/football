@@ -290,7 +290,7 @@ namespace Sobee.TestServer.Messages.Match
             return null;
         }
 
-        public List<PlayerMatchInformation> GetTeam(StadiumSitting stadiumSitting)
+        public List<PlayerMatchInformation>? GetTeam(StadiumSitting stadiumSitting)
         {
             return stadiumSitting switch
             {
@@ -298,7 +298,7 @@ namespace Sobee.TestServer.Messages.Match
                 StadiumSitting.AwayPlayer => AwayTeam,
                 StadiumSitting.HomeSpectator => HomeSpectator,
                 StadiumSitting.AwaySpectator => AwaySpectator,
-                _ => throw new ArgumentException($"Invalid stadium sitting: {stadiumSitting}"),
+                _ => null,
             };
         }
 

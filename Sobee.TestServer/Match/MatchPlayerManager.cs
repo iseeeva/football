@@ -13,26 +13,24 @@ namespace Sobee.TestServer.Match
         // Socket cokmesi, timeout olmasi vs. icin
 
         private readonly MatchRoom _matchRoom;
-        private readonly MatchHelper _matchHelper;
 
         public event Action<MatchRoom, MatchPlayer>? PlayerJoined;
         public event Action<MatchRoom, MatchPlayer>? PlayerLeft;
 
-        public MatchPlayerManager(MatchRoom matchRoom)
-            : base(matchRoom)
+        public MatchPlayerManager(MatchRoom matchRoom) : base(matchRoom)
         {
             _matchRoom = matchRoom;
-            _matchHelper = new MatchHelper(_matchRoom);
         }
 
         public bool TryCreate(AuthUser authUser)
         {
-            if (_matchHelper.TryGeneratePlayer(authUser, out var matchPlayer, out var matchPlayerInfo))
+            if (MatchHelper.TryGeneratePlayer(_matchRoom, authUser, out var matchPlayer, out var matchPlayerInfo))
                 authUser.Dispose();
             else
                 return false;
 
-            if (_matchRoom.MatchInformation.GetTeam(matchPlayerInfo.StadiumSitting).Any(
+            var team = _matchRoom.MatchInformation.GetTeam(matchPlayerInfo.StadiumSitting);
+            if (team == null || team.Any(
                 p => p.PlayerId == matchPlayerInfo.PlayerId ||
                 p.SquadNumber == matchPlayerInfo.SquadNumber
             ))
@@ -40,7 +38,7 @@ namespace Sobee.TestServer.Match
 
             if (TryAdd(matchPlayer))
             {
-                if (!_matchHelper.TryAssignPlayerInfoToMatchInfo(matchPlayerInfo))
+                if (!MatchHelper.TryAssignPlayerInfoToMatchInfo(_matchRoom, matchPlayerInfo))
                 {
                     if (!TryRemove(matchPlayer.Id, out _))
                     {
@@ -72,8 +70,15 @@ namespace Sobee.TestServer.Match
                 return false;
             }
 
+            var matchPlayerInfo = _matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
+            if (matchPlayerInfo == null)
+            {
+                _log.Error("{managerId}, player info not found in match info for removal. PlayerId: {playerId}", Id, matchPlayer.Id);
+                return false;
+            }
+
             // Once oyuncu infosunu kaldir, sonra oyuncuyu kaldir.
-            if (!_matchHelper.TryRemovePlayerInfoFromMatchInfo(matchPlayer) || !base.TryRemove(matchPlayer.Id, out _))
+            if (!MatchHelper.TryRemovePlayerInfoFromMatchInfo(_matchRoom, matchPlayerInfo) || !base.TryRemove(matchPlayer.Id, out _))
             {
                 _log.Error("{managerId}, failed to remove player. PlayerId: {playerId}", Id, matchPlayer.Id);
                 _matchRoom.Dispose();

@@ -35,6 +35,13 @@ namespace Sobee.TestServer.GameEvents
                 case "kickoff":
                     PositioningHelper.ChangePosition(matchRoom, MatchFieldPositioning.Kickoff);
                     return;
+                case "phase":
+                    matchPlayer.SendMessage(new ChatSystemMessage($"Phase: {matchRoom.MatchInformation.PhaseInfo.MatchPhase}", ChatSystemMessageType.General));
+                    return;
+                case "actioner":
+                    var actionerInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.Actioner);
+                    matchPlayer.SendMessage(new ChatSystemMessage($"Actioner: {(actionerInfo != null ? actionerInfo.PlayerName : "Unknown")}", ChatSystemMessageType.General));
+                    return;
             }
 
             matchRoom.Players.SendMessage(new ChatPlayerMessage(matchRoom.MatchInformation.TeamIdInfo.GetId(playerMatchInfo.StadiumSitting), playerMatchInfo.PlayerId, chatMessage.MessageText, 0));

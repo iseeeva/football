@@ -22,7 +22,7 @@ namespace Sobee.TestServer.Helpers
 
             public Team(List<Vector2> positions, Vector2 defaultDirection, AnimationType defaultAnimation)
             {
-                if (positions.Count != MAX_TEAM_SIZE)
+                if (positions.Count > MAX_TEAM_SIZE)
                     throw new ArgumentException($"Positions list must have {MAX_TEAM_SIZE} elements.");
 
                 Positions = new(positions);

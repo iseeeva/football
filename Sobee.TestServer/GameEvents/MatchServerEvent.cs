@@ -48,7 +48,6 @@ namespace Sobee.TestServer.GameEvents
                 matchPlayer.SendMessage(new Messages.Chat.ChatSystemMessage($"[PlayerJoined] (SessionType: {matchPlayer.SessionType})", Messages.Chat.ChatSystemMessageType.General));
                 matchPlayer.SendMessage(new Messages.Chat.ChatSystemMessage($"[PlayerJoined] {matchInformation}", Messages.Chat.ChatSystemMessageType.General));
                 matchPlayer.IsReadyForMatch = true;
-                //MatchBeginning(matchRoom);
             });
         }
     }

@@ -50,7 +50,7 @@ namespace Sobee.TestServer.GameEvents
             matchRoom.MatchInformation.BallPosition = new Vector3(
               (float)(actionerPlayerInfo.Position.X + actionerPlayerInfo.Direction.X * ballHitSafe),
               (float)(actionerPlayerInfo.Position.Y + actionerPlayerInfo.Direction.Y * ballHitSafe),
-              (float)(MatchBallComponent.BallBoundry.Z)
+              (float)(ballComponent.BallBoundry.Z)
             );
 
             matchRoom.MatchInformation.BallVelocity = new Vector3(

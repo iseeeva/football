@@ -7,17 +7,17 @@ namespace Sobee.TestServer.Messages.Player
     [MessageAttribute(18290)]
     public class PlayerMove : Message
     {
-        public sbyte SquadNumber { get; }
+        public readonly sbyte SquadNumber;
 
-        public Vector2 Position { get; }
+        public readonly Vector2 Position;
 
-        public Vector2 Velocity { get; }
+        public readonly Vector2 Velocity;
 
-        public bool Sprint { get; }
+        public readonly bool Sprint;
 
-        public bool Alerted { get; }
+        public readonly bool Alerted;
 
-        public byte Stamina { get; }
+        public readonly byte Stamina;
 
         public PlayerMove(BinaryReader reader) : base(reader)
         {

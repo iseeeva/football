@@ -7,6 +7,7 @@ using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Ball;
 using Sobee.TestServer.Messages.Chat;
 using Sobee.TestServer.Messages.Match;
+using Sobee.TestServer.Messages.Player;
 
 namespace Sobee.TestServer.Match
 {
@@ -39,6 +40,7 @@ namespace Sobee.TestServer.Match
             // === Player Messages ===
             RegisterMessageEvent<ChatMessage>(OnReceivedMessage);
             RegisterMessageEvent<HeartbeatMessage>(OnReceivedMessage);
+            RegisterMessageEvent<PlayerMovePressed>(OnReceivedMessage);
 
             // === Match Messages ===
             RegisterMessageEvent<MatchRunningAlert>(OnReceivedMessage);

@@ -9,14 +9,8 @@ namespace Sobee.TestServer.Helpers
 {
     public class MatchHelper
     {
-        private readonly MatchRoom _matchRoom;
-
-        public MatchHelper(MatchRoom matchRoom)
-        {
-            _matchRoom = matchRoom;
-        }
-
-        public bool TryGeneratePlayer(
+        public static bool TryGeneratePlayer(
+            MatchRoom matchRoom,
             AuthUser authUser,
             [MaybeNullWhen(false)] out MatchPlayer matchPlayer,
             [MaybeNullWhen(false)] out PlayerMatchInformation playerMatchInformation
@@ -30,13 +24,13 @@ namespace Sobee.TestServer.Helpers
             if (authUser.Socket == null || authUser.AuthInformation == null)
                 return false;
 
-            matchPlayer = new MatchPlayer(authUser.AuthInformation, authUser.Socket, _matchRoom);
+            matchPlayer = new MatchPlayer(authUser.Socket, authUser.AuthInformation, matchRoom);
             playerMatchInformation = new PlayerMatchInformation(
-                  _matchRoom.Id,
+                  matchRoom.Id,
                   matchPlayer.Id,
                   $"Temporary {authUser.AuthInformation.Entry.EntryNumber}",
                   new PlayerAppearance(),
-                  _matchRoom.MatchInformation.ScenarioInfo.GetScenarioSittingFromEntry(authUser.AuthInformation.Entry.EntryNumber),
+                  matchRoom.MatchInformation.ScenarioInfo.GetScenarioSittingFromEntry(authUser.AuthInformation.Entry.EntryNumber),
                   (sbyte)authUser.AuthInformation.Entry.ToSquad(true),
                   new Vector2(0, 0),
                   new Vector3(0, 0, 0),
@@ -48,49 +42,51 @@ namespace Sobee.TestServer.Helpers
             return true;
         }
 
-        public bool TryAssignPlayerInfoToMatchInfo(PlayerMatchInformation playerInformation)
+        public static PlayerMatchInformation? GetPlayerInfoFromMatchInfo(MatchRoom matchRoom, Guid playerId)
         {
-            if (_matchRoom.Players.Count > MatchRoom.MAX_PLAYER)
+            if (matchRoom == null)
+                return null;
+
+            return matchRoom.MatchInformation.GetPlayer(playerId);
+        }
+
+        public static bool TryAssignPlayerInfoToMatchInfo(MatchRoom matchRoom, PlayerMatchInformation playerInformation)
+        {
+            if (matchRoom == null || playerInformation == null)
                 return false;
 
-            if (_matchRoom.MatchInformation.GetTeam(playerInformation.StadiumSitting).Any(
+            if (matchRoom.Players.Count > MatchRoom.MAX_PLAYER)
+                return false;
+
+            var team = matchRoom.MatchInformation.GetTeam(playerInformation.StadiumSitting);
+
+            if (team == null || team.Any(
                     p => p.PlayerId == playerInformation.PlayerId ||
                     p.SquadNumber == playerInformation.SquadNumber
                ))
                 return false;
 
-            try
-            {
-                var team = _matchRoom.MatchInformation.GetTeam(playerInformation.StadiumSitting);
-                team?.Add(playerInformation);
-            }
-            catch
-            {
-                return false;
-            }
-
+            team.Add(playerInformation);
             return true;
         }
 
-        public bool TryRemovePlayerInfoFromMatchInfo(MatchPlayer player)
+        public static bool TryRemovePlayerInfoFromMatchInfo(MatchRoom matchRoom, PlayerMatchInformation playerInformation)
         {
-            if (player.AuthInformation == null)
+            if (matchRoom == null || playerInformation == null)
                 return false;
 
-            var playerInformation = _matchRoom.MatchInformation.GetPlayer(player.Id);
-            if (playerInformation == null)
+            var team = matchRoom.MatchInformation.GetTeam(playerInformation.StadiumSitting);
+            if (team == null)
                 return false;
 
-            try
-            {
-                var team = _matchRoom.MatchInformation.GetTeam(playerInformation.StadiumSitting);
-                team?.Remove(playerInformation);
-            }
-            catch
-            {
-                return false;
-            }
+            var targetInformation = team.FirstOrDefault(p =>
+                p.PlayerId == playerInformation.PlayerId &&
+                p.SquadNumber == playerInformation.SquadNumber);
 
+            if (targetInformation == null)
+                return false;
+
+            team.Remove(targetInformation);
             return true;
         }
     }

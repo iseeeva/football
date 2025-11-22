@@ -5,6 +5,7 @@ using Sobee.Network;
 using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Auth;
 using Sobee.TestServer.Messages.Chat;
+using Sobee.TestServer.Messages.Player;
 
 namespace Sobee.TestServer.Match
 {
@@ -20,8 +21,8 @@ namespace Sobee.TestServer.Match
         public bool IsReadyForMatch;
 
         public MatchPlayer(
-            AuthInformation authInformation,
             SocketWrapper userSocket,
+            AuthInformation authInformation,
             Communication communication
         ) : base(userSocket, communication)
         {
@@ -29,6 +30,7 @@ namespace Sobee.TestServer.Match
             AuthInformation = authInformation;
 
             communication.AddSessionHandler<HeartbeatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.HeartbeatMessageReceived));
+            communication.AddSessionHandler<PlayerMovePressed>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.PlayerMovePressedReceived));
             communication.AddSessionHandler<ChatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerChatEvent.ChatMessageReceived));
 
             _log.Debug("{id} initialized.", Id);
