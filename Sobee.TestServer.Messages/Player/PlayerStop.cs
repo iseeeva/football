@@ -1,26 +1,67 @@
-﻿using Sobee.Messaging;
+﻿using System.Numerics;
+using Sobee.Messaging;
 using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Player
 {
-    [MessageAttribute(13399)]
+    [MessageAttribute(13107)]
     public class PlayerStop : Message
     {
-        // Token: 0x06000335 RID: 821 RVA: 0x00002496 File Offset: 0x00000696
-        public PlayerStop()
-        {
-        }
-
-        // Token: 0x06000336 RID: 822 RVA: 0x0000249E File Offset: 0x0000069E
         public PlayerStop(BinaryReader gclass315_0) : base(gclass315_0)
         {
+            this.SquadNumber = gclass315_0.method_11();
+            this.Position = new Vector2((float)gclass315_0.method_8() / 6f, (float)gclass315_0.method_8() / 6f);
+            this.Direction = (float)gclass315_0.method_8() / 10000f;
+            this.IsAlerted = gclass315_0.method_1();
+            this.Stamina = gclass315_0.method_2();
         }
 
-        // Token: 0x06000337 RID: 823 RVA: 0x000024A7 File Offset: 0x000006A7
+        public PlayerStop(sbyte squadNumber, Vector2 position, Vector2 direction, bool isAlerted, byte stamina)
+        {
+            this.SquadNumber = squadNumber;
+            this.Position = position;
+            this.Direction = GClass97.smethod_15(direction.Y, direction.X);
+            this.IsAlerted = isAlerted;
+            this.Stamina = stamina;
+        }
+
         public override void Serialize(BinaryWriter gclass316_0)
         {
             base.Serialize(gclass316_0);
+            gclass316_0.method_11(this.SquadNumber);
+            gclass316_0.method_8((short)(this.Position.X * 6f));
+            gclass316_0.method_8((short)(this.Position.Y * 6f));
+            gclass316_0.method_8((short)(this.Direction * 10000f));
+            gclass316_0.method_1(this.IsAlerted);
+            gclass316_0.method_2(this.Stamina);
         }
+
+        public override string ToString()
+        {
+            return string.Concat(new object[]
+            {
+            "PlayerStop - ",
+            this.SquadNumber,
+            " Pos: ",
+            this.Position,
+            " Dir: ",
+            this.Direction,
+            " Alerted: ",
+            this.IsAlerted,
+            " Stamina: ",
+            this.Stamina
+            });
+        }
+
+        public readonly sbyte SquadNumber;
+
+        public readonly Vector2 Position;
+
+        public readonly float Direction;
+
+        public readonly bool IsAlerted;
+
+        public readonly byte Stamina;
     }
 
 }

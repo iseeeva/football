@@ -9,14 +9,14 @@ namespace Sobee.TestServer.GameEvents
     {
         private static readonly Serilog.ILogger _log = Logging.Get<MatchClientEvent>();
 
-        public static void MatchRunningAlertReceived(object? sender, MessageEventArgs e)
+        public static void MatchStateAlertReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not MatchRunningAlert matchAlert) return;
+            if (e.message is not MatchStateAlert matchAlert) return;
 
             // TODO: Ek kontroller gerekebilir.
-            matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage($"[MatchRunningAlertReceived] Player {matchPlayer.Id} reported his match is running.", Messages.Chat.ChatSystemMessageType.General));
+            matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage($"[MatchStateAlertReceived] Player {matchPlayer.Id} reported his match state is changed.", Messages.Chat.ChatSystemMessageType.General));
         }
     }
 }

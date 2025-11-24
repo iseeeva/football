@@ -14,14 +14,14 @@ namespace Sobee.TestServer.GameEvents
 
             if (matchRoom == null || (matchPlayer == null || matchPlayer.AuthInformation == null))
             {
-                _log.Warning("[PlayerJoined] matchRoom or matchPlayer is null.");
+                _log.Warning("[PlayerJoined] Match or player is null.");
                 return;
             }
 
             var matchInformation = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
             if (matchInformation == null)
             {
-                _log.Warning("[PlayerJoined] MatchPlayer {playerId} not found in MatchRoom {matchId}.", matchPlayer.Id, matchRoom.Id);
+                _log.Warning("[PlayerJoined] Player {playerId} not found in Match {matchId}.", matchPlayer.Id, matchRoom.Id);
                 matchRoom.Players.TryRemove(matchPlayer.Id, out _);
                 return;
             }
@@ -37,7 +37,7 @@ namespace Sobee.TestServer.GameEvents
             matchRoom.MatchInformation.Actor.Mark = matchPlayer.AuthInformation.Entry.EntryNumber;
             matchPlayer.SendMessage(matchRoom.MatchInformation);
 
-            _log.Information("[PlayerJoined] MatchPlayer {playerId} joined to MatchRoom {matchId}.", matchPlayer.Id, matchRoom.Id);
+            _log.Information("[PlayerJoined] Player {playerId} joined to Match {matchId}.", matchPlayer.Id, matchRoom.Id);
 
             // Wait for heartbeat message before invoke the match event.
             // Heartbeat is the first message sent by the client after going match screen.

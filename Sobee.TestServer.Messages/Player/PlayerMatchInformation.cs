@@ -10,33 +10,35 @@ namespace Sobee.TestServer.Messages.Player
     [MessageAttribute(10483)]
     public class PlayerMatchInformation : Message
     {
-        public Guid MatchId { get; set; }
-        public Guid PlayerId { get; set; }
-        public string PlayerName { get; set; }
-        public string UserName { get; set; } = string.Empty;
-        public int Stamina { get; set; }
-        public StadiumSitting StadiumSitting { get; set; }
+        public Guid MatchId;
+        public Guid PlayerId;
+        public string PlayerName;
+        public string UserName = string.Empty;
+        public int Stamina;
+        public StadiumSitting StadiumSitting;
+
         /// <summary>
         /// (splited)
         /// </summary>
-        public sbyte SquadNumber { get; set; }
-        public bool Moving { get; set; }
-        public PlayerAppearance Appearance { get; set; }
-        public Vector2 Position { get; set; }
-        public Vector3 Velocity { get; set; }
-        public Vector2 Direction { get; set; }
-        public bool Invite { get; set; }
-        public string Unknown { get; set; } = string.Empty;
-        public MatchCard CardStatus { get; set; }
-        public string XmlCode { get; set; }
-        public int LeagueGroupId { get; set; }
-        public int LeagueId { get; set; }
-        public sbyte LeagueSortOrder { get; set; }
-        public float EloPoint { get; set; }
-        public int TotalExperience { get; set; }
-        public float ContractRevenueRate { get; set; }
-        public List<string> Skills1 { get; set; } = new List<string>();
-        public List<string> Skills2 { get; set; } = new List<string>();
+        public sbyte SquadNumber;
+
+        public bool Moving;
+        public PlayerAppearance Appearance;
+        public Vector2 Position;
+        public Vector3 Velocity;
+        public Vector2 Direction;
+        public bool Invite;
+        public string Unknown = string.Empty;
+        public MatchCard CardStatus;
+        public string XmlCode;
+        public int LeagueGroupId;
+        public int LeagueId;
+        public sbyte LeagueSortOrder;
+        public float EloPoint;
+        public int TotalExperience;
+        public float ContractRevenueRate;
+        public List<string> Skills1 = new List<string>();
+        public List<string> Skills2 = new List<string>();
 
         public PlayerMatchInformation()
         {

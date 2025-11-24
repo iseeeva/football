@@ -35,16 +35,18 @@ namespace Sobee.TestServer.Match
             CommunicationType = SessionType.Game;
 
             // Component
-            Components.AddComponent(new MatchBallComponent(this));
+            Components.AddComponent(new MatchMovement(this));
+            Components.AddComponent(new MatchBall(this));
 
             // === Player Messages ===
             RegisterMessageEvent<ChatMessage>(OnReceivedMessage);
             RegisterMessageEvent<HeartbeatMessage>(OnReceivedMessage);
-            RegisterMessageEvent<PlayerMovePressed>(OnReceivedMessage);
+            RegisterMessageEvent<PlayerMoveKeyUp>(OnReceivedMessage);
+            RegisterMessageEvent<PlayerMoveKeyDown>(OnReceivedMessage);
 
             // === Match Messages ===
-            RegisterMessageEvent<MatchRunningAlert>(OnReceivedMessage);
-            AddGlobalHandler<MatchRunningAlert>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientEvent.MatchRunningAlertReceived));
+            RegisterMessageEvent<MatchStateAlert>(OnReceivedMessage);
+            AddGlobalHandler<MatchStateAlert>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientEvent.MatchStateAlertReceived));
             RegisterMessageEvent<BallActionerHit>(OnReceivedMessage);
             AddGlobalHandler<BallActionerHit>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.ActionerHitReceived));
 

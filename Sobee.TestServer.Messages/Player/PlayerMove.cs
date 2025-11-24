@@ -13,9 +13,9 @@ namespace Sobee.TestServer.Messages.Player
 
         public readonly Vector2 Velocity;
 
-        public readonly bool Sprint;
+        public readonly bool IsSprint;
 
-        public readonly bool Alerted;
+        public readonly bool IsAlerted;
 
         public readonly byte Stamina;
 
@@ -26,19 +26,19 @@ namespace Sobee.TestServer.Messages.Player
             float num = reader.method_8() / 10f;
             float float_ = reader.method_8() / 10000f;
             Velocity = new Vector2(num * GClass97.smethod_11(float_), num * GClass97.smethod_10(float_));
-            Sprint = reader.method_1();
-            Alerted = reader.method_1();
+            IsSprint = reader.method_1();
+            IsAlerted = reader.method_1();
             Stamina = reader.method_2();
         }
 
-        public PlayerMove(sbyte sbyte_1, Vector2 vector2_2, Vector2 vector2_3, bool bool_2, bool bool_3, byte byte_1)
+        public PlayerMove(sbyte squadNumber, Vector2 position, Vector2 velocity, bool isSprint, bool isAlerted, byte stamina)
         {
-            SquadNumber = sbyte_1;
-            Position = vector2_2;
-            Velocity = vector2_3;
-            Sprint = bool_2;
-            Alerted = bool_3;
-            Stamina = byte_1;
+            SquadNumber = squadNumber;
+            Position = position;
+            Velocity = velocity;
+            IsSprint = isSprint;
+            IsAlerted = isAlerted;
+            Stamina = stamina;
         }
 
         public override void Serialize(BinaryWriter writer)
@@ -50,8 +50,8 @@ namespace Sobee.TestServer.Messages.Player
             writer.method_8((short)(Velocity.Length() * 10f));
             Vector2 vector = Vector2.Normalize(Velocity);
             writer.method_8((short)(GClass97.smethod_15(vector.Y, vector.X) * 10000f));
-            writer.method_1(Sprint);
-            writer.method_1(Alerted);
+            writer.method_1(IsSprint);
+            writer.method_1(IsAlerted);
             writer.method_2(Stamina);
         }
 
@@ -68,9 +68,9 @@ namespace Sobee.TestServer.Messages.Player
             " Spd:",
             Velocity.Length(),
             " Sprnt:",
-            Sprint,
+            IsSprint,
             " Alerted:",
-            Alerted,
+            IsAlerted,
             " Stamina: ",
             Stamina
             });

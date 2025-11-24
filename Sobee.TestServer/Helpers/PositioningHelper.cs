@@ -110,7 +110,11 @@ namespace Sobee.TestServer.Helpers
             var startingTeam = matchPhaseInfo.IsFirstHalf() ? matchInfo.HomeTeam : matchInfo.AwayTeam;
 
             var actionerIndex = startingTeam.Count - 1;
-            var actionerPlayerInformation = startingTeam[actionerIndex];
+            var actionerMatchInformation = startingTeam[actionerIndex];
+            var actionerPlayer = matchRoom.Players[actionerMatchInformation.PlayerId];
+
+            if (actionerPlayer == null)
+                throw new InvalidOperationException($"MatchPlayer with ID {actionerMatchInformation.PlayerId} not found in MatchRoom.");
 
             if (matchPhaseInfo.IsFirstHalf())
                 pos.Home.Positions[actionerIndex] = Vector2.Zero;
@@ -146,7 +150,7 @@ namespace Sobee.TestServer.Helpers
                 pos.Away.Animations
             ));
 
-            BallHelper.GetBall(matchRoom, actionerPlayerInformation.SquadNumber, 0f);
+            BallHelper.GetBall(matchRoom, (sbyte)actionerPlayer.AuthInformation.Entry.ToSquad());
             return pos;
         }
 

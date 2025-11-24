@@ -6,14 +6,14 @@ namespace Sobee.TestServer.Messages.Match
     // INFO: Client, kickoff atisindan hemen sonra gonderiyor.
 
     [MessageAttribute(49149)]
-    public class MatchRunningAlert : Message
+    public class MatchStateAlert : Message
     {
-        public MatchRunningAlert(BinaryReader gclass315_0) : base(gclass315_0)
+        public MatchStateAlert(BinaryReader gclass315_0) : base(gclass315_0)
         {
             this.IsAlerted = gclass315_0.method_1();
         }
 
-        public MatchRunningAlert(bool isAlerted)
+        public MatchStateAlert(bool isAlerted)
         {
             this.IsAlerted = isAlerted;
         }

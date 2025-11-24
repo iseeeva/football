@@ -19,10 +19,17 @@ namespace Sobee.TestServer.GameEvents
             if (e.handler is not MatchPlayer matchPlayer) return;
             if (e.message is not BallActionerHit actionerHit) return;
 
-            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
+            var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
             if (ballComponent == null)
             {
                 _log.Warning("[ActionerHitReceived] MatchBallComponent is null in MatchRoom {matchId}.", matchRoom.Id);
+                return;
+            }
+
+            var movementComponent = matchRoom.Components.GetComponent<MatchMovement>();
+            if (movementComponent == null)
+            {
+                _log.Warning("[ActionerHitReceived] MatchMovementComponent is null in MatchRoom {matchId}.", matchRoom.Id);
                 return;
             }
 
@@ -43,14 +50,14 @@ namespace Sobee.TestServer.GameEvents
             }
 
             double ballSpeed = ballComponent.BallMaxSpeed * actionerHit.Strength;
-            double ballHitSafe = ballComponent.BallCollisionRadius + 0.1;
+            double ballHitSafe = (ballComponent.BallCollisionRadius + movementComponent.MovementCollisionRadius) + 0.1;
 
             actionerPlayerInfo.Direction = actionerHit.Direction;
 
             matchRoom.MatchInformation.BallPosition = new Vector3(
               (float)(actionerPlayerInfo.Position.X + actionerPlayerInfo.Direction.X * ballHitSafe),
               (float)(actionerPlayerInfo.Position.Y + actionerPlayerInfo.Direction.Y * ballHitSafe),
-              (float)(ballComponent.BallBoundry.Z)
+              (float)(ballComponent.BallBoundary.Z)
             );
 
             matchRoom.MatchInformation.BallVelocity = new Vector3(
@@ -73,10 +80,12 @@ namespace Sobee.TestServer.GameEvents
 
             matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage($"[ActionerHitReceived] {matchRoom.MatchInformation.FieldPositioning} by {actionerPlayerInfo.PlayerName}", Messages.Chat.ChatSystemMessageType.General));
             matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage($"[ActionerHitReceived] Strength: {actionerHit.Strength}, HitSubType: {actionerHit.HitSubType}, Direction: {actionerHit.Direction}", Messages.Chat.ChatSystemMessageType.General));
-            _log.Information("[ActionerHitReceived] Actioner {playerId} hit the ball during {fieldPos}.", actionerPlayerInfo.PlayerId, matchRoom.MatchInformation.FieldPositioning);
 
             matchRoom.MatchInformation.Actor.Actioner = -1;
             matchRoom.MatchInformation.MatchState = MatchStateType.Running;
+            matchRoom.MatchInformation.FieldPositioning = MatchFieldPositioning.Running;
+
+            _log.Information("[ActionerHitReceived] Actioner {playerId} hit the ball during {fieldPos}.", actionerPlayerInfo.PlayerId, matchRoom.MatchInformation.FieldPositioning);
         }
     }
 }

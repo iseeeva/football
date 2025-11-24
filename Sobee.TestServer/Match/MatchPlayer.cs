@@ -30,7 +30,8 @@ namespace Sobee.TestServer.Match
             AuthInformation = authInformation;
 
             communication.AddSessionHandler<HeartbeatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.HeartbeatMessageReceived));
-            communication.AddSessionHandler<PlayerMovePressed>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.PlayerMovePressedReceived));
+            communication.AddSessionHandler<PlayerMoveKeyDown>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.PlayerMoveKeyDownReceived));
+            communication.AddSessionHandler<PlayerMoveKeyUp>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.PlayerMoveKeyUpReceived));
             communication.AddSessionHandler<ChatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerChatEvent.ChatMessageReceived));
 
             _log.Debug("{id} initialized.", Id);
