@@ -61,7 +61,7 @@ namespace Sobee.TestServer.GameEvents
             ));
 
             playerMatchInfo.Moving = true;
-            _log.Debug("[PlayerMovePressedReceived] Player {playerId} moving to {direction}.", player.Id, playerMatchInfo.Direction);
+            _log.Debug("[PlayerMoveKeyDownReceived] Player {playerId} moving to {direction}.", player.Id, playerMatchInfo.Direction);
         }
 
         public static void PlayerMoveKeyUpReceived(object? sender, MessageEventArgs e)
@@ -89,7 +89,7 @@ namespace Sobee.TestServer.GameEvents
             playerInformation.Velocity = Vector3.Zero;
 
             playerInformation.Moving = false;
-            _log.Debug("[PlayerMoveReleasedReceived] Player {playerId} stopped moving.", matchPlayer.Id);
+            _log.Debug("[PlayerMoveKeyUpReceived] Player {playerId} stopped moving.", matchPlayer.Id);
         }
     }
 }
