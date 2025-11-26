@@ -1,12 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using Sobee.Common;
-using Sobee.Messaging;
 
-namespace Sobee.TestServer
+namespace Sobee.Network.Messaging
 {
-    public class Communication : MessageDispatch
+    public class MessageCommunication : MessageDispatch
     {
-        private readonly static Serilog.ILogger _log = Logging.Get<Communication>();
+        private readonly static Serilog.ILogger _log = Logging.Get<MessageCommunication>();
         private bool _isDisposed;
 
         // Nasil calisir: Global handlerlar tum sessionlar icin gecerli olur.
@@ -17,10 +16,9 @@ namespace Sobee.TestServer
         private readonly ConcurrentDictionary<Type, EventHandler<MessageEventArgs>> _globalHandlers = new();
         private readonly ConcurrentDictionary<Session, ConcurrentDictionary<Type, EventHandler<MessageEventArgs>>> _sessionHandlers = new();
 
-        public Communication() : base()
+        public MessageCommunication() : base()
         {
-            RegisterMessagesFromAssemblyName("Sobee.TestServer.Messages");
-            RegisterMessageEvent<Messages.LatencyMessage>(OnReceivedMessage);
+
         }
 
         /// <summary>
@@ -103,14 +101,14 @@ namespace Sobee.TestServer
                 if (map.TryGetValue(typeof(T), out var handler))
                 {
                     handler.Invoke(this, new MessageEventArgs(sender, message));
-                    //_log.Debug("{commId}, invoked session handler ({type}) for session {id}.", Id, typeof(T).Name, sender.Id);
+                    _log.Debug("{commId}, invoked session handler ({type}) for session {id}.", Id, typeof(T).Name, sender.Id);
                 }
             }
         }
 
         protected virtual void OnReceivedMessage<T>(Session sender, T message) where T : Message
         {
-            DispatchTo<T>(sender, message);
+            DispatchTo(sender, message);
         }
 
         //public override Session CreateSession(SocketWrapper socketConnection)

@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-using Sobee.Messaging;
+using Sobee.Network.Messaging;
 using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Player

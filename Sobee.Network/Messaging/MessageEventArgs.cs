@@ -1,4 +1,4 @@
-﻿namespace Sobee.Messaging
+﻿namespace Sobee.Network.Messaging
 {
     public class MessageEventArgs : EventArgs
     {

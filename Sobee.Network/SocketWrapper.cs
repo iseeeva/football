@@ -21,10 +21,10 @@ namespace Sobee.Network
         private int _processedBytesInBuffer;
 
         public event EventHandler? Disconnected;
-        public event EventHandler<GEventArgs10>? SocketError;
-        public event EventHandler<GEventArgs10>? ConnectionError;
-        public event EventHandler<GEventArgs10>? SendError;
-        public event EventHandler<GEventArgs10>? ReceiveError;
+        public event EventHandler<ConnectionErrorEvent>? SocketError;
+        public event EventHandler<ConnectionErrorEvent>? ConnectionError;
+        public event EventHandler<ConnectionErrorEvent>? SendError;
+        public event EventHandler<ConnectionErrorEvent>? ReceiveError;
 
         public long TotalBytesSent { get; private set; }
         public long TotalBytesReceived { get; private set; }
@@ -252,10 +252,10 @@ namespace Sobee.Network
         }
 
         private void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
-        private void OnSocketError(SocketError error) => SocketError?.Invoke(this, new GEventArgs10(error));
-        private void OnConnectionError(ConnectionError error) => ConnectionError?.Invoke(this, new GEventArgs10(error));
-        private void OnSendError(SocketError error) => SendError?.Invoke(this, new GEventArgs10(error));
-        private void OnReceiveError(SocketError error) => ReceiveError?.Invoke(this, new GEventArgs10(error));
+        private void OnSocketError(SocketError error) => SocketError?.Invoke(this, new ConnectionErrorEvent(error));
+        private void OnConnectionError(ConnectionError error) => ConnectionError?.Invoke(this, new ConnectionErrorEvent(error));
+        private void OnSendError(SocketError error) => SendError?.Invoke(this, new ConnectionErrorEvent(error));
+        private void OnReceiveError(SocketError error) => ReceiveError?.Invoke(this, new ConnectionErrorEvent(error));
 
         protected override void Dispose(bool disposing)
         {

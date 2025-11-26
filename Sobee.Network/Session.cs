@@ -1,10 +1,10 @@
 ﻿using System.Runtime.Serialization;
 using Serilog;
 using Sobee.Common;
-using Sobee.Network;
+using Sobee.Network.Messaging;
 using Sobee.Serialization;
 
-namespace Sobee.Messaging
+namespace Sobee.Network
 {
     public class Session : Component
     {
@@ -37,7 +37,7 @@ namespace Sobee.Messaging
             _sendHelper = new MessageHelper(_sendBufferStream, _dispatcher.GetDispatcher(), _dispatcher.GetMessageTypeToIdDelegate());
             _receiveHelper = new MessageHelper(_receiveBufferStream, _dispatcher.GetDispatcher(), _dispatcher.GetMessageTypeToIdDelegate());
 
-            _log.Information("{thisId} initialized. (source: {socketId})", this.Id, Socket.Id);
+            _log.Information("{thisId} initialized. (source: {socketId})", Id, Socket.Id);
         }
 
         public virtual void Start()

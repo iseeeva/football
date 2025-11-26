@@ -1,6 +1,7 @@
 ﻿using Serilog;
 using Sobee.Common;
-using Sobee.Messaging;
+using Sobee.Network;
+using Sobee.Network.Messaging;
 using Sobee.TestServer.Messages.Auth;
 
 namespace Sobee.TestServer.GameEvents

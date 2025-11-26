@@ -1,9 +1,9 @@
 ﻿// Token: 0x02000005 RID: 5
 using Sobee.Serialization;
 
-namespace Sobee.Messaging
+namespace Sobee.Network.Messaging
 {
-    [MessageAttribute(1)]
+    [Message(1)]
     public class Message : IMessage
     {
         // Token: 0x06000059 RID: 89 RVA: 0x00002598 File Offset: 0x00000798

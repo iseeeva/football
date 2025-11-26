@@ -1,11 +1,10 @@
 ﻿using Serilog;
 using Sobee.Common;
-using Sobee.Messaging;
 using Sobee.Network;
 
 namespace Sobee.TestServer
 {
-    public class Room<T> : Communication where T : Session
+    public class Room<T> : TestServerCommunication where T : Session
     {
         private static readonly ILogger _log = Logging.Get<Room<T>>();
         private bool _isDisposed;

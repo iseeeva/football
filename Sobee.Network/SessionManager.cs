@@ -1,9 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Sobee.Common;
-using Sobee.Messaging;
-
-namespace Sobee.TestServer;
+using Sobee.Network.Messaging;
+namespace Sobee.Network;
 
 public class SessionManager<T> : Component where T : Session
 {
@@ -11,12 +10,12 @@ public class SessionManager<T> : Component where T : Session
     private bool _isDisposed;
 
     private readonly ConcurrentDictionary<Guid, T> _sessions = new();
-    private readonly Communication _communication;
+    private readonly MessageCommunication _communication;
 
     public event Action<T>? SessionAdded;
     public event Action<T>? SessionRemoved;
 
-    public SessionManager(Communication communication)
+    public SessionManager(MessageCommunication communication)
     {
         _communication = communication;
         _log.Information("{id} initialized.", Id);

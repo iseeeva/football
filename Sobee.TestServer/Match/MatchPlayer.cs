@@ -1,7 +1,7 @@
 ﻿using Serilog;
 using Sobee.Common;
-using Sobee.Messaging;
 using Sobee.Network;
+using Sobee.Network.Messaging;
 using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Auth;
 using Sobee.TestServer.Messages.Chat;
@@ -23,7 +23,7 @@ namespace Sobee.TestServer.Match
         public MatchPlayer(
             SocketWrapper userSocket,
             AuthInformation authInformation,
-            Communication communication
+            MessageCommunication communication
         ) : base(userSocket, communication)
         {
             SessionType = SessionType.User;

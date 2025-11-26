@@ -1,7 +1,7 @@
 ﻿using System.IO.Compression;
 using System.Numerics;
 using System.Text;
-using Sobee.Messaging;
+using Sobee.Network.Messaging;
 using Sobee.Serialization;
 using Sobee.TestServer.Messages.Match;
 

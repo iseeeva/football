@@ -1,4 +1,4 @@
-﻿using Sobee.Messaging;
+﻿using Sobee.Network.Messaging;
 using Sobee.Serialization;
 using Sobee.TestServer.Messages.Match;
 

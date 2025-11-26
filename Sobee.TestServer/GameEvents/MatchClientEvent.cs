@@ -1,5 +1,5 @@
 ﻿using Sobee.Common;
-using Sobee.Messaging;
+using Sobee.Network.Messaging;
 using Sobee.TestServer.Match;
 using Sobee.TestServer.Messages.Match;
 

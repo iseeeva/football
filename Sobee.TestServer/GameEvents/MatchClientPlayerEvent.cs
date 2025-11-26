@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 using Sobee.Common;
-using Sobee.Messaging;
+using Sobee.Network.Messaging;
 using Sobee.TestServer.Match;
 using Sobee.TestServer.MatchComponents;
 using Sobee.TestServer.Messages;

@@ -1,7 +1,7 @@
 ﻿using Serilog;
 using Sobee.Common;
-using Sobee.Messaging;
 using Sobee.Network;
+using Sobee.Network.Messaging;
 using Sobee.TestServer.MatchComponents;
 using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Ball;
@@ -48,7 +48,9 @@ namespace Sobee.TestServer.Match
             RegisterMessageEvent<MatchStateAlert>(OnReceivedMessage);
             AddGlobalHandler<MatchStateAlert>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientEvent.MatchStateAlertReceived));
             RegisterMessageEvent<BallActionerHit>(OnReceivedMessage);
-            AddGlobalHandler<BallActionerHit>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.ActionerHitReceived));
+            AddGlobalHandler<BallActionerHit>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.BallActionerHitReceived));
+            RegisterMessageEvent<BallPassHit>(OnReceivedMessage);
+            AddGlobalHandler<BallPassHit>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.BallPassHitReceived));
 
             _log.Debug("{id} initialized.", Id);
         }

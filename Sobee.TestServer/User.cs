@@ -1,7 +1,7 @@
 ﻿using Serilog;
 using Sobee.Common;
-using Sobee.Messaging;
 using Sobee.Network;
+using Sobee.Network.Messaging;
 
 namespace Sobee.TestServer
 {
@@ -10,7 +10,7 @@ namespace Sobee.TestServer
         private static readonly ILogger _log = Logging.Get<User>();
         private bool _isDisposed;
 
-        public User(SocketWrapper socket, Communication playerComm) : base(socket, playerComm)
+        public User(SocketWrapper socket, MessageCommunication playerComm) : base(socket, playerComm)
         {
             SessionType = SessionType.User;
             _log.Debug("{id} initialized.", Id);

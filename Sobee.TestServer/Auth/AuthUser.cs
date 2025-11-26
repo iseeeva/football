@@ -1,6 +1,7 @@
 ﻿using Serilog;
 using Sobee.Common;
 using Sobee.Network;
+using Sobee.Network.Messaging;
 using Sobee.TestServer.Messages.Auth;
 
 namespace Sobee.TestServer.Auth
@@ -15,7 +16,7 @@ namespace Sobee.TestServer.Auth
 
         public AuthUser(
             SocketWrapper userSocket,
-            Communication communication
+            MessageCommunication communication
         ) : base(userSocket, communication)
         {
             SessionType = SessionType.User;

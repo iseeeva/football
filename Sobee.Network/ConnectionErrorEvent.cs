@@ -2,7 +2,7 @@
 using Sobee.Network;
 
 // Token: 0x02000009 RID: 9
-public class GEventArgs10 : EventArgs
+public class ConnectionErrorEvent : EventArgs
 {
     // Token: 0x06000053 RID: 83 RVA: 0x000025DB File Offset: 0x000007DB
     public SocketError method_0()
@@ -23,21 +23,21 @@ public class GEventArgs10 : EventArgs
     }
 
     // Token: 0x06000056 RID: 86 RVA: 0x000025F3 File Offset: 0x000007F3
-    public GEventArgs10(SocketError socketError_1)
+    public ConnectionErrorEvent(SocketError socketError_1)
     {
         this.ConnectionError = ConnectionError.SocketError;
         this.SocketError = socketError_1;
     }
 
     // Token: 0x06000057 RID: 87 RVA: 0x00002609 File Offset: 0x00000809
-    public GEventArgs10(ConnectionError connectionError_1)
+    public ConnectionErrorEvent(ConnectionError connectionError_1)
     {
         this.ConnectionError = connectionError_1;
         this.SocketError = SocketError.Success;
     }
 
     // Token: 0x06000058 RID: 88 RVA: 0x0000261F File Offset: 0x0000081F
-    public GEventArgs10(SocketWrapper gclass297_1)
+    public ConnectionErrorEvent(SocketWrapper gclass297_1)
     {
         this.Socket = gclass297_1;
     }

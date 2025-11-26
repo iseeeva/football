@@ -1,4 +1,4 @@
-﻿using Sobee.Messaging;
+﻿using Sobee.Network.Messaging;
 
 namespace Sobee.TestServer.Messages
 {

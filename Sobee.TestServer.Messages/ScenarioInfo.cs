@@ -3,7 +3,7 @@ using System.IO.Compression;
 using System.Text;
 using Serilog;
 using Sobee.Common;
-using Sobee.Messaging;
+using Sobee.Network.Messaging;
 using Sobee.Serialization;
 using Sobee.TestServer.Messages.Match;
 

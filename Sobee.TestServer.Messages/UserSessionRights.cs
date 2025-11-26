@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Reflection;
 using System.Text;
-using Sobee.Messaging;
+using Sobee.Network.Messaging;
 using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages

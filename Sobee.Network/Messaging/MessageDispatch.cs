@@ -3,10 +3,9 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using Serilog;
 using Sobee.Common;
-using Sobee.Network;
 using Sobee.Serialization;
 
-namespace Sobee.Messaging
+namespace Sobee.Network.Messaging
 {
     public class MessageDispatch : Component
     {

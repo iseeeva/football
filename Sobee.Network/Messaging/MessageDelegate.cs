@@ -1,4 +1,4 @@
-﻿namespace Sobee.Messaging
+﻿namespace Sobee.Network.Messaging
 {
 
     // Token: 0x02000012 RID: 18

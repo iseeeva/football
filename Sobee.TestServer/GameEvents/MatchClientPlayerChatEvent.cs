@@ -1,4 +1,5 @@
 ﻿using Sobee.Common;
+using Sobee.Network.Messaging;
 using Sobee.Serialization.GameServer;
 using Sobee.TestServer.Helpers;
 using Sobee.TestServer.Match;
@@ -10,7 +11,7 @@ namespace Sobee.TestServer.GameEvents
     {
         private static readonly Serilog.ILogger _log = Logging.Get<MatchClientPlayerChatEvent>();
 
-        public static void ChatMessageReceived(object? sender, Sobee.Messaging.MessageEventArgs e)
+        public static void ChatMessageReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;

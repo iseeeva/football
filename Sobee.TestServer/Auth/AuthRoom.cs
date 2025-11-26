@@ -1,7 +1,7 @@
 ﻿using Serilog;
 using Sobee.Common;
-using Sobee.Messaging;
 using Sobee.Network;
+using Sobee.Network.Messaging;
 
 namespace Sobee.TestServer.Auth
 {
