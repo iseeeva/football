@@ -88,22 +88,49 @@ namespace Sobee.Network.Messaging
                 _log.Information("No handlers to remove for session {id}.", session.Id);
         }
 
-        public void DispatchTo<T>(Session sender, T message) where T : Message
+        public bool HasMessageHandler<T>(Session? session) where T : Message
         {
+            if (session == null)
+            {
+                if (_globalHandlers.TryGetValue(typeof(T), out _))
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                if (_sessionHandlers.TryGetValue(session, out var map))
+                {
+                    if (map.TryGetValue(typeof(T), out _))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool DispatchTo<T>(Session sender, T message) where T : Message
+        {
+            bool globalInvoked = false;
             if (_globalHandlers.TryGetValue(typeof(T), out var global))
             {
                 global.Invoke(this, new MessageEventArgs(sender, message));
                 _log.Debug("{commId}, invoked global handler ({type}) for session {id}.", Id, typeof(T).Name, sender.Id);
+                globalInvoked = true;
             }
 
+            bool sessionInvoked = false;
             if (_sessionHandlers.TryGetValue(sender, out var map))
             {
                 if (map.TryGetValue(typeof(T), out var handler))
                 {
                     handler.Invoke(this, new MessageEventArgs(sender, message));
                     _log.Debug("{commId}, invoked session handler ({type}) for session {id}.", Id, typeof(T).Name, sender.Id);
+                    sessionInvoked = true;
                 }
             }
+
+            return globalInvoked || sessionInvoked;
         }
 
         protected virtual void OnReceivedMessage<T>(Session sender, T message) where T : Message

@@ -104,7 +104,7 @@ namespace Sobee.TestServer.Messages.Player
             Appearance = (PlayerAppearance)reader.method_25();
             Position = reader.method_19();
             Velocity = reader.method_20();
-            Direction = GClass97.smethod_16(reader.method_12());
+            Direction = GClass97.smethod_10_11_c(reader.method_12());
             Invite = reader.method_1();
             CardStatus = (MatchCard)reader.method_9();
             LeagueId = reader.method_9();

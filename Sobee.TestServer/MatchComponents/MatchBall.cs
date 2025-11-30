@@ -11,22 +11,22 @@ namespace Sobee.TestServer.MatchComponents
         private bool _isDisposed;
 
         /// <summary>Minimum speed before stopping the ball movement</summary>
-        public float Epsilon { get; init; } = 10f;
+        public float Epsilon { get; set; } = 10f;
 
         /// <summary>Gravity affecting the ball's vertical movement</summary>
-        public float Gravity { get; init; } = -9.81f * 100f * 2.5f;
+        public float Gravity { get; set; } = -9.81f * 100f * 2.5f;
 
         /// <summary>Reduction factor for ball speed over time</summary>
-        public float Reduction { get; init; } = 0.985f;
+        public float Reduction { get; set; } = 0.985f;
 
         /// <summary>Radius for ball collision detection</summary>
-        public double BallCollisionRadius { get; init; } = 15;
+        public double BallCollisionRadius { get; set; } = 15;
 
         /// <summary>Maximum speed of the ball</summary>
-        public double BallMaxSpeed { get; init; } = 2000;
+        public double BallMaxSpeed { get; set; } = 2000;
 
         /// <summary>Boundary for the ball (Z axis is ground level)</summary>
-        public Vector3 BallBoundary { get; init; } = new(0, 0, 11.254f);
+        public Vector3 BallBoundary { get; set; } = new(0, 0, 11.254f);
 
         public MatchBall(MatchRoom room) : base(room)
         {

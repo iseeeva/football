@@ -15,7 +15,7 @@ namespace Sobee.TestServer.Messages.Player
         // Token: 0x060001DF RID: 479 RVA: 0x00003BD7 File Offset: 0x00001DD7
         public PlayerMoveKeyDown(BinaryReader reader) : base(reader)
         {
-            Velocity = GClass97.smethod_16(GClass97.smethod_21(reader.method_12()));
+            Velocity = GClass97.smethod_10_11_c(GClass97.smethod_21(reader.method_12()));
             IsSprint = reader.method_1();
         }
 

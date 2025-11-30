@@ -40,7 +40,7 @@ namespace Sobee.TestServer.GameEvents
                     matchPlayer.SendMessage(new ChatSystemMessage($"Phase: {matchRoom.MatchInformation.PhaseInfo.MatchPhase}", ChatSystemMessageType.General));
                     return;
                 case "actioner":
-                    var actionerInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.Actioner);
+                    var actionerInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.BallOwner);
                     matchPlayer.SendMessage(new ChatSystemMessage($"Actioner: {(actionerInfo != null ? actionerInfo.PlayerName : "Unknown")}", ChatSystemMessageType.General));
                     return;
             }

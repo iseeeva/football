@@ -32,9 +32,9 @@ namespace Sobee.TestServer.GameEvents
                 Messages.Chat.ChatSystemMessageType.Anounce
             ));
 
-            // TODO: Set camera and mark to the joining player for their own view
-            matchRoom.MatchInformation.Actor.Camera = (sbyte)matchPlayer.AuthInformation.Entry.ToSquad(false);
-            matchRoom.MatchInformation.Actor.Mark = matchPlayer.AuthInformation.Entry.EntryNumber;
+            // TODO: Set camera and clientId to the joining player for their own view
+            matchRoom.MatchInformation.Actor.Camera = (sbyte)matchPlayer.AuthInformation.Entry.ToSquad();
+            matchRoom.MatchInformation.Actor.ClientId = matchInformation.PlayerId;
             matchPlayer.SendMessage(matchRoom.MatchInformation);
 
             _log.Information("[PlayerJoined] Player {playerId} joined to Match {matchId}.", matchPlayer.Id, matchRoom.Id);

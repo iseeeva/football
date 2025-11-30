@@ -3,8 +3,6 @@ using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Match
 {
-    // INFO: Client, kickoff atisindan hemen sonra gonderiyor.
-
     [MessageAttribute(49149)]
     public class MatchStateAlert : Message
     {

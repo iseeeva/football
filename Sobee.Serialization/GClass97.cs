@@ -75,6 +75,13 @@ public static class GClass97
         return (float)Math.Cos((double)float_3);
     }
 
+    public static Vector2 smethod_10_11_c(float angle)
+    {
+        float x = smethod_11(angle);
+        float y = smethod_10(angle);
+        return new Vector2(x, y);
+    }
+
     // Token: 0x06000027 RID: 39 RVA: 0x0000214C File Offset: 0x0000034C
     public static float smethod_12(float float_3)
     {
@@ -97,13 +104,6 @@ public static class GClass97
     public static float smethod_15(float float_3, float float_4)
     {
         return (float)Math.Atan2((double)float_3, (double)float_4);
-    }
-
-    public static Vector2 smethod_16(float angle)
-    {
-        float x = (float)Math.Cos(angle);
-        float y = (float)Math.Sin(angle);
-        return new Vector2(x, y);
     }
 
     // Token: 0x0600002B RID: 43 RVA: 0x00002176 File Offset: 0x00000376

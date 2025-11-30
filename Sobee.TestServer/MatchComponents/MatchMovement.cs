@@ -19,7 +19,8 @@ namespace Sobee.TestServer.MatchComponents
         public double MovementWalkSpeed { get; set; } = 250;
 
         /// <summary>Movement sprint speed (per frame)</summary>
-        public double MovementSprintSpeed => MovementWalkSpeed * 1.5;
+        public double MovementSprintSpeed => MovementWalkSpeed * MovementSprintFactor;
+        public double MovementSprintFactor { get; set; } = 1.5;
 
         public MatchMovement(MatchRoom room) : base(room)
         {
@@ -97,7 +98,7 @@ namespace Sobee.TestServer.MatchComponents
             var ballPos2D = new Vector2(matchInformation.BallPosition.X, matchInformation.BallPosition.Y);
 
             bool isPlayerInCollision = Vector2.Distance(ballPos2D, playerPos2D) <= (ballComponent.BallCollisionRadius + MovementCollisionRadius);
-            bool isActionerUnset = matchInformation.Actor.Actioner == -1;
+            bool isActionerUnset = matchInformation.Actor.BallOwner == -1;
 
             //if (isPlayerInCollision)
             //{

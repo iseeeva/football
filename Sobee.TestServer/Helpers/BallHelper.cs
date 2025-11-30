@@ -26,7 +26,7 @@ namespace Sobee.TestServer.Helpers
             var playerDirection = playerMatchInformation.Direction;
             matchRoom.MatchInformation.BallVelocity = new Vector3(0, 0, 0);
 
-            matchRoom.MatchInformation.Actor.Actioner = (sbyte)matchPlayer.AuthInformation.Entry.ToSquad();
+            matchRoom.MatchInformation.Actor.BallOwner = (sbyte)matchPlayer.AuthInformation.Entry.ToSquad();
             matchRoom.Players.SendMessage(new BallUpdate(matchRoom.MatchInformation.BallPosition, matchRoom.MatchInformation.BallVelocity));
             matchRoom.Players.SendMessage(new BallGet(
                 squadNumber,

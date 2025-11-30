@@ -12,32 +12,32 @@ namespace Sobee.TestServer.Messages.Match
         /// <summary>
         /// Squad number (not splited) of the actor who have ball
         /// </summary>
-        public sbyte Actioner;
+        public sbyte BallOwner;
 
         /// <summary>
-        /// Entry number of the actor for map mark
+        /// Client id of the actor
         /// </summary>
-        public int Mark;
+        public Guid ClientId;
 
-        public MatchActor(sbyte camera, sbyte actioner, int mark)
+        public MatchActor(sbyte camera, sbyte actioner, Guid clientId)
         {
             Camera = camera;
-            Actioner = actioner;
-            Mark = mark;
+            BallOwner = actioner;
+            ClientId = clientId;
         }
 
         public MatchActor(BinaryReader reader)
         {
             Camera = reader.method_11();
-            Actioner = reader.method_11();
-            Mark = reader.method_9();
+            BallOwner = reader.method_11();
+            ClientId = GuidConverter.ConvertFromInt(reader.method_9());
         }
 
         public void Serialize(BinaryWriter writer)
         {
             writer.method_11(Camera);
-            writer.method_11(Actioner);
-            writer.method_9(Mark);
+            writer.method_11(BallOwner);
+            writer.method_9(GuidConverter.ConvertToInt(ClientId));
         }
     }
 }

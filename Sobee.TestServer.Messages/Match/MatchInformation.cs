@@ -48,7 +48,7 @@ namespace Sobee.TestServer.Messages.Match
             HomeSpectator = new List<PlayerMatchInformation>(11);
             AwaySpectator = new List<PlayerMatchInformation>(11);
 
-            Actor = new MatchActor(-1, -1, -1);
+            Actor = new MatchActor(-1, -1, Guid.Empty);
             BallPosition = Vector3.Zero;
             BallVelocity = Vector3.Zero;
             MatchState = MatchStateType.Positioning;
