@@ -16,12 +16,12 @@ namespace Sobee
             // => Ne yapacak?: Gelen kullanicinin auth bilgisini kontrol edip dogruysa MatchRoom'a yonlendirecek.
             // ==================================
             // Eventler:
-            // => AuthInformation: Gelen auth bilgisini kontrol eder. eger dogruysa istenen MatchRoom.AuthInformation'a gonderir.
+            // => AuthInformationReceived: Gelen auth bilgisini kontrol eder. eger dogruysa istenen MatchRoom'a gonderir.
+            // ==================================
 
             // MatchRoom: Mac odasi
             // => Ne yapacak?: Gelen kullaniciyi kontrol edip maca baglayacak.
             // ==================================
-            // => AuthInformation (auth bilgisini AuthRoom.AuthInformation'dan alir. yeni kullanici icin odayi kontrol eder.)
 
             Logging.Configure();
             _log.Information("Logging started.");

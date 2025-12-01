@@ -4,7 +4,7 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Player
 {
     [MessageAttribute(8993)]
-    public class PlayerAppearance : Message
+    public class PlayerAppearanceMessage : Message
     {
         public byte Part0 { get; set; }
         public byte Part1 { get; set; }
@@ -67,7 +67,7 @@ namespace Sobee.TestServer.Messages.Player
         public byte Part58 { get; set; }
         public byte Part59 { get; set; }
 
-        public PlayerAppearance()
+        public PlayerAppearanceMessage()
         {
             Part0 = 128; Part1 = 128; Part2 = 128; Part3 = 128; Part4 = 128;
             Part5 = 128; Part6 = 128; Part7 = 128; Part8 = 128; Part9 = 128;
@@ -85,7 +85,7 @@ namespace Sobee.TestServer.Messages.Player
             Part56 = 128; Part57 = 128; Part58 = 0; Part59 = 0;
         }
 
-        public PlayerAppearance(
+        public PlayerAppearanceMessage(
             byte part0, byte part1, byte part2, byte part3, byte part4, byte part5,
             byte part6, byte part7, byte part8, byte part9, byte part10, byte part11,
             byte part12, byte part13, byte part14, byte part15, byte part16, byte part17,
@@ -111,7 +111,7 @@ namespace Sobee.TestServer.Messages.Player
             Part55 = part55; Part56 = part56; Part57 = part57; Part58 = part58; Part59 = part59;
         }
 
-        public PlayerAppearance(BinaryReader reader)
+        public PlayerAppearanceMessage(BinaryReader reader)
         {
             Part0 = reader.method_2(); Part1 = reader.method_2(); Part2 = reader.method_2();
             Part3 = reader.method_2(); Part4 = reader.method_2(); Part5 = reader.method_2();
@@ -154,7 +154,7 @@ namespace Sobee.TestServer.Messages.Player
             writer.method_2(Part56); writer.method_2(Part57); writer.method_2(Part58); writer.method_2(Part59);
         }
 
-        public void CopyFrom(PlayerAppearance other)
+        public void CopyFrom(PlayerAppearanceMessage other)
         {
             ArgumentNullException.ThrowIfNull(other);
             Part0 = other.Part0; Part1 = other.Part1; Part2 = other.Part2; Part3 = other.Part3;

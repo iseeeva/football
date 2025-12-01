@@ -21,8 +21,8 @@ namespace Sobee.TestServer.Auth
             CommunicationType = SessionType.Authentication;
 
             // Bu handler ın bütün sessionlardan gelen mesajları işlemesi gerekiyor.
-            RegisterMessageEvent<Messages.Auth.AuthInformation>(OnReceivedMessage);
-            AddGlobalHandler<Messages.Auth.AuthInformation>(new EventHandler<MessageEventArgs>(GameEvents.AuthClientEvent.AuthInformation));
+            RegisterMessageEvent<Messages.Auth.AuthInformationMessage>(OnReceivedMessage);
+            AddGlobalHandler<Messages.Auth.AuthInformationMessage>(new EventHandler<MessageEventArgs>(GameEvents.AuthClientEvent.AuthInformationReceived));
 
             _log.Debug("{id} initialized.", Id);
         }

@@ -30,11 +30,6 @@ namespace Sobee.Network.Messaging
 
         public IEnumerable<KeyValuePair<Type, int>> GetAllTypeIndexes() => _messageTypeToIndex;
 
-        public virtual Session CreateSession(SocketWrapper gclass297_0)
-        {
-            throw new NotImplementedException("Create session function has not been implemented.");
-        }
-
         public int GetMessageIndex(Type type)
         {
             if (_messageTypeToIndex.TryGetValue(type, out var index))

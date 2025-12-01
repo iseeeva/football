@@ -6,21 +6,21 @@ namespace Sobee.TestServer.Messages.Player
 {
     // Token: 0x02000061 RID: 97
     [MessageAttribute(48125)]
-    public class PlayerMoveKeyDown : Message
+    public class PlayerMoveKeyDownMessage : Message
     {
         public readonly Vector2 Velocity;
 
         public readonly bool IsSprint;
 
         // Token: 0x060001DF RID: 479 RVA: 0x00003BD7 File Offset: 0x00001DD7
-        public PlayerMoveKeyDown(BinaryReader reader) : base(reader)
+        public PlayerMoveKeyDownMessage(BinaryReader reader) : base(reader)
         {
             Velocity = GClass97.smethod_10_11_c(GClass97.smethod_21(reader.method_12()));
             IsSprint = reader.method_1();
         }
 
         // Token: 0x060001E0 RID: 480 RVA: 0x00003BF8 File Offset: 0x00001DF8
-        public PlayerMoveKeyDown(Vector2 float_1, bool bool_1)
+        public PlayerMoveKeyDownMessage(Vector2 float_1, bool bool_1)
         {
             Velocity = float_1;
             IsSprint = bool_1;

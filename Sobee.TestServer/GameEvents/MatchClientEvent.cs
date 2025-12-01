@@ -13,7 +13,7 @@ namespace Sobee.TestServer.GameEvents
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not MatchStateAlert matchAlert) return;
+            if (e.message is not MatchStateAlertMessage matchAlert) return;
 
             // TODO: Ek kontroller gerekebilir.
             matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage($"[MatchStateAlertReceived] Player {matchPlayer.Id} reported his match state is changed.", Messages.Chat.ChatSystemMessageType.General));

@@ -18,7 +18,7 @@ namespace Sobee.TestServer.Match
 
         public MatchPlayerManager Players => (MatchPlayerManager)_sessions;
         public readonly ComponentManager<MatchComponent> Components = new();
-        public readonly MatchInformation MatchInformation = new();
+        public readonly MatchInformationMessage MatchInformation = new();
 
         // Constants
         public static readonly TimeSpan MAX_IDLE_TIME = new(0, 1, 0); // 1 dakika
@@ -29,7 +29,8 @@ namespace Sobee.TestServer.Match
             _log.Debug("{id} initializing.", Id);
 
             // Events
-            Players.PlayerJoined += GameEvents.MatchServerEvent.PlayerJoined;
+            Players.PlayerJoinEvent += GameEvents.MatchServerEvent.PlayerJoin;
+            Players.PlayerLeaveEvent += GameEvents.MatchServerEvent.PlayerLeave;
 
             // Communication 
             CommunicationType = SessionType.Game;
@@ -41,18 +42,18 @@ namespace Sobee.TestServer.Match
             // === Player Messages ===
             RegisterMessageEvent<ChatMessage>(OnReceivedMessage);
             RegisterMessageEvent<HeartbeatMessage>(OnReceivedMessage);
-            RegisterMessageEvent<PlayerMoveKeyUp>(OnReceivedMessage);
-            RegisterMessageEvent<PlayerMoveKeyDown>(OnReceivedMessage);
+            RegisterMessageEvent<PlayerMoveKeyUpMessage>(OnReceivedMessage);
+            RegisterMessageEvent<PlayerMoveKeyDownMessage>(OnReceivedMessage);
 
             // === Match Messages ===
-            RegisterMessageEvent<MatchStateAlert>(OnReceivedMessage);
-            AddGlobalHandler<MatchStateAlert>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientEvent.MatchStateAlertReceived));
-            RegisterMessageEvent<BallPositioning>(OnReceivedMessage);
-            AddGlobalHandler<BallPositioning>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.BallPositioningReceived));
+            RegisterMessageEvent<MatchStateAlertMessage>(OnReceivedMessage);
+            AddGlobalHandler<MatchStateAlertMessage>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientEvent.MatchStateAlertReceived));
+            RegisterMessageEvent<BallPositioningMessage>(OnReceivedMessage);
+            AddGlobalHandler<BallPositioningMessage>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.BallPositioningReceived));
             //RegisterMessageEvent<BallPass>(OnReceivedMessage);
             //AddGlobalHandler<BallPass>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.BallPassReceived));
-            RegisterMessageEvent<BallShoot>(OnReceivedMessage);
-            AddGlobalHandler<BallShoot>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.BallShootReceived));
+            RegisterMessageEvent<BallShootMessage>(OnReceivedMessage);
+            AddGlobalHandler<BallShootMessage>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.BallShootReceived));
 
             _log.Debug("{id} initialized.", Id);
         }
@@ -75,13 +76,12 @@ namespace Sobee.TestServer.Match
 
         public override async Task Update(double delta)
         {
-            if (_sessions != null)
-            {
+            if (Players != null)
                 await Players.Update(delta);
-                Players.SendMessage(new LatencyMessage((float)delta)); // TODO: Calisiyor ama dogru yer mi emin degilim
-            }
 
-            await Components.Update(delta);
+            if (Components != null)
+                await Components.Update(delta);
+
             await base.Update(delta);
         }
 
@@ -93,6 +93,8 @@ namespace Sobee.TestServer.Match
 
                 if (disposing)
                 {
+                    _log.Debug("{id} disposing.", Id);
+                    Components.Dispose();
                     _log.Debug("{id} disposed.", Id);
                 }
             }

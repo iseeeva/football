@@ -13,7 +13,7 @@ namespace Sobee.TestServer.Helpers
             MatchRoom matchRoom,
             AuthUser authUser,
             [MaybeNullWhen(false)] out MatchPlayer matchPlayer,
-            [MaybeNullWhen(false)] out PlayerMatchInformation playerMatchInformation
+            [MaybeNullWhen(false)] out PlayerMatchInformationMessage playerMatchInformation
         )
         {
             // TODO: Database den kontrol edilecek
@@ -25,11 +25,11 @@ namespace Sobee.TestServer.Helpers
                 return false;
 
             matchPlayer = new MatchPlayer(authUser.Socket, authUser.AuthInformation, matchRoom);
-            playerMatchInformation = new PlayerMatchInformation(
+            playerMatchInformation = new PlayerMatchInformationMessage(
                   matchRoom.Id,
                   matchPlayer.Id,
                   $"Temporary {authUser.AuthInformation.Entry.EntryNumber}",
-                  new PlayerAppearance(),
+                  new PlayerAppearanceMessage(),
                   matchRoom.MatchInformation.ScenarioInfo.GetScenarioSittingFromEntry(authUser.AuthInformation.Entry.EntryNumber),
                   (sbyte)authUser.AuthInformation.Entry.ToSquad(true),
                   new Vector2(0, 0),
@@ -42,7 +42,7 @@ namespace Sobee.TestServer.Helpers
             return true;
         }
 
-        public static PlayerMatchInformation? GetPlayerInfoFromMatchInfo(MatchRoom matchRoom, Guid playerId)
+        public static PlayerMatchInformationMessage? GetPlayerInfoFromMatchInfo(MatchRoom matchRoom, Guid playerId)
         {
             if (matchRoom == null)
                 return null;
@@ -50,7 +50,7 @@ namespace Sobee.TestServer.Helpers
             return matchRoom.MatchInformation.GetPlayer(playerId);
         }
 
-        public static bool TryAssignPlayerInfoToMatchInfo(MatchRoom matchRoom, PlayerMatchInformation playerInformation)
+        public static bool TryAssignPlayerInfoToMatchInfo(MatchRoom matchRoom, PlayerMatchInformationMessage playerInformation)
         {
             if (matchRoom == null || playerInformation == null)
                 return false;
@@ -70,7 +70,7 @@ namespace Sobee.TestServer.Helpers
             return true;
         }
 
-        public static bool TryRemovePlayerInfoFromMatchInfo(MatchRoom matchRoom, PlayerMatchInformation playerInformation)
+        public static bool TryRemovePlayerInfoFromMatchInfo(MatchRoom matchRoom, PlayerMatchInformationMessage playerInformation)
         {
             if (matchRoom == null || playerInformation == null)
                 return false;

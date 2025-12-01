@@ -5,7 +5,7 @@ using Sobee.TestServer.Messages.Match;
 namespace Sobee.TestServer.Messages.Auth
 {
     [MessageAttribute(29475)]
-    public sealed class AuthInformation : Message
+    public sealed class AuthInformationMessage : Message
     {
         public Version Version { get; }
         public long Unknown { get; }
@@ -19,7 +19,7 @@ namespace Sobee.TestServer.Messages.Auth
         public string Session { get; }
         public bool Autorun { get; }
 
-        public AuthInformation(BinaryReader reader) : base(reader)
+        public AuthInformationMessage(BinaryReader reader) : base(reader)
         {
             Version = reader.method_24();
             Unknown = reader.method_10();
@@ -34,7 +34,7 @@ namespace Sobee.TestServer.Messages.Auth
             Autorun = reader.method_1();
         }
 
-        public AuthInformation(
+        public AuthInformationMessage(
             Version version,
             long unknown,
             string password,

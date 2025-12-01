@@ -8,7 +8,7 @@ using Sobee.TestServer.Messages.Match;
 namespace Sobee.TestServer.Messages.Player
 {
     [MessageAttribute(10483)]
-    public class PlayerMatchInformation : Message
+    public class PlayerMatchInformationMessage : Message
     {
         public Guid MatchId;
         public Guid PlayerId;
@@ -23,7 +23,7 @@ namespace Sobee.TestServer.Messages.Player
         public sbyte SquadNumber;
 
         public bool Moving;
-        public PlayerAppearance Appearance;
+        public PlayerAppearanceMessage Appearance;
         public Vector2 Position;
         public Vector3 Velocity;
         public Vector2 Direction;
@@ -40,7 +40,7 @@ namespace Sobee.TestServer.Messages.Player
         public List<string> Skills1 = new List<string>();
         public List<string> Skills2 = new List<string>();
 
-        public PlayerMatchInformation()
+        public PlayerMatchInformationMessage()
         {
             // TODO: Remove hardcoded values when possible.
             MatchId = Guid.Empty;
@@ -51,7 +51,7 @@ namespace Sobee.TestServer.Messages.Player
             StadiumSitting = StadiumSitting.Invalid;
             SquadNumber = -1;
             Moving = false;
-            Appearance = new PlayerAppearance();
+            Appearance = new PlayerAppearanceMessage();
             Position = Vector2.Zero;
             Velocity = Vector3.Zero;
             Direction = Vector2.Zero;
@@ -69,9 +69,9 @@ namespace Sobee.TestServer.Messages.Player
             Skills2 = new List<string>();
         }
 
-        public PlayerMatchInformation(
+        public PlayerMatchInformationMessage(
             Guid matchId,
-            Guid playerId, string playerName, PlayerAppearance appearance,
+            Guid playerId, string playerName, PlayerAppearanceMessage appearance,
             StadiumSitting stadiumSitting, sbyte squadNumber,
             Vector2 position, Vector3 velocity, Vector2 direction,
             MatchCard cardStatus,
@@ -91,7 +91,7 @@ namespace Sobee.TestServer.Messages.Player
             XmlCode = xmlCode;
         }
 
-        public PlayerMatchInformation(BinaryReader reader)
+        public PlayerMatchInformationMessage(BinaryReader reader)
         {
             MatchId = GuidConverter.ConvertFromInt(reader.method_9());
             PlayerId = GuidConverter.ConvertFromInt(reader.method_9());
@@ -101,7 +101,7 @@ namespace Sobee.TestServer.Messages.Player
             SquadNumber = reader.method_11();
             Unknown = reader.method_14();
             Moving = reader.method_1();
-            Appearance = (PlayerAppearance)reader.method_25();
+            Appearance = (PlayerAppearanceMessage)reader.method_25();
             Position = reader.method_19();
             Velocity = reader.method_20();
             Direction = GClass97.smethod_10_11_c(reader.method_12());

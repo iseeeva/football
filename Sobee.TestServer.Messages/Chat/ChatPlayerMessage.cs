@@ -3,7 +3,7 @@
 namespace Sobee.TestServer.Messages.Chat
 {
     [MessageAttribute(9210)]
-    public class ChatPlayerMessage : ChatBase
+    public class ChatPlayerMessage : ChatBaseMessage
     {
         public Guid PlayerId { get; }
         public string MessageText { get; }

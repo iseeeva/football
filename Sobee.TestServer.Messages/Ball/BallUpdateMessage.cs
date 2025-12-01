@@ -5,15 +5,15 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Ball
 {
     [MessageAttribute(13196)]
-    public class BallUpdate : Message
+    public class BallUpdateMessage : Message
     {
-        public BallUpdate(BinaryReader gclass315_0) : base(gclass315_0)
+        public BallUpdateMessage(BinaryReader gclass315_0) : base(gclass315_0)
         {
             this.Position = gclass315_0.method_20();
             this.Velocity = gclass315_0.method_20();
         }
 
-        public BallUpdate(Vector3 position, Vector3 velocity)
+        public BallUpdateMessage(Vector3 position, Vector3 velocity)
         {
             this.Position = position;
             this.Velocity = velocity;

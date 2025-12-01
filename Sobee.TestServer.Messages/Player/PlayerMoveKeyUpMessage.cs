@@ -4,15 +4,15 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Player
 {
     [MessageAttribute(13399)]
-    public class PlayerMoveKeyUp : Message
+    public class PlayerMoveKeyUpMessage : Message
     {
         // Token: 0x06000335 RID: 821 RVA: 0x00002496 File Offset: 0x00000696
-        public PlayerMoveKeyUp()
+        public PlayerMoveKeyUpMessage()
         {
         }
 
         // Token: 0x06000336 RID: 822 RVA: 0x0000249E File Offset: 0x0000069E
-        public PlayerMoveKeyUp(BinaryReader gclass315_0) : base(gclass315_0)
+        public PlayerMoveKeyUpMessage(BinaryReader gclass315_0) : base(gclass315_0)
         {
         }
 

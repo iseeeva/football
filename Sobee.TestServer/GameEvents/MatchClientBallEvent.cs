@@ -18,7 +18,7 @@ namespace Sobee.TestServer.GameEvents
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallPositioning ballActionerHit) return;
+            if (e.message is not BallPositioningMessage ballActionerHit) return;
 
             var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
             if (ballComponent == null)
@@ -60,7 +60,7 @@ namespace Sobee.TestServer.GameEvents
             switch (ballActionerHit.HitSubType)
             {
                 case HitSubType.Shoot:
-                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallShoot(ballActionerHit.Strength, ballActionerHit.Direction));
+                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallShootMessage(ballActionerHit.Strength, ballActionerHit.Direction));
                     break;
 
                 case HitSubType.Pass: // Client PositioningHit için squad numarası göndermiyor?
@@ -86,7 +86,7 @@ namespace Sobee.TestServer.GameEvents
             {
                 case MatchFieldPositioning.Kickoff:
                     {
-                        matchRoom.Players.SendMessage(new BallKickoffHit(
+                        matchRoom.Players.SendMessage(new BallKickoffHitMessage(
                             matchRoom.MatchInformation.BallVelocity,
                             AnimationType.ShootLeft
                         ));
@@ -163,7 +163,7 @@ namespace Sobee.TestServer.GameEvents
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallShoot ballShoot) return;
+            if (e.message is not BallShootMessage ballShoot) return;
 
             var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
             if (ballComponent == null)
@@ -215,7 +215,7 @@ namespace Sobee.TestServer.GameEvents
             // INFO: Bu kontrolün sebebi BallPositioning (PositioningHit)
             if (matchRoom.MatchInformation.MatchState == MatchStateType.Running)
             {
-                matchRoom.Players.SendMessage(new BallShootHit(
+                matchRoom.Players.SendMessage(new BallShootHitMessage(
                     (sbyte)matchPlayer.AuthInformation.Entry.ToSquad(),
                     actionerPlayerInfo.Position,
                     actionerPlayerInfo.Direction,

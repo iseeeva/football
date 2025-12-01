@@ -3,20 +3,18 @@ using Sobee.Common;
 using Sobee.Network;
 using Sobee.TestServer.Auth;
 using Sobee.TestServer.Helpers;
+using Sobee.TestServer.Messages.Player;
 
 namespace Sobee.TestServer.Match
 {
     public class MatchPlayerManager : SessionManager<MatchPlayer>
     {
         private static readonly Serilog.ILogger _log = Logging.Get<MatchPlayerManager>();
-
-        // TODO: Odadan cikan oyuncularin kontrol edilmesi lazim.
-        // Socket cokmesi, timeout olmasi vs. icin
+        private bool _isDisposed;
 
         private readonly MatchRoom _matchRoom;
-
-        public event Action<MatchRoom, MatchPlayer>? PlayerJoined;
-        public event Action<MatchRoom, MatchPlayer>? PlayerLeft;
+        public event Action<MatchRoom, MatchPlayer>? PlayerJoinEvent;
+        public event Action<MatchRoom, MatchPlayer, PlayerMatchInformationMessage>? PlayerLeaveEvent;
 
         public MatchPlayerManager(MatchRoom matchRoom) : base(matchRoom)
         {
@@ -56,7 +54,7 @@ namespace Sobee.TestServer.Match
                 return false;
             }
 
-            PlayerJoined?.Invoke(_matchRoom, matchPlayer);
+            PlayerJoinEvent?.Invoke(_matchRoom, matchPlayer);
             return true;
         }
 
@@ -86,8 +84,26 @@ namespace Sobee.TestServer.Match
                 return false;
             }
 
-            PlayerLeft?.Invoke(_matchRoom, matchPlayer);
+            PlayerLeaveEvent?.Invoke(_matchRoom, matchPlayer, matchPlayerInfo);
             return true;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (_isDisposed)
+            {
+                _isDisposed = true;
+
+                if (disposing)
+                {
+                    _log.Debug("{id} disposing.", Id);
+                    PlayerJoinEvent = null;
+                    PlayerLeaveEvent = null;
+                    _log.Debug("{id} disposed.", Id);
+                }
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

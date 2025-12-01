@@ -30,7 +30,7 @@ namespace Sobee.TestServer.GameEvents
                 return;
             }
 
-            // TODO: [DEVELOPMENT] Isin bitince sil
+            // TODO: [TEST] Isin bitince sil
             switch (chatMessage.MessageText)
             {
                 case "kickoff":

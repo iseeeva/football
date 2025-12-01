@@ -4,14 +4,14 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Ball
 {
     [MessageAttribute(43635)]
-    public class BallPass : Message
+    public class BallPassMessage : Message
     {
-        public BallPass(BinaryReader gclass315_0) : base(gclass315_0)
+        public BallPassMessage(BinaryReader gclass315_0) : base(gclass315_0)
         {
             SquadNumber = gclass315_0.method_11();
         }
 
-        public BallPass(sbyte squadNumber)
+        public BallPassMessage(sbyte squadNumber)
         {
             SquadNumber = squadNumber;
         }

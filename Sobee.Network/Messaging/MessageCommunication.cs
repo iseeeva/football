@@ -138,11 +138,6 @@ namespace Sobee.Network.Messaging
             DispatchTo(sender, message);
         }
 
-        //public override Session CreateSession(SocketWrapper socketConnection)
-        //{
-        //    return new Session(socketConnection, this);
-        //}
-
         protected override void Dispose(bool disposing)
         {
             if (!_isDisposed)

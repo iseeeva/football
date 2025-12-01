@@ -5,9 +5,9 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Player
 {
     [MessageAttribute(13107)]
-    public class PlayerStop : Message
+    public class PlayerStopMessage : Message
     {
-        public PlayerStop(BinaryReader gclass315_0) : base(gclass315_0)
+        public PlayerStopMessage(BinaryReader gclass315_0) : base(gclass315_0)
         {
             this.SquadNumber = gclass315_0.method_11();
             this.Position = new Vector2((float)gclass315_0.method_8() / 6f, (float)gclass315_0.method_8() / 6f);
@@ -16,7 +16,7 @@ namespace Sobee.TestServer.Messages.Player
             this.Stamina = gclass315_0.method_2();
         }
 
-        public PlayerStop(sbyte squadNumber, Vector2 position, Vector2 direction, bool isAlerted, byte stamina)
+        public PlayerStopMessage(sbyte squadNumber, Vector2 position, Vector2 direction, bool isAlerted, byte stamina)
         {
             this.SquadNumber = squadNumber;
             this.Position = position;

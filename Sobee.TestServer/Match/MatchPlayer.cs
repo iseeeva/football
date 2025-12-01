@@ -14,7 +14,7 @@ namespace Sobee.TestServer.Match
         private static readonly ILogger _log = Logging.Get<MatchPlayer>();
         private bool _isDisposed;
 
-        public AuthInformation AuthInformation;
+        public AuthInformationMessage AuthInformation;
 
         // Client, mac ekranina geldiginda true olacak.
         // Maci etkileyen baska birsey yapilmadigi surece true kalacak.
@@ -22,19 +22,25 @@ namespace Sobee.TestServer.Match
 
         public MatchPlayer(
             SocketWrapper userSocket,
-            AuthInformation authInformation,
+            AuthInformationMessage authInformation,
             MessageCommunication communication
         ) : base(userSocket, communication)
         {
             SessionType = SessionType.User;
             AuthInformation = authInformation;
 
-            communication.AddSessionHandler<HeartbeatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.HeartbeatMessageReceived));
-            communication.AddSessionHandler<PlayerMoveKeyDown>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.PlayerMoveKeyDownReceived));
-            communication.AddSessionHandler<PlayerMoveKeyUp>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.PlayerMoveKeyUpReceived));
+            communication.AddSessionHandler<HeartbeatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.HeartbeatReceived));
+            communication.AddSessionHandler<PlayerMoveKeyDownMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.PlayerMoveKeyDownReceived));
+            communication.AddSessionHandler<PlayerMoveKeyUpMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.PlayerMoveKeyUpReceived));
             communication.AddSessionHandler<ChatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerChatEvent.ChatMessageReceived));
 
             _log.Debug("{id} initialized.", Id);
+        }
+
+        public override async Task Update(double delta)
+        {
+            SendMessage(new LatencyMessage((float)delta));
+            await base.Update(delta);
         }
 
         protected override void Dispose(bool disposing)

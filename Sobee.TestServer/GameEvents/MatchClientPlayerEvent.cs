@@ -12,7 +12,7 @@ namespace Sobee.TestServer.GameEvents
     {
         private static readonly Serilog.ILogger _log = Logging.Get<MatchClientPlayerEvent>();
 
-        public static void HeartbeatMessageReceived(object? sender, MessageEventArgs e)
+        public static void HeartbeatReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
@@ -26,7 +26,7 @@ namespace Sobee.TestServer.GameEvents
         {
             if (sender is not MatchRoom match) return;
             if (e.handler is not MatchPlayer player) return;
-            if (e.message is not PlayerMoveKeyDown moveKeyDown) return;
+            if (e.message is not PlayerMoveKeyDownMessage moveKeyDown) return;
 
             var movementComponent = match.Components.GetComponent<MatchMovement>();
             if (movementComponent == null)
@@ -51,7 +51,7 @@ namespace Sobee.TestServer.GameEvents
                 0f
             );
 
-            match.Players.SendMessage(new PlayerMove(
+            match.Players.SendMessage(new PlayerMoveMessage(
                 (sbyte)player.AuthInformation.Entry.ToSquad(),
                 playerMatchInfo.Position,
                 new Vector2(playerMatchInfo.Velocity.X, playerMatchInfo.Velocity.Y),
@@ -68,7 +68,7 @@ namespace Sobee.TestServer.GameEvents
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not PlayerMoveKeyUp moveReleased) return;
+            if (e.message is not PlayerMoveKeyUpMessage moveReleased) return;
 
             var playerInformation = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
             if (playerInformation == null)
@@ -77,7 +77,7 @@ namespace Sobee.TestServer.GameEvents
                 return;
             }
 
-            matchRoom.Players.SendMessage(new PlayerStop(
+            matchRoom.Players.SendMessage(new PlayerStopMessage(
                 (sbyte)matchPlayer.AuthInformation.Entry.ToSquad(),
                 playerInformation.Position,
                 playerInformation.Direction,

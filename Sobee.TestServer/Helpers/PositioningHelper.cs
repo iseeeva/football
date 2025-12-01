@@ -68,7 +68,7 @@ namespace Sobee.TestServer.Helpers
             _log.Debug("Room {RoomId} positioned for {FieldType}.", matchRoom.Id, fieldType);
         }
 
-        private static void ApplyPositions(List<PlayerMatchInformation> players, Team team)
+        private static void ApplyPositions(List<PlayerMatchInformationMessage> players, Team team)
         {
             for (int i = 0; i < players.Count; i++)
             {

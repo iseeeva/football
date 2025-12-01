@@ -5,14 +5,14 @@ namespace Sobee.TestServer.Messages.Ball
 {
 
     [MessageAttribute(8756)]
-    public class BallKickoffHit : AnimationMessageAbstract
+    public class BallKickoffHitMessage : AnimationMessageAbstract
     {
-        public BallKickoffHit(BinaryReader gclass315_0) : base(gclass315_0)
+        public BallKickoffHitMessage(BinaryReader gclass315_0) : base(gclass315_0)
         {
             this.Velocity = gclass315_0.method_20();
         }
 
-        public BallKickoffHit(Vector3 velocity, AnimationType animationType) : base(animationType)
+        public BallKickoffHitMessage(Vector3 velocity, AnimationType animationType) : base(animationType)
         {
             this.Velocity = velocity;
         }

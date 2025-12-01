@@ -184,7 +184,7 @@ namespace Sobee.Network
 
                 try
                 {
-                    // TODO: Socketi session ile dispose etmek riskli çünkü socket başka bir session içinde kullanılabilir.
+                    // WARN: Socketi session ile dispose etmek riskli çünkü socket başka bir session içinde kullanılabilir.
                     // ORNEK: AuthUser, MatchUser'e geçerken aynı socketi kullanmak zorunda.
 
                     if (!IsConnected)
@@ -199,7 +199,6 @@ namespace Sobee.Network
 
                     _receiveBufferStream.Dispose();
                     _sendBufferStream.Dispose();
-                    // _dispatcher.Dispose(); // WARN: Dispatcher artık odalara bağlı!!!!
                 }
                 catch { }
 

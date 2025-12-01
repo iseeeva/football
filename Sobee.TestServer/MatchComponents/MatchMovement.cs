@@ -83,7 +83,7 @@ namespace Sobee.TestServer.MatchComponents
 
         private void HandleBallCollision(
             MatchPlayer player,
-            MatchInformation matchInformation,
+            MatchInformationMessage matchInformation,
             MatchBall ballComponent)
         {
             var playerMatchInfo = matchInformation.GetPlayer(player.Id);

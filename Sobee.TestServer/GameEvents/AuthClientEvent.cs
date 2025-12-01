@@ -10,11 +10,11 @@ namespace Sobee.TestServer.GameEvents
     {
         private static readonly ILogger _log = Logging.Get<AuthClientEvent>();
 
-        public static void AuthInformation(object? sender, MessageEventArgs e)
+        public static void AuthInformationReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not AuthRoom authRoom) return;
             if (e.handler is not AuthUser authUser) return;
-            if (e.message is not AuthInformation authInformation) return;
+            if (e.message is not AuthInformationMessage authInformation) return;
 
             if (authRoom.ConnectedHub is not Hub hub) return;
 

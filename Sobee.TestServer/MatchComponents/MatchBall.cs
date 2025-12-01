@@ -35,33 +35,37 @@ namespace Sobee.TestServer.MatchComponents
 
         public override Task Update(double delta)
         {
-            var matchInfo = _matchRoom.MatchInformation;
+            var matchInformation = _matchRoom.MatchInformation;
+            bool isActionerUnset = matchInformation.Actor.BallOwner == -1;
 
-            if (matchInfo.BallVelocity.Length() > Epsilon)
+            if (isActionerUnset)
             {
-                matchInfo.BallVelocity = new Vector3(
-                    matchInfo.BallVelocity.X * Reduction,
-                    matchInfo.BallVelocity.Y * Reduction,
-                    (matchInfo.BallVelocity.Z + Gravity * (float)delta) * Reduction
-                );
-
-                matchInfo.BallPosition += matchInfo.BallVelocity * (float)delta;
-
-                if (matchInfo.BallPosition.Z <= BallBoundary.Z)
+                if (matchInformation.BallVelocity.Length() > Epsilon)
                 {
-                    matchInfo.BallPosition.Z = BallBoundary.Z;
-
-                    matchInfo.BallVelocity = new Vector3(
-                        matchInfo.BallVelocity.X,
-                        matchInfo.BallVelocity.Y,
-                        -matchInfo.BallVelocity.Z * Reduction
+                    matchInformation.BallVelocity = new Vector3(
+                        matchInformation.BallVelocity.X * Reduction,
+                        matchInformation.BallVelocity.Y * Reduction,
+                        (matchInformation.BallVelocity.Z + Gravity * (float)delta) * Reduction
                     );
-                }
 
-                _matchRoom.Players.SendMessage(new BallUpdate(
-                    matchInfo.BallPosition,
-                    matchInfo.BallVelocity
-                ));
+                    matchInformation.BallPosition += matchInformation.BallVelocity * (float)delta;
+
+                    if (matchInformation.BallPosition.Z <= BallBoundary.Z)
+                    {
+                        matchInformation.BallPosition.Z = BallBoundary.Z;
+
+                        matchInformation.BallVelocity = new Vector3(
+                            matchInformation.BallVelocity.X,
+                            matchInformation.BallVelocity.Y,
+                            -matchInformation.BallVelocity.Z * Reduction
+                        );
+                    }
+
+                    _matchRoom.Players.SendMessage(new BallUpdateMessage(
+                        matchInformation.BallPosition,
+                        matchInformation.BallVelocity
+                    ));
+                }
             }
 
             return Task.CompletedTask;

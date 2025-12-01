@@ -4,16 +4,16 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Player
 {
     [MessageAttribute(9203)]
-    public class PlayerJoined : Message
+    public class PlayerJoinMessage : Message
     {
-        public PlayerMatchInformation PlayerInfo { get; }
+        public PlayerMatchInformationMessage PlayerInfo { get; }
 
-        public PlayerJoined(BinaryReader reader) : base(reader)
+        public PlayerJoinMessage(BinaryReader reader) : base(reader)
         {
-            PlayerInfo = (PlayerMatchInformation)reader.method_25();
+            PlayerInfo = (PlayerMatchInformationMessage)reader.method_25();
         }
 
-        public PlayerJoined(PlayerMatchInformation playerMatchInformation)
+        public PlayerJoinMessage(PlayerMatchInformationMessage playerMatchInformation)
         {
             PlayerInfo = playerMatchInformation;
         }

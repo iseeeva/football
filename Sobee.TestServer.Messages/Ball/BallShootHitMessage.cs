@@ -5,10 +5,10 @@ namespace Sobee.TestServer.Messages.Ball
 {
     // Token: 0x02000037 RID: 55
     [MessageAttribute(17253)]
-    public class BallShootHit : AnimationMessageAbstract
+    public class BallShootHitMessage : AnimationMessageAbstract
     {
         // Token: 0x06000095 RID: 149 RVA: 0x00006324 File Offset: 0x00004524
-        public BallShootHit(BinaryReader gclass315_0) : base(gclass315_0)
+        public BallShootHitMessage(BinaryReader gclass315_0) : base(gclass315_0)
         {
             this.SquadNumber = gclass315_0.method_11();
             this.Position = gclass315_0.method_19();
@@ -18,7 +18,7 @@ namespace Sobee.TestServer.Messages.Ball
         }
 
         // Token: 0x06000096 RID: 150 RVA: 0x00006374 File Offset: 0x00004574
-        public BallShootHit(sbyte squadNumber, Vector2 position, Vector2 direction, Vector3 velocity, float speed, AnimationType animationType_1) : base(animationType_1)
+        public BallShootHitMessage(sbyte squadNumber, Vector2 position, Vector2 direction, Vector3 velocity, float speed, AnimationType animationType_1) : base(animationType_1)
         {
             this.SquadNumber = squadNumber;
             this.Position = position;

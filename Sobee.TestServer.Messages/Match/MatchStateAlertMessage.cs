@@ -4,14 +4,14 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Match
 {
     [MessageAttribute(49149)]
-    public class MatchStateAlert : Message
+    public class MatchStateAlertMessage : Message
     {
-        public MatchStateAlert(BinaryReader gclass315_0) : base(gclass315_0)
+        public MatchStateAlertMessage(BinaryReader gclass315_0) : base(gclass315_0)
         {
             this.IsAlerted = gclass315_0.method_1();
         }
 
-        public MatchStateAlert(bool isAlerted)
+        public MatchStateAlertMessage(bool isAlerted)
         {
             this.IsAlerted = isAlerted;
         }

@@ -5,9 +5,9 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Ball
 {
     [MessageAttribute(22132)]
-    public class BallPositioning : Message
+    public class BallPositioningMessage : Message
     {
-        public BallPositioning(BinaryReader gclass315_0) : base(gclass315_0)
+        public BallPositioningMessage(BinaryReader gclass315_0) : base(gclass315_0)
         {
             Strength = gclass315_0.method_12();
             Direction = gclass315_0.method_19();
@@ -15,7 +15,7 @@ namespace Sobee.TestServer.Messages.Ball
         }
 
         // Token: 0x060001E6 RID: 486 RVA: 0x00003C74 File Offset: 0x00001E74
-        public BallPositioning(float strength, Vector2 direction, HitSubType hitSubType)
+        public BallPositioningMessage(float strength, Vector2 direction, HitSubType hitSubType)
         {
             Strength = strength;
             Direction = direction;

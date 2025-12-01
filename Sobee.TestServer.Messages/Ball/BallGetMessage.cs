@@ -5,14 +5,14 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Ball
 {
     [MessageAttribute(12883)]
-    public class BallGet : Message
+    public class BallGetMessage : Message
     {
         public Vector2 GetDirectionAxis()
         {
             return new Vector2(GClass97.smethod_11(this.Direction), GClass97.smethod_10(this.Direction));
         }
 
-        public BallGet(BinaryReader gclass315_0) : base(gclass315_0)
+        public BallGetMessage(BinaryReader gclass315_0) : base(gclass315_0)
         {
             this.SquadNumber = gclass315_0.method_11();
             this.Position = gclass315_0.method_19();
@@ -20,7 +20,7 @@ namespace Sobee.TestServer.Messages.Ball
             this.Speed = gclass315_0.method_12();
         }
 
-        public BallGet(sbyte squadNumber, Vector2 position, Vector2 direction, float speed)
+        public BallGetMessage(sbyte squadNumber, Vector2 position, Vector2 direction, float speed)
         {
             this.SquadNumber = squadNumber;
             this.Position = position;

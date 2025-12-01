@@ -5,7 +5,7 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Player
 {
     [MessageAttribute(18290)]
-    public class PlayerMove : Message
+    public class PlayerMoveMessage : Message
     {
         public readonly sbyte SquadNumber;
 
@@ -19,7 +19,7 @@ namespace Sobee.TestServer.Messages.Player
 
         public readonly byte Stamina;
 
-        public PlayerMove(BinaryReader reader) : base(reader)
+        public PlayerMoveMessage(BinaryReader reader) : base(reader)
         {
             SquadNumber = reader.method_11();
             Position = new Vector2(reader.method_8() / 6f, reader.method_8() / 6f);
@@ -31,7 +31,7 @@ namespace Sobee.TestServer.Messages.Player
             Stamina = reader.method_2();
         }
 
-        public PlayerMove(sbyte squadNumber, Vector2 position, Vector2 velocity, bool isSprint, bool isAlerted, byte stamina)
+        public PlayerMoveMessage(sbyte squadNumber, Vector2 position, Vector2 velocity, bool isSprint, bool isAlerted, byte stamina)
         {
             SquadNumber = squadNumber;
             Position = position;
