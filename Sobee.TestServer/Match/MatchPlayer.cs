@@ -16,10 +16,6 @@ namespace Sobee.TestServer.Match
 
         public AuthInformationMessage AuthInformation;
 
-        // Client, mac ekranina geldiginda true olacak.
-        // Maci etkileyen baska birsey yapilmadigi surece true kalacak.
-        public bool IsReadyForMatch;
-
         public MatchPlayer(
             SocketWrapper userSocket,
             AuthInformationMessage authInformation,
@@ -50,8 +46,6 @@ namespace Sobee.TestServer.Match
                 _isDisposed = true;
                 if (disposing)
                 {
-                    _log.Debug("{id} disposing.", Id);
-
                     _log.Debug("{id} disposed.", Id);
                 }
             }

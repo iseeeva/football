@@ -27,7 +27,7 @@ namespace Sobee.TestServer.Match
                 _isDisposed = true;
                 if (disposing)
                 {
-
+                    _log.Information("{id} disposed.", Id);
                 }
             }
             base.Dispose(disposing);
