@@ -89,7 +89,7 @@ namespace Sobee.TestServer.GameEvents
             playerInformation.Velocity = Vector3.Zero;
 
             playerInformation.Moving = false;
-            _log.Debug("[PlayerMoveKeyUpReceived] Player {playerId} stopped moving.", matchPlayer.Id);
+            _log.Information("[PlayerMoveKeyUpReceived] Player {playerId} stopped moving.", matchPlayer.Id);
         }
     }
 }

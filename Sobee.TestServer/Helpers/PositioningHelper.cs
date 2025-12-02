@@ -150,7 +150,9 @@ namespace Sobee.TestServer.Helpers
                 pos.Away.Animations
             ));
 
-            BallHelper.GetBall(matchRoom, (sbyte)actionerPlayer.AuthInformation.Entry.ToSquad());
+            if (!BallHelper.GetBall(matchRoom, (sbyte)actionerPlayer.AuthInformation.Entry.ToSquad()))
+                _log.Error("[PositioningHelper] Failed to assign ball to actioner player ({PlayerId}) during {fieldPos}.", matchRoom.Id, actionerPlayer.Id, matchInfo.FieldPositioning);
+
             return pos;
         }
 

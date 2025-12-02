@@ -283,7 +283,7 @@ namespace Sobee.Network
 
                 try { _sendBuffer.Dispose(); } catch { }
 
-                _log.Information("{SocketId} disposed.", Id);
+                _log.Debug("{SocketId} disposed.", Id);
             }
 
             base.Dispose(disposing);

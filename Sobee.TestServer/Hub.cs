@@ -46,7 +46,7 @@ namespace Sobee.TestServer
             }
             catch (Exception ex)
             {
-                _log.Error($"Failed during start: {ex.GetBaseException()}", ex);
+                _log.Error($"{Id} failed during start: {ex.GetBaseException()}");
                 Dispose();
                 throw;
             }
@@ -54,32 +54,32 @@ namespace Sobee.TestServer
 
         private async Task AcceptClientsAsync(CancellationToken cancellationToken)
         {
-            _log.Information("Client accept loop started.");
+            _log.Information("{hubId} client accept loop started.", Id);
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
                     Socket clientSocket = await _socket.AcceptAsync(cancellationToken);
 
-                    _log.Information("New client connected: {remoteEp}", clientSocket.RemoteEndPoint);
+                    _log.Information("{hubId} new client connected: {remoteEp}", Id, clientSocket.RemoteEndPoint);
                     _authRoom.Users.TryAdd(new SocketWrapper(clientSocket));
                 }
                 catch (OperationCanceledException)
                 {
-                    _log.Information("Client accept loop stopping.");
+                    _log.Information("{hubId} client accept loop stopping.", Id);
                     break;
                 }
                 catch (Exception ex)
                 {
-                    _log.Error($"Error in accept loop: {ex.GetBaseException()}", ex);
+                    _log.Error($"Error in {Id} client accept loop: {ex.GetBaseException()}");
                 }
             }
-            _log.Information("Client accept loop stopped.");
+            _log.Information("{hubId} client accept loop stopped.", Id);
         }
 
         private async Task TickAsync(CancellationToken cancellationToken)
         {
-            _log.Information("Server tick loop started.");
+            _log.Information("{hubId} tick loop started.", Id);
             _stopwatch.Start();
             double previous = _stopwatch.Elapsed.TotalMilliseconds;
 
@@ -103,16 +103,16 @@ namespace Sobee.TestServer
                 }
                 catch (OperationCanceledException)
                 {
-                    _log.Information("Server tick loop stopping.");
+                    _log.Information("{hubId} tick loop stopping.", Id);
                     break;
                 }
                 catch (Exception ex)
                 {
-                    _log.Error($"Critical error in tick loop: {ex.GetBaseException()}", ex);
+                    _log.Error($"Critical error in {Id} tick loop: {ex.GetBaseException()}");
                     await Task.Delay(1000, cancellationToken);
                 }
             }
-            _log.Information("Server tick loop stopped.");
+            _log.Information("{hubId} tick loop stopped.", Id);
         }
 
 
@@ -151,7 +151,7 @@ namespace Sobee.TestServer
                     }
                     catch (Exception ex)
                     {
-                        _log.Warning("Error disposing listener socket: {msg}", ex.Message);
+                        _log.Warning("{hubId} error disposing: {msg}", Id, ex.Message);
                     }
 
                     _log.Debug("{id} disposed.", Id);

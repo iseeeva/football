@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Sobee.Common;
 using Sobee.TestServer.Match;
 using Sobee.TestServer.MatchComponents;
 using Sobee.TestServer.Messages.Ball;
@@ -6,19 +7,30 @@ namespace Sobee.TestServer.Helpers
 {
     public class BallHelper
     {
-        public static void GetBall(MatchRoom matchRoom, sbyte squadNumber)
+        private static readonly Serilog.ILogger _log = Logging.Get<BallHelper>();
+
+        public static bool GetBall(MatchRoom matchRoom, sbyte squadNumber)
         {
             var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
             if (ballComponent == null)
-                throw new InvalidOperationException("MatchBallComponent not found in MatchRoom.");
+            {
+                _log.Warning("[BallHelper] MatchBall is null in match {matchId}.", matchRoom.Id);
+                return false;
+            }
 
             var playerMatchInformation = matchRoom.MatchInformation.GetPlayer(squadNumber);
             if (playerMatchInformation == null)
-                throw new ArgumentException($"No player found with squad number {squadNumber}.");
+            {
+                _log.Warning("[BallHelper] No player match information found for squad number {squadNumber} in match {matchId}.", squadNumber, matchRoom.Id);
+                return false;
+            }
 
             var matchPlayer = matchRoom.Players[playerMatchInformation.PlayerId];
             if (matchPlayer == null)
-                throw new ArgumentException($"No match player found with player ID {playerMatchInformation.PlayerId}.");
+            {
+                _log.Warning("[BallHelper] No match player found for player ID {playerId} in match {matchId}.", playerMatchInformation.PlayerId, matchRoom.Id);
+                return false;
+            }
 
             var playerPosition = playerMatchInformation.Position;
             matchRoom.MatchInformation.BallPosition = new Vector3(playerPosition.X, playerPosition.Y, (float)ballComponent.BallBoundary.Z);
@@ -34,6 +46,8 @@ namespace Sobee.TestServer.Helpers
                 playerDirection,
                 0
             ));
+
+            return true;
         }
     }
 }

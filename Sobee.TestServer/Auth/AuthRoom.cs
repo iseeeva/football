@@ -48,8 +48,6 @@ namespace Sobee.TestServer.Auth
 
                 if (disposing)
                 {
-                    _log.Debug("{id} disposing.", Id);
-                    Users.Dispose();
                     _log.Debug("{id} disposed.", Id);
                 }
             }

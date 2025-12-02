@@ -109,9 +109,15 @@ namespace Sobee.TestServer.MatchComponents
 
             if (isPlayerInCollision && isActionerUnset)
             {
-                BallHelper.GetBall(_matchRoom, (sbyte)player.AuthInformation.Entry.ToSquad());
-                _matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage($"[MatchMovement] Player {player.Id} took the ball.", Messages.Chat.ChatSystemMessageType.General));
-                _log.Information("[MatchMovement] Player {player.Id} took the ball.", player.Id);
+                if (BallHelper.GetBall(_matchRoom, (sbyte)player.AuthInformation.Entry.ToSquad()))
+                {
+                    _matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage($"[MatchMovement] Player {player.Id} took the ball.", Messages.Chat.ChatSystemMessageType.General));
+                    _log.Information("[MatchMovement] Player {player.Id} took the ball.", player.Id);
+                }
+                else
+                {
+                    _log.Error("[MatchMovement] Failed to assign ball to player {playerId}.", player.Id);
+                }
             }
         }
 
@@ -122,7 +128,7 @@ namespace Sobee.TestServer.MatchComponents
                 _isDisposed = true;
                 if (disposing)
                 {
-                    _log.Information("{id} disposed.", Id);
+                    _log.Debug("{id} disposed.", Id);
                 }
             }
 

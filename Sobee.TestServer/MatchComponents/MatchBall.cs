@@ -78,7 +78,7 @@ namespace Sobee.TestServer.MatchComponents
                 _isDisposed = true;
                 if (disposing)
                 {
-                    _log.Information("{id} disposed.", Id);
+                    _log.Debug("{id} disposed.", Id);
                 }
             }
 
