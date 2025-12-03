@@ -12,8 +12,8 @@ namespace Sobee.TestServer.Helpers
         public static bool TryGeneratePlayer(
             MatchRoom matchRoom,
             AuthUser authUser,
-            [MaybeNullWhen(false)] out MatchPlayer matchPlayer,
-            [MaybeNullWhen(false)] out PlayerMatchInformationMessage playerMatchInformation
+            [NotNullWhen(true)] out MatchPlayer? matchPlayer,
+            [NotNullWhen(true)] out PlayerMatchInformationMessage? playerMatchInformation
         )
         {
             // TODO: Database den kontrol edilecek

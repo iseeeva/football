@@ -17,7 +17,7 @@ namespace Sobee.TestServer.Match
             _log.Debug("{id} initialized.", Id);
         }
 
-        public bool TryAdd(MatchRoom room)
+        public virtual bool TryAdd(MatchRoom room)
         {
             if (_rooms.TryAdd(room.Id, room))
             {
@@ -29,22 +29,22 @@ namespace Sobee.TestServer.Match
             return false;
         }
 
-        public void Add(MatchRoom room)
+        public virtual bool TryCreate([NotNullWhen(true)] out MatchRoom? matchRoom)
         {
-            if (!TryAdd(room))
-                room.Dispose();
+            var createdRoom = new MatchRoom();
+            if (TryAdd(createdRoom))
+            {
+                matchRoom = createdRoom;
+                return true;
+            }
+
+            createdRoom.Dispose();
+            matchRoom = null;
+            return false;
         }
 
-        public MatchRoom Create()
-        {
-            var room = new MatchRoom();
-            _log.Information("Room {id} created.", room.Id);
 
-            Add(room);
-            return room;
-        }
-
-        public bool TryRemove(Guid roomId, [MaybeNullWhen(false)] out MatchRoom room)
+        public virtual bool TryRemove(Guid roomId, [NotNullWhen(true)] out MatchRoom? room)
         {
             if (_rooms.TryRemove(roomId, out room))
             {
@@ -62,16 +62,7 @@ namespace Sobee.TestServer.Match
             return false;
         }
 
-        public void Remove(MatchRoom room)
-        {
-            ArgumentNullException.ThrowIfNull(room);
-            TryRemove(room.Id, out _);
-        }
-
-        public void Remove(Guid roomId) =>
-            TryRemove(roomId, out _);
-
-        public bool TryGetRoom(Guid roomId, [MaybeNullWhen(false)] out MatchRoom room) =>
+        public bool TryGetRoom(Guid roomId, [NotNullWhen(true)] out MatchRoom? room) =>
             _rooms.TryGetValue(roomId, out room);
 
         public override async Task Update(double delta)
@@ -92,15 +83,20 @@ namespace Sobee.TestServer.Match
 
                 foreach (var id in expiredRooms)
                 {
-                    _log.Information(
-                        "Room {id} removing due to inactivity. (idle limit {@maxIdleSecond}s)",
-                        id, MatchRoom.MAX_IDLE_TIME.TotalSeconds
-                    );
-
-                    TryRemove(id, out var room);
+                    if (TryRemove(id, out var room))
+                    {
+                        _log.Information(
+                            "Room {id} removed due to inactivity. (idle limit {@maxIdleSecond}s)",
+                            id, MatchRoom.MAX_IDLE_TIME.TotalSeconds
+                        );
+                    }
+                    else
+                    {
+                        _log.Warning("Failed to remove inactive room {id}.", id);
+                    }
                 }
 
-                await Task.WhenAll(_rooms.Values.Select(r => r.Update(delta)));
+                await Task.WhenAll(_rooms.Values.Select(room => room.Update(delta)));
             }
             catch (Exception ex)
             {

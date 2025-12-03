@@ -28,7 +28,7 @@ public class SessionManager<T> : Component where T : Session
 
     public bool Contains(Guid id) => _sessions.ContainsKey(id);
 
-    public bool TryGet(Guid id, [MaybeNullWhen(false)] out T session)
+    public bool TryGet(Guid id, [NotNullWhen(true)] out T? session)
         => _sessions.TryGetValue(id, out session);
 
     public T this[Guid id] => _sessions[id];
@@ -48,7 +48,7 @@ public class SessionManager<T> : Component where T : Session
         return true;
     }
 
-    public virtual bool TryRemove(Guid sessionId, [MaybeNullWhen(false)] out T session)
+    public virtual bool TryRemove(Guid sessionId, [NotNullWhen(true)] out T? session)
     {
         if (!_sessions.TryRemove(sessionId, out session))
         {
@@ -97,7 +97,7 @@ public class SessionManager<T> : Component where T : Session
         foreach (var id in deadSessions)
         {
             if (TryRemove(id, out _))
-                _log.Information("Session {id} removed due inactivity.", id);
+                _log.Information("Session {id} removed due disconnection.", id);
         }
     }
 

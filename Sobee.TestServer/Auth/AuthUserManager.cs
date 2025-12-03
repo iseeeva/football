@@ -14,11 +14,17 @@ namespace Sobee.TestServer.Auth
             _authRoom = authRoom;
         }
 
-        public bool TryAdd(SocketWrapper socketWrapper)
+        public override bool TryAdd(AuthUser session)
+        {
+            _log.Warning("TryAdd doesn't implemented, use TryCreate for now.");
+            return false;
+        }
+
+        public virtual bool TryCreate(SocketWrapper socketWrapper)
         {
             var authUser = new AuthUser(socketWrapper, _authRoom);
 
-            if (TryAdd(authUser))
+            if (base.TryAdd(authUser))
                 return true;
             else
                 authUser.Dispose();

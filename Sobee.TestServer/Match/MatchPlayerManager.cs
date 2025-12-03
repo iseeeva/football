@@ -21,7 +21,13 @@ namespace Sobee.TestServer.Match
             _matchRoom = matchRoom;
         }
 
-        public bool TryCreate(AuthUser authUser)
+        public override bool TryAdd(MatchPlayer session)
+        {
+            _log.Warning("TryAdd doesn't implemented, use TryCreate for now.");
+            return false;
+        }
+
+        public virtual bool TryCreate(AuthUser authUser)
         {
             if (MatchHelper.TryGeneratePlayer(_matchRoom, authUser, out var matchPlayer, out var matchPlayerInfo))
                 authUser.Dispose();
@@ -35,7 +41,7 @@ namespace Sobee.TestServer.Match
             ))
                 return false;
 
-            if (TryAdd(matchPlayer))
+            if (base.TryAdd(matchPlayer))
             {
                 if (!MatchHelper.TryAssignPlayerInfoToMatchInfo(_matchRoom, matchPlayerInfo))
                 {
@@ -58,7 +64,7 @@ namespace Sobee.TestServer.Match
             return true;
         }
 
-        public override bool TryRemove(Guid id, [MaybeNullWhen(false)] out MatchPlayer matchPlayer)
+        public override bool TryRemove(Guid id, [NotNullWhen(true)] out MatchPlayer? matchPlayer)
         {
             matchPlayer = this[id];
 

@@ -62,7 +62,7 @@ namespace Sobee.TestServer
                     Socket clientSocket = await _socket.AcceptAsync(cancellationToken);
 
                     _log.Information("{hubId} new client connected: {remoteEp}", Id, clientSocket.RemoteEndPoint);
-                    _authRoom.Users.TryAdd(new SocketWrapper(clientSocket));
+                    _authRoom.Users.TryCreate(new SocketWrapper(clientSocket));
                 }
                 catch (OperationCanceledException)
                 {

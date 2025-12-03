@@ -28,9 +28,11 @@ namespace Sobee.TestServer.GameEvents
                 return;
             }
 
-            var matchRoom = hub.MatchRoomManager.Create();
-            if (!matchRoom.Players.TryCreate(authUser))
-                _log.Error("[TEMPORARY] Failed to add auth user {authId} to match room.", authUser.Id);
+            if (hub.MatchRoomManager.TryCreate(out var matchRoom))
+            {
+                if (!matchRoom.Players.TryCreate(authUser))
+                    _log.Error("[TEMPORARY] Failed to add auth user {authId} to match room.", authUser.Id);
+            }
             #endregion
 
             _log.Information($"{authUser.Id} - {authInformation}");
