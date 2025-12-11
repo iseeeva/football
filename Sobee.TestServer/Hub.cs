@@ -26,7 +26,7 @@ namespace Sobee.TestServer
 
         public Hub(int port)
         {
-            if (port > IPEndPoint.MinPort || port < IPEndPoint.MaxPort)
+            if (port > IPEndPoint.MinPort && port < IPEndPoint.MaxPort)
                 Port = port;
             else
                 throw new ArgumentOutOfRangeException(nameof(port), $"{nameof(port)} ({port}) must be in the valid port range.");

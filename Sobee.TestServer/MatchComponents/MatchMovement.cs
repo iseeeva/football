@@ -66,7 +66,7 @@ namespace Sobee.TestServer.MatchComponents
                 return;
             }
 
-            if (!playerMatchInfo.Moving) return;
+            if (!playerMatchInfo.IsMoving) return;
 
             if (playerMatchInfo.Velocity.Length() > 0)
             {
@@ -75,7 +75,7 @@ namespace Sobee.TestServer.MatchComponents
             }
             else
             {
-                playerMatchInfo.Moving = false;
+                playerMatchInfo.IsMoving = false;
                 playerMatchInfo.Velocity = Vector3.Zero;
                 _log.Warning("[MatchMovement] Player {playerId} velocity is below zero but moving is true.", playerMatchInfo.PlayerId);
             }

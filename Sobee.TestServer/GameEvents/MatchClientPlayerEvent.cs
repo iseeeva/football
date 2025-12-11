@@ -60,7 +60,7 @@ namespace Sobee.TestServer.GameEvents
                 (byte)playerMatchInfo.Stamina
             ));
 
-            playerMatchInfo.Moving = true;
+            playerMatchInfo.IsMoving = true;
             _log.Debug("[PlayerMoveKeyDownReceived] Player {playerId} moving to {direction}.", player.Id, playerMatchInfo.Direction);
         }
 
@@ -88,7 +88,7 @@ namespace Sobee.TestServer.GameEvents
             playerInformation.Direction = Vector2.Zero;
             playerInformation.Velocity = Vector3.Zero;
 
-            playerInformation.Moving = false;
+            playerInformation.IsMoving = false;
             _log.Information("[PlayerMoveKeyUpReceived] Player {playerId} stopped moving.", matchPlayer.Id);
         }
     }

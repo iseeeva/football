@@ -16,19 +16,16 @@ namespace Sobee.TestServer.Messages.Player
         public string UserName = string.Empty;
         public int Stamina;
         public StadiumSitting StadiumSitting;
-
-        /// <summary>
-        /// (splited)
-        /// </summary>
+        /// <summary>(splited)</summary>
         public sbyte SquadNumber;
-
-        public bool Moving;
+        public bool IsMoving;
+        public bool UnkBool0;
         public PlayerAppearanceMessage Appearance;
         public Vector2 Position;
         public Vector3 Velocity;
         public Vector2 Direction;
         public bool Invite;
-        public string Unknown = string.Empty;
+        public string UnkStr0 = string.Empty;
         public MatchCard CardStatus;
         public string XmlCode;
         public int LeagueGroupId;
@@ -50,13 +47,13 @@ namespace Sobee.TestServer.Messages.Player
             Stamina = 120;
             StadiumSitting = StadiumSitting.Invalid;
             SquadNumber = -1;
-            Moving = false;
+            UnkBool0 = false;
             Appearance = new PlayerAppearanceMessage();
             Position = Vector2.Zero;
             Velocity = Vector3.Zero;
             Direction = Vector2.Zero;
             Invite = false;
-            Unknown = string.Empty;
+            UnkStr0 = string.Empty;
             CardStatus = MatchCard.None;
             XmlCode = string.Empty;
             LeagueGroupId = -1;
@@ -99,8 +96,8 @@ namespace Sobee.TestServer.Messages.Player
             Stamina = reader.method_9();
             StadiumSitting = (StadiumSitting)reader.method_9();
             SquadNumber = reader.method_11();
-            Unknown = reader.method_14();
-            Moving = reader.method_1();
+            UnkStr0 = reader.method_14();
+            UnkBool0 = reader.method_1();
             Appearance = (PlayerAppearanceMessage)reader.method_25();
             Position = reader.method_19();
             Velocity = reader.method_20();
@@ -145,8 +142,8 @@ namespace Sobee.TestServer.Messages.Player
             writer.method_9(Stamina);
             writer.method_9((int)StadiumSitting);
             writer.method_11(SquadNumber);
-            writer.method_14(Unknown);
-            writer.method_1(Moving);
+            writer.method_14(UnkStr0);
+            writer.method_1(UnkBool0);
             writer.method_25(Appearance);
             writer.method_19(Position);
             writer.method_20(Velocity);
