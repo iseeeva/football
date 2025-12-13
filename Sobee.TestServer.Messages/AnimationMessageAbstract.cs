@@ -1,4 +1,5 @@
 ﻿using Sobee.Network.Messaging;
+using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages
 {

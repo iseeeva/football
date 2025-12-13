@@ -3,9 +3,7 @@
     public static class AsyncWait
     {
         // https://stackoverflow.com/a/52357854
-        /// <summary>
-        /// Blocks while condition is true or timeout occurs.
-        /// </summary>
+        /// <summary>Blocks while condition is true or timeout occurs.</summary>
         public static async Task WaitWhile(Func<bool> condition, int frequency = 25, int timeout = -1)
         {
             var waitTask = Task.Run(async () =>
@@ -18,13 +16,8 @@
         }
 
         // https://stackoverflow.com/a/52357854
-        /// <summary>
-        /// Blocks until condition is true or timeout occurs.
-        /// </summary>
-        public static async Task WaitUntil(
-            Func<bool> condition,
-            int frequency = 25,
-            int timeout = -1)
+        /// <summary>Blocks until condition is true or timeout occurs.</summary>
+        public static async Task WaitUntil(Func<bool> condition, int frequency = 25, int timeout = -1)
         {
             using var cts = timeout > 0 ? new CancellationTokenSource(timeout) : new CancellationTokenSource();
 

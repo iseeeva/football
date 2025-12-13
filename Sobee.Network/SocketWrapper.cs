@@ -20,7 +20,7 @@ namespace Sobee.Network
         private readonly byte[] _receiveBuffer = new byte[MAX_RECEIVE_SIZE];
         private int _processedBytesInBuffer;
 
-        public event EventHandler? Disconnected;
+        public event EventHandler? SocketDisconnected;
         public event EventHandler<ConnectionErrorEvent>? SocketError;
         public event EventHandler<ConnectionErrorEvent>? ConnectionError;
         public event EventHandler<ConnectionErrorEvent>? SendError;
@@ -74,14 +74,15 @@ namespace Sobee.Network
 
         public int SendSync()
         {
-            if (!IsConnected) return 0;
+            if (!IsConnected)
+                return 0;
 
             lock (_sendBuffer)
             {
                 try
                 {
                     int length = (int)_sendBuffer.Length;
-                    if (length == 0) return 0;
+                    if (length == 0) return length;
 
                     int sent = _socket.Send(_sendBuffer.GetBuffer(), 0, length, SocketFlags.None);
                     _sendBuffer.SetLength(0);
@@ -106,7 +107,8 @@ namespace Sobee.Network
 
         public byte[]? ReceiveSync()
         {
-            if (!IsConnected) return null;
+            if (!IsConnected)
+                return null;
 
             try
             {
@@ -244,6 +246,7 @@ namespace Sobee.Network
                     _socket.Shutdown(SocketShutdown.Both);
 
                 _socket.Close();
+                _socket.Dispose();
             }
             catch { }
 
@@ -251,7 +254,7 @@ namespace Sobee.Network
             OnDisconnected();
         }
 
-        private void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
+        private void OnDisconnected() => SocketDisconnected?.Invoke(this, EventArgs.Empty);
         private void OnSocketError(SocketError error) => SocketError?.Invoke(this, new ConnectionErrorEvent(error));
         private void OnConnectionError(ConnectionError error) => ConnectionError?.Invoke(this, new ConnectionErrorEvent(error));
         private void OnSendError(SocketError error) => SendError?.Invoke(this, new ConnectionErrorEvent(error));
@@ -266,24 +269,26 @@ namespace Sobee.Network
 
             if (disposing)
             {
-                Stop();
-
                 try
                 {
-                    if (IsConnected)
+                    Stop();
+
+                    if (_socket.Connected)
                         _socket.Shutdown(SocketShutdown.Both);
 
                     _socket.Close();
                     _socket.Dispose();
+
+                    lock (_receiveQueue)
+                        _receiveQueue.Clear();
+
+                    _sendBuffer.Dispose();
+                    _log.Debug("{SocketId} disposed.", Id);
                 }
-                catch { }
-
-                lock (_receiveQueue)
-                    _receiveQueue.Clear();
-
-                try { _sendBuffer.Dispose(); } catch { }
-
-                _log.Debug("{SocketId} disposed.", Id);
+                catch (Exception ex)
+                {
+                    _log.Error(ex, "{SocketId} dispose error.", Id);
+                }
             }
 
             base.Dispose(disposing);

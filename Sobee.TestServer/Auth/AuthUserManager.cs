@@ -1,10 +1,11 @@
-﻿using Sobee.Network;
+﻿using Sobee.Common;
+using Sobee.Network;
 
 namespace Sobee.TestServer.Auth
 {
     public class AuthUserManager : SessionManager<AuthUser>
     {
-        private static readonly Serilog.ILogger _log = Sobee.Common.Logging.Get<AuthUserManager>();
+        private static readonly Serilog.ILogger _log = Logging.Get<AuthUserManager>();
         private bool _isDisposed;
 
         private readonly AuthRoom _authRoom;

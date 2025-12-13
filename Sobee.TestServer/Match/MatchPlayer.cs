@@ -41,13 +41,14 @@ namespace Sobee.TestServer.Match
 
         protected override void Dispose(bool disposing)
         {
-            if (!_isDisposed)
+            if (_isDisposed)
+                return;
+
+            _isDisposed = true;
+
+            if (disposing)
             {
-                _isDisposed = true;
-                if (disposing)
-                {
-                    _log.Debug("{id} disposed.", Id);
-                }
+                _log.Debug("{id} disposed.", Id);
             }
 
             base.Dispose(disposing);

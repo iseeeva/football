@@ -21,8 +21,8 @@ namespace Sobee.Network
         public bool IsConnected => Socket != null && Socket.IsConnected;
 
         private readonly MessageDispatch _dispatcher;
-        private readonly MessageHelper _receiveHelper;
-        private readonly MessageHelper _sendHelper;
+        private readonly MessageSerialization _receiveSerialization;
+        private readonly MessageSerialization _sendSerialization;
 
         private readonly MemoryStream _receiveBufferStream = new(SocketWrapper.MAX_RECEIVE_SIZE);
         private readonly MemoryStream _sendBufferStream = new(SocketWrapper.MAX_SEND_SIZE);
@@ -34,8 +34,8 @@ namespace Sobee.Network
             Socket = socket ?? throw new ArgumentNullException(nameof(socket));
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
-            _sendHelper = new MessageHelper(_sendBufferStream, _dispatcher.GetDispatcher(), _dispatcher.GetMessageTypeToIdDelegate());
-            _receiveHelper = new MessageHelper(_receiveBufferStream, _dispatcher.GetDispatcher(), _dispatcher.GetMessageTypeToIdDelegate());
+            _sendSerialization = new MessageSerialization(_sendBufferStream, _dispatcher.DispatchToMessageConstructor(), _dispatcher.GetMessageIdFromType());
+            _receiveSerialization = new MessageSerialization(_receiveBufferStream, _dispatcher.DispatchToMessageConstructor(), _dispatcher.GetMessageIdFromType());
 
             _log.Information("{thisId} initialized. (source: {socketId})", Id, Socket.Id);
         }
@@ -80,9 +80,9 @@ namespace Sobee.Network
                     _receiveBufferStream.Write(packetData, 0, packetData.Length);
                     _receiveBufferStream.Position = 0;
 
-                    var message = (Message)_receiveHelper.ReadMessage();
-                    OnMessageReceived(this, message);
+                    var message = (Message)_receiveSerialization.ReadMessage();
                     _dispatcher.DispatchToMessageEvent(new MessageEventArgs(this, message));
+                    OnMessageReceived(this, message);
                 }
             }
             catch (SerializationException ex)
@@ -118,7 +118,7 @@ namespace Sobee.Network
 
             _sendBufferStream.Position = 0;
             _sendBufferStream.SetLength(0);
-            _sendHelper.WriteMessage(message);
+            _sendSerialization.WriteMessage(message);
 
             Socket?.EnqueueSend(_sendBufferStream.GetBuffer(), 0, (int)_sendBufferStream.Length);
             OnMessageSent(this, message);
@@ -180,12 +180,11 @@ namespace Sobee.Network
 
             if (disposing)
             {
-                Stop();
-
                 try
                 {
                     // WARN: Socketi session ile dispose etmek riskli çünkü socket başka bir session içinde kullanılabilir.
-                    // ORNEK: AuthUser, MatchUser'e geçerken aynı socketi kullanmak zorunda.
+                    // ORNEK: AuthUser, MatchPlayer'a geçerken aynı socketi kullanmak zorunda.
+                    Stop();
 
                     if (!IsConnected)
                     {
@@ -195,14 +194,31 @@ namespace Sobee.Network
                     else
                         _log.Warning("{id} socket NOT disposed! (isConnected:{isConnected})", Id, IsConnected);
 
+                    // WARN: Artik dispatcher session'a degil odaya bagli.
+                    // Session, dispatcher dispose EDEMEZ.
+
+                    // Socket
                     Socket = null;
 
-                    _receiveBufferStream.Dispose();
-                    _sendBufferStream.Dispose();
-                }
-                catch { }
+                    // Events
+                    MessageSent = null;
+                    MessageReceived = null;
+                    SerializationError = null;
 
-                _log.Debug("{id} disposed.", Id);
+                    // Serializations
+                    _sendSerialization.Dispose();
+                    _receiveSerialization.Dispose();
+
+                    // Buffers
+                    //_sendBufferStream.Dispose();
+                    //_receiveBufferStream.Dispose();
+
+                    _log.Debug("{id} disposed.", Id);
+                }
+                catch (Exception ex)
+                {
+                    _log.Error(ex, "{id} dispose error", Id);
+                }
             }
 
             base.Dispose(disposing);

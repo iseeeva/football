@@ -16,9 +16,8 @@ namespace Sobee.TestServer.Auth
         public AuthRoom(Hub connectedHub) : base()
         {
             _log.Debug("{id} initializing.", Id);
-            ConnectedHub = connectedHub;
-
             CommunicationType = SessionType.Authentication;
+            ConnectedHub = connectedHub;
 
             // Bu handler ın bütün sessionlardan gelen mesajları işlemesi gerekiyor.
             RegisterMessageEvent<Messages.Auth.AuthInformationMessage>(OnReceivedMessage);

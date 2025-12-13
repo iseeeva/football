@@ -1,4 +1,4 @@
-﻿// Token: 0x02000005 RID: 5
+﻿
 using Sobee.Serialization;
 
 namespace Sobee.Network.Messaging

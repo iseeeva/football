@@ -19,6 +19,7 @@ namespace Sobee.TestServer.Match
         public MatchPlayerManager(MatchRoom matchRoom) : base(matchRoom)
         {
             _matchRoom = matchRoom;
+            _log.Information("{managerId} initialized.", Id);
         }
 
         public override bool TryAdd(MatchPlayer session)
@@ -97,16 +98,16 @@ namespace Sobee.TestServer.Match
         protected override void Dispose(bool disposing)
         {
             if (_isDisposed)
-            {
-                _isDisposed = true;
+                return;
 
-                if (disposing)
-                {
-                    _log.Debug("{id} disposing.", Id);
-                    PlayerJoinEvent = null;
-                    PlayerLeaveEvent = null;
-                    _log.Debug("{id} disposed.", Id);
-                }
+            _isDisposed = true;
+
+            if (disposing)
+            {
+                _log.Debug("{id} disposing.", Id);
+                PlayerJoinEvent = null;
+                PlayerLeaveEvent = null;
+                _log.Debug("{id} disposed.", Id);
             }
 
             base.Dispose(disposing);

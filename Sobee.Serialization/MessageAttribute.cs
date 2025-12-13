@@ -7,7 +7,7 @@
 
         public MessageAttribute(ushort messageId)
         {
-            this.MessageId = messageId;
+            MessageId = messageId;
         }
 
     }

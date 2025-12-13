@@ -21,30 +21,23 @@ public class SessionManager<T> : Component where T : Session
         _log.Information("{id} initialized.", Id);
     }
 
-    public IReadOnlyDictionary<Guid, T> Sessions => _sessions;
-    public IEnumerable<T> Values => _sessions.Values;
-    public IEnumerable<Guid> Keys => _sessions.Keys;
-    public int Count => _sessions.Count;
-
-    public bool Contains(Guid id) => _sessions.ContainsKey(id);
+    public T this[Guid id] => _sessions[id];
 
     public bool TryGet(Guid id, [NotNullWhen(true)] out T? session)
         => _sessions.TryGetValue(id, out session);
-
-    public T this[Guid id] => _sessions[id];
 
     public virtual bool TryAdd(T session)
     {
         if (!_sessions.TryAdd(session.Id, session))
         {
-            _log.Warning("Failed to add session {id} (Already exists?).", session.Id);
+            _log.Warning("Failed to add session {id} (already exists?).", session.Id);
             return false;
         }
 
         session.Start();
         SessionAdded?.Invoke(session);
-        _log.Information("Session {id} added.", session.Id);
 
+        _log.Information("Session {id} added.", session.Id);
         return true;
     }
 
@@ -58,10 +51,9 @@ public class SessionManager<T> : Component where T : Session
 
         _communication.RemoveAllSessionHandlers(session);
         session.Dispose();
-
         SessionRemoved?.Invoke(session);
-        _log.Information("Session {id} removed.", sessionId);
 
+        _log.Information("Session {id} removed.", sessionId);
         return true;
     }
 
@@ -101,6 +93,8 @@ public class SessionManager<T> : Component where T : Session
         }
     }
 
+    public int Count => _sessions.Count;
+
     protected override void Dispose(bool disposing)
     {
         if (_isDisposed)
@@ -110,14 +104,24 @@ public class SessionManager<T> : Component where T : Session
 
         if (disposing)
         {
-            foreach (var session in _sessions.Values)
+            try
             {
-                session.Disconnect();
-                session.Dispose();
-            }
+                foreach (var session in _sessions.Values)
+                {
+                    // WARN: Session.Dispose'un ne yaptigini kontrol et.
+                    TryRemove(session.Id, out _);
+                }
 
-            _sessions.Clear();
-            _log.Debug("{id} disposed.", Id);
+                // Events
+                SessionAdded = null;
+                SessionRemoved = null;
+
+                _log.Debug("{id} disposed.", Id);
+            }
+            catch (Exception ex)
+            {
+                _log.Error(ex, "{id} dispose error.", Id);
+            }
         }
 
         base.Dispose(disposing);

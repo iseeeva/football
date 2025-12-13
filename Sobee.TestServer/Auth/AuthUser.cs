@@ -24,14 +24,15 @@ namespace Sobee.TestServer.Auth
 
         protected override void Dispose(bool disposing)
         {
-            if (!_isDisposed)
-            {
-                _isDisposed = true;
+            if (_isDisposed)
+                return;
 
-                if (disposing)
-                {
-                    _log.Debug("{id} disposed.", Id);
-                }
+            _isDisposed = true;
+
+            if (disposing)
+            {
+                AuthInformation = null;
+                _log.Debug("{id} disposed.", Id);
             }
 
             base.Dispose(disposing);

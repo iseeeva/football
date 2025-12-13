@@ -17,28 +17,10 @@ namespace Sobee.Network.Messaging
         private readonly SortedDictionary<ushort, ConstructorInfo> _messageConstructorsById = [];
         private readonly Dictionary<Type, ushort> _messageTypeToId = [];
         private readonly ConcurrentDictionary<int, Delegate> _messageIdToEvent = new();
-        private readonly Dictionary<Type, int> _messageTypeToIndex = [];
         private readonly HashSet<ushort> _usedMessageIds = [];
 
-        public IEnumerable<KeyValuePair<ushort, ConstructorInfo>> GetAllRegisteredConstructors() => _messageConstructorsById;
-
-        public GDelegate1 GetDispatcher() => new(DispatchToMessageConstructor);
-
-        public GDelegate2 GetMessageTypeToIdDelegate() => new(GetMessageTypeId);
-
-        public int GetRegisteredMessageCount() => _messageTypeToId.Count;
-
-        public IEnumerable<KeyValuePair<Type, int>> GetAllTypeIndexes() => _messageTypeToIndex;
-
-        public int GetMessageIndex(Type type)
-        {
-            if (_messageTypeToIndex.TryGetValue(type, out var index))
-                return index;
-
-            throw new KeyNotFoundException($"Message type index not found for: {type.FullName}");
-        }
-
-        public ushort GetMessageTypeId(Type type)
+        public MessageIdFromTypeDelegate GetMessageIdFromType() => new(GetMessageIdFromType);
+        public ushort GetMessageIdFromType(Type type)
         {
             if (_messageTypeToId.TryGetValue(type, out var id))
                 return id;
@@ -104,7 +86,7 @@ namespace Sobee.Network.Messaging
         {
             ArgumentNullException.ThrowIfNull(messageEvent);
 
-            var id = GetMessageTypeId(typeof(T));
+            var id = GetMessageIdFromType(typeof(T));
 
             _messageIdToEvent.AddOrUpdate(
                 id,
@@ -139,7 +121,6 @@ namespace Sobee.Network.Messaging
 
             _messageConstructorsById[messageId] = constructor;
             _messageTypeToId[type] = messageId;
-            _messageTypeToIndex[type] = _messageTypeToIndex.Count + 1;
             _usedMessageIds.Add(messageId);
 
             _log.Information("Registered message type: {Type} with ID: {MessageId}", type.FullName, messageId);
@@ -156,6 +137,7 @@ namespace Sobee.Network.Messaging
             RegisterMessageType(attribute.MessageId, type);
         }
 
+        public DispatchToMessageDelegate DispatchToMessageConstructor() => new(DispatchToMessageConstructor);
         public object DispatchToMessageConstructor(ushort messageId, BinaryReader reader)
         {
             if (!_messageConstructorsById.TryGetValue(messageId, out var constructor))
@@ -176,7 +158,7 @@ namespace Sobee.Network.Messaging
 
         public void DispatchToMessageEvent(MessageEventArgs args)
         {
-            var messageId = GetMessageTypeId(args.message.GetType());
+            var messageId = GetMessageIdFromType(args.message.GetType());
 
             if (!_messageIdToEvent.TryGetValue(messageId, out var eventDelegate))
             {
@@ -200,18 +182,21 @@ namespace Sobee.Network.Messaging
             }
         }
 
+        public int RegisteredMessageCount => _messageTypeToId.Count;
 
         protected override void Dispose(bool disposing)
         {
-            if (!_isDisposed)
+            if (_isDisposed)
+                return;
+
+            _isDisposed = true;
+
+            if (disposing)
             {
-                _isDisposed = true;
-
-                if (disposing)
-                {
-                    // Dispose managed state.
-
-                }
+                _messageConstructorsById.Clear();
+                _messageTypeToId.Clear();
+                _messageIdToEvent.Clear();
+                _usedMessageIds.Clear();
             }
 
             base.Dispose(disposing);
