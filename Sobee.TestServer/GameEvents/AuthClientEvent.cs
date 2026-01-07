@@ -28,7 +28,7 @@ namespace Sobee.TestServer.GameEvents
                 return;
             }
 
-            if (hub.MatchRoomManager.TryCreate(out var matchRoom))
+            if (hub.RoomManager.TryCreate(out var matchRoom))
             {
                 if (!matchRoom.Players.TryCreate(authUser))
                     _log.Error("[TEMPORARY] Failed to add auth user {authId} to match room.", authUser.Id);

@@ -22,23 +22,23 @@ namespace Sobee.TestServer
         protected virtual SessionManager<T> CreateSessionManager()
             => new(this);
 
-        public override async Task Update(double delta)
+        public override void Update(double delta)
         {
-            await _sessions.Update(delta);
+            _sessions.Update(delta);
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (!_isDisposed)
-            {
-                _isDisposed = true;
+            if (_isDisposed)
+                return;
 
-                if (disposing)
-                {
-                    _log.Debug("{id} disposing.", Id);
-                    _sessions.Dispose();
-                    _log.Debug("{id} disposed.", Id);
-                }
+            _isDisposed = true;
+
+            if (disposing)
+            {
+                _log.Debug("{id} disposing.", Id);
+                _sessions.Dispose();
+                _log.Debug("{id} disposed.", Id);
             }
 
             base.Dispose(disposing);

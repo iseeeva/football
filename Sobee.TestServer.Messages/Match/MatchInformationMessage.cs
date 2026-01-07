@@ -11,8 +11,8 @@ namespace Sobee.TestServer.Messages.Match
     {
         public MatchActor Actor { get; private set; }
 
-        public List<PlayerMatchInformationMessage> HomeTeam { get; private set; }
-        public List<PlayerMatchInformationMessage> AwayTeam { get; private set; }
+        public List<PlayerMatchInformationMessage> HomePlayer { get; private set; }
+        public List<PlayerMatchInformationMessage> AwayPlayer { get; private set; }
         public List<PlayerMatchInformationMessage> HomeSpectator { get; private set; }
         public List<PlayerMatchInformationMessage> AwaySpectator { get; private set; }
 
@@ -43,8 +43,8 @@ namespace Sobee.TestServer.Messages.Match
         public MatchInformationMessage()
         {
             // TODO: Remove hardcoded values when possible
-            HomeTeam = new List<PlayerMatchInformationMessage>(11);
-            AwayTeam = new List<PlayerMatchInformationMessage>(11);
+            HomePlayer = new List<PlayerMatchInformationMessage>(11);
+            AwayPlayer = new List<PlayerMatchInformationMessage>(11);
             HomeSpectator = new List<PlayerMatchInformationMessage>(11);
             AwaySpectator = new List<PlayerMatchInformationMessage>(11);
 
@@ -77,17 +77,17 @@ namespace Sobee.TestServer.Messages.Match
             Actor = new MatchActor(gclass315_0);
 
             ushort num = gclass315_0.method_15();
-            HomeTeam = new List<PlayerMatchInformationMessage>(num);
+            HomePlayer = new List<PlayerMatchInformationMessage>(num);
             for (int i = 0; i < num; i++)
             {
-                HomeTeam.Add((PlayerMatchInformationMessage)gclass315_0.method_25());
+                HomePlayer.Add((PlayerMatchInformationMessage)gclass315_0.method_25());
             }
 
             num = gclass315_0.method_15();
-            AwayTeam = new List<PlayerMatchInformationMessage>(num);
+            AwayPlayer = new List<PlayerMatchInformationMessage>(num);
             for (int j = 0; j < num; j++)
             {
-                AwayTeam.Add((PlayerMatchInformationMessage)gclass315_0.method_25());
+                AwayPlayer.Add((PlayerMatchInformationMessage)gclass315_0.method_25());
             }
 
             num = gclass315_0.method_15();
@@ -169,8 +169,8 @@ namespace Sobee.TestServer.Messages.Match
             )
         {
             this.Actor = Actor;
-            HomeTeam = new List<PlayerMatchInformationMessage>(ienumerable_0);
-            AwayTeam = new List<PlayerMatchInformationMessage>(ienumerable_1);
+            HomePlayer = new List<PlayerMatchInformationMessage>(ienumerable_0);
+            AwayPlayer = new List<PlayerMatchInformationMessage>(ienumerable_1);
             HomeSpectator = new List<PlayerMatchInformationMessage>(ienumerable_2);
             AwaySpectator = new List<PlayerMatchInformationMessage>(ienumerable_3);
             BallPosition = vector3_2;
@@ -197,15 +197,15 @@ namespace Sobee.TestServer.Messages.Match
         {
             base.Serialize(gclass316_0);
             Actor.Serialize(gclass316_0);
-            gclass316_0.method_15((ushort)HomeTeam.Count);
-            for (int i = 0; i < HomeTeam.Count; i++)
+            gclass316_0.method_15((ushort)HomePlayer.Count);
+            for (int i = 0; i < HomePlayer.Count; i++)
             {
-                gclass316_0.method_25(HomeTeam[i]);
+                gclass316_0.method_25(HomePlayer[i]);
             }
-            gclass316_0.method_15((ushort)AwayTeam.Count);
-            for (int j = 0; j < AwayTeam.Count; j++)
+            gclass316_0.method_15((ushort)AwayPlayer.Count);
+            for (int j = 0; j < AwayPlayer.Count; j++)
             {
-                gclass316_0.method_25(AwayTeam[j]);
+                gclass316_0.method_25(AwayPlayer[j]);
             }
             gclass316_0.method_15((ushort)HomeSpectator.Count);
             for (int k = 0; k < HomeSpectator.Count; k++)
@@ -254,34 +254,63 @@ namespace Sobee.TestServer.Messages.Match
         }
 
         #region Player Helpers
-        public List<PlayerMatchInformationMessage> GetPlayers()
+
+        public List<PlayerMatchInformationMessage> GetHomeTeam()
         {
-            return [.. HomeTeam, .. AwayTeam];
+            return [.. HomePlayer, .. HomeSpectator];
         }
 
-        public List<PlayerMatchInformationMessage> GetSpectators()
+        public List<PlayerMatchInformationMessage> GetAwayTeam()
+        {
+            return [.. AwayPlayer, .. AwaySpectator];
+        }
+
+        public List<PlayerMatchInformationMessage> GetTeamPlayers()
+        {
+            return [.. HomePlayer, .. AwayPlayer];
+        }
+
+        public List<PlayerMatchInformationMessage> GetTeamSpectators()
         {
             return [.. HomeSpectator, .. AwaySpectator];
         }
 
-        public List<PlayerMatchInformationMessage> GetAllPlayers()
+        public List<PlayerMatchInformationMessage> GetTeams()
         {
-            return [.. HomeTeam, .. AwayTeam, .. HomeSpectator, .. AwaySpectator];
+            return [.. HomePlayer, .. AwayPlayer, .. HomeSpectator, .. AwaySpectator];
         }
 
+        /// <param name="squadNumber">(not splited)</param>
         public PlayerMatchInformationMessage? GetPlayer(int squadNumber)
         {
-            foreach (var player in GetAllPlayers())
+            var tempNumber = squadNumber + 1;
+
+            if (!MatchEntry.InRange(tempNumber))
+                return null;
+
+            if (tempNumber <= ScenarioInfo.MAX_TEAM_SIZE) // Home
             {
-                if (player.SquadNumber == squadNumber)
-                    return player;
+                foreach (var player in GetHomeTeam())
+                {
+                    if (player.SquadNumber == squadNumber)
+                        return player;
+                }
             }
+            else if (tempNumber <= ScenarioInfo.MAX_TEAM_SIZE * 2) // Away
+            {
+                foreach (var player in GetAwayTeam())
+                {
+                    if (player.SquadNumber == MatchEntry.ToSquad(tempNumber, true))
+                        return player;
+                }
+            }
+
             return null;
         }
 
         public PlayerMatchInformationMessage? GetPlayer(Guid playerId)
         {
-            foreach (var player in GetAllPlayers())
+            foreach (var player in GetTeams())
             {
                 if (player.PlayerId == playerId)
                     return player;
@@ -294,8 +323,8 @@ namespace Sobee.TestServer.Messages.Match
         {
             return stadiumSitting switch
             {
-                StadiumSitting.HomePlayer => HomeTeam,
-                StadiumSitting.AwayPlayer => AwayTeam,
+                StadiumSitting.HomePlayer => HomePlayer,
+                StadiumSitting.AwayPlayer => AwayPlayer,
                 StadiumSitting.HomeSpectator => HomeSpectator,
                 StadiumSitting.AwaySpectator => AwaySpectator,
                 _ => null,
@@ -304,7 +333,7 @@ namespace Sobee.TestServer.Messages.Match
 
         public bool HasPlayer(Func<PlayerMatchInformationMessage, bool> predicate)
         {
-            foreach (var player in GetAllPlayers())
+            foreach (var player in GetTeams())
             {
                 if (predicate(player))
                     return true;

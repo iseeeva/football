@@ -1,269 +1,285 @@
-﻿using System.Net;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using Sobee.Common;
 
 namespace Sobee.Network
 {
+    public enum SocketState
+    {
+        Stopped,
+        Running,
+        Paused
+    }
+
     public class SocketWrapper : Component
     {
-        public bool IsActive { get; private set; }
         private static readonly Serilog.ILogger _log = Logging.Get<SocketWrapper>();
-
-        private readonly Socket _socket;
         private bool _isDisposed;
 
         public static readonly int MAX_SEND_SIZE = 32768;
         public static readonly int MAX_RECEIVE_SIZE = 4096;
 
-        private readonly MemoryStream _sendBuffer = new(MAX_SEND_SIZE);
-        private readonly Queue<byte[]> _receiveQueue = new();
+        private readonly Socket _socket;
+        public bool IsConnected => _socket != null && _socket.Connected;
+        public bool IsRunning => _socket != null && _socketState == SocketState.Running;
+
+        private readonly object _socketStateLock = new();
+        private SocketState _socketState = SocketState.Stopped;
+        private bool _isReceivePending = false;
+
+        private readonly MemoryStream _sendBuffer = new MemoryStream(MAX_SEND_SIZE);
         private readonly byte[] _receiveBuffer = new byte[MAX_RECEIVE_SIZE];
-        private int _processedBytesInBuffer;
+        private readonly Queue<byte[]> _receiveQueue = new Queue<byte[]>();
+        private int _receiveBufferOffset;
 
-        public event EventHandler? SocketDisconnected;
-        public event EventHandler<ConnectionErrorEvent>? SocketError;
-        public event EventHandler<ConnectionErrorEvent>? ConnectionError;
-        public event EventHandler<ConnectionErrorEvent>? SendError;
-        public event EventHandler<ConnectionErrorEvent>? ReceiveError;
-
-        public long TotalBytesSent { get; private set; }
-        public long TotalBytesReceived { get; private set; }
+        public long TotalSentBytes { get; private set; }
+        public long TotalReceivedBytes { get; private set; }
         public long TotalPacketsSent { get; private set; }
         public long TotalPacketsReceived { get; private set; }
 
-        public bool IsConnected => _socket.Connected;
-        public EndPoint? RemoteEndPoint => _socket.RemoteEndPoint;
+        public EventHandler? DisconnectHandler;
+        public EventHandler<ConnectionErrorEvent>? ErrorHandler;
 
         public SocketWrapper(Socket socket)
         {
-            _socket = socket ?? throw new ArgumentNullException(nameof(socket));
-            _log.Information("{SocketId} initialized. (source: {ip})", Id, _socket.RemoteEndPoint);
+            _socket = socket;
+            _log.Information("{id} initialized. (socket:{socketIp})", Id, _socket.RemoteEndPoint);
         }
 
-        public virtual void Start()
+        public void Start()
         {
-            if (IsConnected && !IsActive)
+            lock (_socketStateLock)
             {
-                IsActive = true;
-                BeginReceive(_processedBytesInBuffer);
+                if (_socketState == SocketState.Running)
+                    return;
 
-                _log.Information("{SocketId} started.", Id);
+                _socketState = SocketState.Running;
+                if (!_isReceivePending)
+                    BeginReceiveAsync(_receiveBufferOffset);
             }
+
+            _log.Information("{id} started.", Id, _socket.RemoteEndPoint);
         }
 
-        public virtual void Stop()
+        public void Pause(bool isFlushNeeded = false)
         {
-            if (IsActive)
+            lock (_socketStateLock)
             {
-                IsActive = false;
-                _log.Information("{SocketId} stopped.", Id);
+                if (_socketState == SocketState.Paused)
+                    return;
+
+                _socketState = SocketState.Paused;
+                if (isFlushNeeded)
+                    FlushBuffers();
             }
+
+            _log.Information("{id} paused. (isFlushNeeded:{flushBool})", Id, isFlushNeeded);
         }
 
-        public void EnqueueSend(byte[] data, int offset, int count)
+        public void Stop()
         {
-            if (!IsConnected) return;
+            lock (_socketStateLock)
+            {
+                if (_socketState == SocketState.Stopped)
+                    return;
 
+                _socketState = SocketState.Stopped;
+                Disconnect();
+            }
+
+            _log.Information("{id} stopped.", Id);
+        }
+
+        public virtual void QueueSend(byte[] buffer, int offset, int length)
+        {
             lock (_sendBuffer)
             {
-                _sendBuffer.Write(BitConverter.GetBytes(count), 0, 4);
-                _sendBuffer.Write(data, offset, count);
+                _sendBuffer.Write(BitConverter.GetBytes(length), 0, 4);
+                _sendBuffer.Write(buffer, offset, length);
                 TotalPacketsSent++;
             }
         }
 
-        public int SendSync()
+        public long BeginSendBuffered()
         {
-            if (!IsConnected)
+            if (_socket == null || !IsConnected)
                 return 0;
 
+            byte[] dataToSend;
             lock (_sendBuffer)
             {
-                try
-                {
-                    int length = (int)_sendBuffer.Length;
-                    if (length == 0) return length;
+                if (_sendBuffer.Length == 0)
+                    return 0;
 
-                    int sent = _socket.Send(_sendBuffer.GetBuffer(), 0, length, SocketFlags.None);
-                    _sendBuffer.SetLength(0);
+                dataToSend = _sendBuffer.ToArray();
+                _sendBuffer.SetLength(0);
+                _sendBuffer.Position = 0;
+            }
 
-                    TotalBytesSent += sent;
-                    return sent;
-                }
-                catch (SocketException ex)
-                {
-                    OnSendError(ex.SocketErrorCode);
-                    OnSocketError(ex.SocketErrorCode);
-                    Disconnect();
-                }
-                catch (ObjectDisposedException)
-                {
-                    OnDisconnected();
-                }
-
+            try
+            {
+                _socket.BeginSend(dataToSend, 0, dataToSend.Length, SocketFlags.None, EndSendCallback, _socket);
+                return dataToSend.Length;
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
                 return 0;
             }
         }
 
-        public byte[]? ReceiveSync()
+        private void EndSendCallback(IAsyncResult ar)
         {
-            if (!IsConnected)
-                return null;
-
-            try
-            {
-                if (!_socket.Poll(0, SelectMode.SelectRead) || _socket.Available < 4)
-                    return null;
-
-                _socket.Receive(_receiveBuffer, 4, SocketFlags.Peek);
-                int packetSize = BitConverter.ToInt32(_receiveBuffer, 0);
-
-                if (packetSize <= 0 || packetSize > _receiveBuffer.Length || _socket.Available < packetSize + 4)
-                    return null;
-
-                var packet = new byte[packetSize];
-                _socket.Receive(_receiveBuffer, 4, SocketFlags.None);
-                _socket.Receive(packet, packetSize, SocketFlags.None);
-
-                TotalBytesReceived += packetSize + 4;
-                TotalPacketsReceived++;
-                return packet;
-            }
-            catch (SocketException ex)
-            {
-                OnReceiveError(ex.SocketErrorCode);
-                OnSocketError(ex.SocketErrorCode);
-                Disconnect();
-            }
-            catch (ObjectDisposedException)
-            {
-                OnDisconnected();
-            }
-
-            return null;
+            try { TotalSentBytes += ((Socket)ar.AsyncState!).EndSend(ar); }
+            catch { Disconnect(); }
         }
 
-        private void BeginReceive(int offset)
+        private void BeginReceiveAsync(int offset)
         {
-            if (!IsActive || !IsConnected || _isDisposed)
+            if (_socket == null || _isDisposed)
                 return;
+
+            lock (_socketStateLock)
+            {
+                if (_socketState == SocketState.Stopped)
+                    return;
+
+                _isReceivePending = true;
+            }
 
             try
             {
-                _socket.BeginReceive(_receiveBuffer, offset, _receiveBuffer.Length - offset,
-                    SocketFlags.None, OnReceiveCallback, null);
+                _socket.BeginReceive(_receiveBuffer, offset, _receiveBuffer.Length - offset, SocketFlags.None, EndReceiveCallback, _socket);
             }
-            catch (SocketException ex)
+            catch (Exception ex)
             {
-                OnReceiveError(ex.SocketErrorCode);
-                OnSocketError(ex.SocketErrorCode);
-                Disconnect();
-            }
-            catch (ObjectDisposedException)
-            {
-                OnDisconnected();
+                lock (_socketStateLock)
+                    _isReceivePending = false;
+
+                HandleException(ex);
             }
         }
 
-        private void OnReceiveCallback(IAsyncResult ar)
+        private void EndReceiveCallback(IAsyncResult ar)
         {
-            if (!IsConnected || _isDisposed)
-                return;
+            lock (_socketStateLock)
+                _isReceivePending = false;
 
             try
             {
-                int read = _socket.EndReceive(ar);
-                if (read <= 0)
+                int received = ((Socket)ar.AsyncState!).EndReceive(ar);
+                if (received <= 0)
                 {
                     Disconnect();
                     return;
                 }
 
-                TotalBytesReceived += read;
-                _processedBytesInBuffer += read;
+                _receiveBufferOffset += received;
+                TotalReceivedBytes += received;
 
-                while (_processedBytesInBuffer > 4)
+                ProcessBuffer();
+                BeginReceiveAsync(_receiveBufferOffset);
+            }
+            catch (Exception ex)
+            {
+                HandleException(ex);
+            }
+        }
+
+        private void ProcessBuffer()
+        {
+            while (_receiveBufferOffset > 4)
+            {
+                int packetLength = BitConverter.ToInt32(_receiveBuffer, 0);
+                if (packetLength <= 0 || packetLength > MAX_RECEIVE_SIZE)
                 {
-                    int packetSize = BitConverter.ToInt32(_receiveBuffer, 0);
-
-                    if (packetSize <= 0 || packetSize > _receiveBuffer.Length)
-                    {
-                        OnConnectionError(Network.ConnectionError.BufferLengthTooLong);
-                        Disconnect();
-                        return;
-                    }
-
-                    if (_processedBytesInBuffer < (packetSize + 4))
-                        break;
-
-                    var packet = new byte[packetSize];
-                    Array.Copy(_receiveBuffer, 4, packet, 0, packetSize);
-
-                    _processedBytesInBuffer -= (packetSize + 4);
-                    Array.Copy(_receiveBuffer, packetSize + 4, _receiveBuffer, 0, _processedBytesInBuffer);
-
-                    lock (_receiveQueue) _receiveQueue.Enqueue(packet);
-
-                    TotalPacketsReceived++;
+                    OnConnectionError(ConnectionError.BufferLengthTooLong);
+                    Disconnect(); return;
                 }
 
-                BeginReceive(_processedBytesInBuffer);
+                int fullLength = 4 + packetLength;
+                if (_receiveBufferOffset < fullLength) break;
+
+                bool isRunning;
+                lock (_socketStateLock)
+                {
+                    isRunning =
+                        (_socketState == SocketState.Running);
+                }
+
+                // Sadece socket calisiyorsa (SocketState.Running) paketi kuyruga ekleyecek.
+                if (isRunning)
+                {
+                    byte[] packet = new byte[packetLength];
+                    Array.Copy(_receiveBuffer, 4, packet, 0, packetLength);
+                    lock (_receiveQueue) { _receiveQueue.Enqueue(packet); TotalPacketsReceived++; }
+                }
+
+                _receiveBufferOffset -= fullLength;
+                if (_receiveBufferOffset > 0)
+                    Array.Copy(_receiveBuffer, fullLength, _receiveBuffer, 0, _receiveBufferOffset);
             }
-            catch (SocketException ex)
+        }
+
+        public byte[]? DequeuePacket()
+        {
+            lock (_receiveQueue)
+                return _receiveQueue.Count == 0 ?
+                    null :
+                    _receiveQueue.Dequeue();
+        }
+
+        public void Disconnect()
+        {
+            lock (_socketStateLock)
             {
-                OnReceiveError(ex.SocketErrorCode);
-                OnSocketError(ex.SocketErrorCode);
-                Disconnect();
-            }
-            catch (ObjectDisposedException)
-            {
+                if (!IsConnected)
+                    return;
+
+                // stop, socketStatei stopped yapıyor ama ya disconnecti cagiran stop degilse?
+                _socketState = SocketState.Stopped;
+
+                if (_socket != null && _socket.Connected)
+                    _socket.Close();
+
+                FlushBuffers();
+
+                _log.Information("{id} disconnected.", Id);
                 OnDisconnected();
             }
         }
 
-        public void FlushQueue()
+        protected virtual void OnDisconnected() => DisconnectHandler?.Invoke(this, EventArgs.Empty);
+        protected virtual void OnSocketError(SocketError error) => ErrorHandler?.Invoke(this, new ConnectionErrorEvent(error));
+        protected virtual void OnConnectionError(ConnectionError error) => ErrorHandler?.Invoke(this, new ConnectionErrorEvent(error));
+
+        public void FlushBuffers()
         {
+            lock (_sendBuffer)
+            {
+                _sendBuffer.SetLength(0);
+                _sendBuffer.Position = 0;
+            }
+
             lock (_receiveQueue)
                 _receiveQueue.Clear();
         }
 
-        public byte[]? DequeueReceive()
+        private void HandleException(Exception ex)
         {
-            lock (_receiveQueue)
-                return _receiveQueue.Count > 0 ? _receiveQueue.Dequeue() : null;
+            if (ex is SocketException se)
+                OnSocketError(se.SocketErrorCode);
+
+            Disconnect();
         }
-
-        public virtual void Disconnect()
-        {
-            if (_isDisposed || !IsConnected)
-                return;
-
-            Stop();
-
-            try
-            {
-                if (_socket.Connected)
-                    _socket.Shutdown(SocketShutdown.Both);
-
-                _socket.Close();
-                _socket.Dispose();
-            }
-            catch { }
-
-            _log.Information("{SocketId} disconnected.", Id);
-            OnDisconnected();
-        }
-
-        private void OnDisconnected() => SocketDisconnected?.Invoke(this, EventArgs.Empty);
-        private void OnSocketError(SocketError error) => SocketError?.Invoke(this, new ConnectionErrorEvent(error));
-        private void OnConnectionError(ConnectionError error) => ConnectionError?.Invoke(this, new ConnectionErrorEvent(error));
-        private void OnSendError(SocketError error) => SendError?.Invoke(this, new ConnectionErrorEvent(error));
-        private void OnReceiveError(SocketError error) => ReceiveError?.Invoke(this, new ConnectionErrorEvent(error));
 
         protected override void Dispose(bool disposing)
         {
-            if (_isDisposed)
-                return;
+            if (_isDisposed) return;
+
+            lock (_socketStateLock)
+            {
+                _socketState = SocketState.Stopped;
+            }
 
             _isDisposed = true;
 
@@ -271,23 +287,21 @@ namespace Sobee.Network
             {
                 try
                 {
-                    Stop();
+                    if (_socket != null)
+                    {
+                        if (_socket.Connected)
+                            _socket.Shutdown(SocketShutdown.Both);
 
-                    if (_socket.Connected)
-                        _socket.Shutdown(SocketShutdown.Both);
+                        _socket.Close();
+                        _socket.Dispose();
+                    }
 
-                    _socket.Close();
-                    _socket.Dispose();
-
-                    lock (_receiveQueue)
-                        _receiveQueue.Clear();
-
-                    _sendBuffer.Dispose();
-                    _log.Debug("{SocketId} disposed.", Id);
+                    FlushBuffers();
+                    _log.Information("{id} disposed.", Id);
                 }
                 catch (Exception ex)
                 {
-                    _log.Error(ex, "{SocketId} dispose error.", Id);
+                    _log.Error(ex, "{id} error during disposal", Id);
                 }
             }
 

@@ -33,10 +33,10 @@ namespace Sobee.TestServer.Match
             _log.Debug("{id} initialized.", Id);
         }
 
-        public override async Task Update(double delta)
+        public override void Update(double delta)
         {
             SendMessage(new LatencyMessage((float)delta));
-            await base.Update(delta);
+            base.Update(delta);
         }
 
         protected override void Dispose(bool disposing)

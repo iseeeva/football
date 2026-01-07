@@ -31,11 +31,11 @@ namespace Sobee.TestServer.Auth
             return new AuthUserManager(this);
         }
 
-        public override async Task Update(double delta)
+        public override void Update(double delta)
         {
             if (_sessions != null)
             {
-                await Users.Update(delta);
+                Users.Update(delta);
             }
         }
 

@@ -74,29 +74,24 @@ namespace Sobee.TestServer.Match
             base.OnReceivedMessage(sender, message);
         }
 
-        public override async Task Update(double delta)
+        public override void Update(double delta)
         {
-            if (Players != null)
-                await Players.Update(delta);
-
-            if (Components != null)
-                await Components.Update(delta);
-
-            await base.Update(delta);
+            Players?.Update(delta);
+            Components?.Update(delta);
+            base.Update(delta);
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (!_isDisposed)
-            {
-                _isDisposed = true;
+            if (_isDisposed)
+                return;
 
-                if (disposing)
-                {
-                    _log.Debug("{id} disposing.", Id);
-                    Components.Dispose();
-                    _log.Debug("{id} disposed.", Id);
-                }
+            _isDisposed = true;
+
+            if (disposing)
+            {
+                Components.Dispose();
+                _log.Debug("{id} disposed.", Id);
             }
 
             base.Dispose(disposing);

@@ -15,9 +15,9 @@ namespace Sobee.TestServer.Match
             _log.Debug("{id} initialized.", Id);
         }
 
-        public override Task Update(double delta)
+        public override void Update(double delta)
         {
-            return Task.CompletedTask;
+
         }
 
         protected override void Dispose(bool disposing)

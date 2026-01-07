@@ -11,96 +11,138 @@ namespace Sobee.Network
         private static readonly ILogger _log = Logging.Get<Session>();
         private bool _isDisposed;
 
-        public event UnhandledExceptionEventHandler? SerializationError;
-        public event EventHandler<MessageEventArgs>? MessageReceived;
-        public event EventHandler<MessageEventArgs>? MessageSent;
-
         public SocketWrapper? Socket;
-
-        public bool IsActive { get; private set; }
         public bool IsConnected => Socket != null && Socket.IsConnected;
+        public bool IsRunning => Socket != null && Socket.IsRunning;
+
+        public SessionType SessionType { get; protected set; }
 
         private readonly MessageDispatch _dispatcher;
         private readonly MessageSerialization _receiveSerialization;
         private readonly MessageSerialization _sendSerialization;
 
-        private readonly MemoryStream _receiveBufferStream = new(SocketWrapper.MAX_RECEIVE_SIZE);
-        private readonly MemoryStream _sendBufferStream = new(SocketWrapper.MAX_SEND_SIZE);
+        private readonly MemoryStream _receiveStream = new(SocketWrapper.MAX_RECEIVE_SIZE);
+        private readonly MemoryStream _sendStream = new(SocketWrapper.MAX_SEND_SIZE);
 
-        public SessionType SessionType { get; protected set; }
+        public event EventHandler<Message>? MessageReceivedHandler;
+        public event EventHandler<Message>? MessageSendHandler;
 
         public Session(SocketWrapper socket, MessageDispatch dispatcher)
         {
             Socket = socket ?? throw new ArgumentNullException(nameof(socket));
             _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
-            _sendSerialization = new MessageSerialization(_sendBufferStream, _dispatcher.DispatchToMessageConstructor(), _dispatcher.GetMessageIdFromType());
-            _receiveSerialization = new MessageSerialization(_receiveBufferStream, _dispatcher.DispatchToMessageConstructor(), _dispatcher.GetMessageIdFromType());
+            _sendSerialization = new MessageSerialization(
+                _sendStream,
+                _dispatcher.DispatchToMessageConstructor(),
+                _dispatcher.GetMessageIdFromType());
 
-            _log.Information("{thisId} initialized. (source: {socketId})", Id, Socket.Id);
+            _receiveSerialization = new MessageSerialization(
+                _receiveStream,
+                _dispatcher.DispatchToMessageConstructor(),
+                _dispatcher.GetMessageIdFromType());
+
+            _log.Information("{id} initialized. (socket:{socketId})", Id, Socket.Id);
         }
 
-        public virtual void Start()
+        public void Start()
         {
-            if (!IsConnected || IsActive)
+            if (IsRunning || !IsConnected)
                 return;
 
-            IsActive = true;
-            Socket?.Start();
-
+            Socket!.Start();
             _log.Information("{id} started.", Id);
         }
 
-        public virtual void Stop()
+        public void Pause(bool isFlushNeeded = false)
         {
-            if (!IsActive)
+            if (!IsRunning)
                 return;
 
-            IsActive = false;
-            Socket?.Stop();
+            Socket!.Pause(isFlushNeeded);
+            _log.Information("{id} paused.", Id);
+        }
 
+        public void Stop()
+        {
+            if (!IsRunning)
+                return;
+
+            Socket!.Stop();
             _log.Information("{id} stopped.", Id);
         }
 
-        public override Task Update(double delta)
+        public override void Update(double delta)
         {
-            if (_isDisposed || !IsActive || !IsConnected)
-                return Task.CompletedTask;
+            if (_isDisposed || !IsRunning || !IsConnected)
+                return;
 
             try
             {
-                while (true)
+                while (Socket?.DequeuePacket() is byte[] packet)
                 {
-                    var packetData = Socket?.DequeueReceive();
-                    if (packetData == null)
-                        break;
+                    _receiveStream.Position = 0;
+                    _receiveStream.SetLength(0);
 
-                    _receiveBufferStream.Position = 0;
-                    _receiveBufferStream.SetLength(0);
-                    _receiveBufferStream.Write(packetData, 0, packetData.Length);
-                    _receiveBufferStream.Position = 0;
+                    _receiveStream.Write(packet);
+                    _receiveStream.Position = 0;
 
                     var message = (Message)_receiveSerialization.ReadMessage();
-                    _dispatcher.DispatchToMessageEvent(new MessageEventArgs(this, message));
-                    OnMessageReceived(this, message);
+                    _dispatcher.DispatchToMessageEvent(
+                        new MessageEventArgs(this, message)
+                    );
+
+                    MessageReceivedHandler?.Invoke(this, message);
                 }
             }
             catch (SerializationException ex)
             {
-                OnSerializationError(ex);
+                _log.Error(ex, "{id} serialization error", Id);
                 Disconnect();
             }
             catch (Exception ex)
             {
-                _log.Error(ex, "{id} unexpected receive error", Id);
+                _log.Error(ex, "{id} unexpected session error", Id);
                 Disconnect();
             }
 
-            Socket?.SendSync();
-            return Task.CompletedTask;
+            Socket?.BeginSendBuffered();
         }
 
-        public virtual void Disconnect()
+        /// <summary> Belirli turdeki mesaji 1 kere bekler </summary>
+        public void WaitForMessage<T>(Action<Session, T> handler) where T : Message
+        {
+            EventHandler<Message>? wrapper = null;
+            wrapper = (sender, message) =>
+            {
+                if (message is not T msg)
+                    return;
+
+                MessageReceivedHandler -= wrapper;
+
+                handler(this, msg);
+            };
+
+            MessageReceivedHandler += wrapper;
+        }
+
+        public void SendMessage(Message message)
+        {
+            if (_isDisposed || !IsConnected)
+                return;
+
+            _sendStream.Position = 0;
+            _sendStream.SetLength(0);
+            _sendSerialization.WriteMessage(message);
+
+            Socket?.QueueSend(
+                _sendStream.GetBuffer(),
+                0,
+                (int)_sendStream.Length
+            );
+        }
+
+        public void Disconnect()
         {
             if (_isDisposed || !IsConnected)
                 return;
@@ -109,66 +151,6 @@ namespace Sobee.Network
             Socket?.Disconnect();
 
             _log.Information("{id} disconnected.", Id);
-        }
-
-        public virtual void SendMessage(Message message)
-        {
-            if (_isDisposed || !IsConnected)
-                return;
-
-            _sendBufferStream.Position = 0;
-            _sendBufferStream.SetLength(0);
-            _sendSerialization.WriteMessage(message);
-
-            Socket?.EnqueueSend(_sendBufferStream.GetBuffer(), 0, (int)_sendBufferStream.Length);
-            OnMessageSent(this, message);
-        }
-
-        public async Task<Message> WaitForMessage(Func<Message, bool> filter, int timeoutMs = -1)
-        {
-            var tcs = new TaskCompletionSource<Message>();
-
-            void Handler(object? sender, MessageEventArgs args)
-            {
-                if (filter(args.message))
-                {
-                    MessageReceived -= Handler;
-                    tcs.TrySetResult(args.message);
-                }
-            }
-
-            MessageReceived += Handler;
-
-            if (timeoutMs > 0)
-            {
-                var timeoutTask = Task.Delay(timeoutMs);
-                var completedTask = await Task.WhenAny(tcs.Task, timeoutTask);
-                if (completedTask == timeoutTask)
-                {
-                    MessageReceived -= Handler;
-                    throw new TimeoutException("WaitForMessage timed out");
-                }
-            }
-
-            return await tcs.Task;
-        }
-
-        protected virtual void OnSerializationError(SerializationException ex)
-        {
-            _log.Error(ex, "{id} serialization error", Id);
-            SerializationError?.Invoke(this, new UnhandledExceptionEventArgs(ex, false));
-        }
-
-        protected virtual void OnMessageReceived(object sender, Message message)
-        {
-            _log.Debug("{id} received: {messageType}", Id, message.GetType().Name);
-            MessageReceived?.Invoke(this, new MessageEventArgs(this, message));
-        }
-
-        protected virtual void OnMessageSent(object sender, Message message)
-        {
-            _log.Debug("{id} sent: {messageType}", Id, message.GetType().Name);
-            MessageSent?.Invoke(this, new MessageEventArgs(this, message));
         }
 
         protected override void Dispose(bool disposing)
@@ -184,7 +166,7 @@ namespace Sobee.Network
                 {
                     // WARN: Socketi session ile dispose etmek riskli çünkü socket başka bir session içinde kullanılabilir.
                     // ORNEK: AuthUser, MatchPlayer'a geçerken aynı socketi kullanmak zorunda.
-                    Stop();
+                    Pause(true);
 
                     if (!IsConnected)
                     {
@@ -200,18 +182,9 @@ namespace Sobee.Network
                     // Socket
                     Socket = null;
 
-                    // Events
-                    MessageSent = null;
-                    MessageReceived = null;
-                    SerializationError = null;
-
                     // Serializations
                     _sendSerialization.Dispose();
                     _receiveSerialization.Dispose();
-
-                    // Buffers
-                    //_sendBufferStream.Dispose();
-                    //_receiveBufferStream.Dispose();
 
                     _log.Debug("{id} disposed.", Id);
                 }

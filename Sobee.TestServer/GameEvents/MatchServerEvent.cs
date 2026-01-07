@@ -43,12 +43,23 @@ namespace Sobee.TestServer.GameEvents
 
             // Wait for heartbeat message before invoke the match event.
             // Heartbeat is the first message sent by the client after going match screen.
-            _ = matchPlayer.WaitForMessage(s => s is HeartbeatMessage).ContinueWith(_ =>
+            matchPlayer.WaitForMessage<HeartbeatMessage>((player, heartbeat) =>
             {
-                matchPlayer.SendMessage(new ChatSystemMessage($"[PlayerJoin] Room Id: {matchRoom.Id}", ChatSystemMessageType.General));
-                matchPlayer.SendMessage(new ChatSystemMessage($"[PlayerJoin] Your Id: {matchPlayer.Id}", ChatSystemMessageType.General));
-                matchPlayer.SendMessage(new ChatSystemMessage($"[PlayerJoin] (SessionType: {matchPlayer.SessionType})", ChatSystemMessageType.General));
-                matchPlayer.SendMessage(new ChatSystemMessage($"[PlayerJoin] {matchInformation}", ChatSystemMessageType.General));
+                player.SendMessage(new ChatSystemMessage(
+                    $"[PlayerJoin] Room Id: {matchRoom.Id}",
+                    ChatSystemMessageType.General));
+
+                player.SendMessage(new ChatSystemMessage(
+                    $"[PlayerJoin] Your Id: {player.Id}",
+                    ChatSystemMessageType.General));
+
+                player.SendMessage(new ChatSystemMessage(
+                    $"[PlayerJoin] (SessionType: {player.SessionType})",
+                    ChatSystemMessageType.General));
+
+                player.SendMessage(new ChatSystemMessage(
+                    $"[PlayerJoin] (PlayerMatchInformation: {matchInformation})",
+                    ChatSystemMessageType.General));
             });
         }
 

@@ -107,7 +107,10 @@ namespace Sobee.TestServer.Helpers
             var matchPhaseInfo = matchInfo.PhaseInfo;
 
             var pos = Create11v11(matchInfo.ScenarioInfo.ScenarioType);
-            var startingTeam = matchPhaseInfo.IsFirstHalf() ? matchInfo.HomeTeam : matchInfo.AwayTeam;
+            var startingTeam = matchPhaseInfo.IsFirstHalf() ? matchInfo.HomePlayer : matchInfo.AwayPlayer;
+
+            if (startingTeam.Count == 0)
+                throw new InvalidOperationException("Starting team has no players.");
 
             var actionerIndex = startingTeam.Count - 1;
             var actionerMatchInformation = startingTeam[actionerIndex];
@@ -131,14 +134,14 @@ namespace Sobee.TestServer.Helpers
                 );
             }
 
-            ApplyDefaultToUnuseds(pos.Home.Positions, pos.Home.Directions, matchInfo.HomeTeam.Count);
-            ApplyDefaultToUnuseds(pos.Away.Positions, pos.Away.Directions, matchInfo.AwayTeam.Count);
+            ApplyDefaultToUnuseds(pos.Home.Positions, pos.Home.Directions, matchInfo.HomePlayer.Count);
+            ApplyDefaultToUnuseds(pos.Away.Positions, pos.Away.Directions, matchInfo.AwayPlayer.Count);
 
             matchInfo.MatchState = MatchStateType.Positioning;
             matchInfo.FieldPositioning = type;
 
-            ApplyPositions(matchInfo.HomeTeam, pos.Home);
-            ApplyPositions(matchInfo.AwayTeam, pos.Away);
+            ApplyPositions(matchInfo.HomePlayer, pos.Home);
+            ApplyPositions(matchInfo.AwayPlayer, pos.Away);
 
             matchRoom.Players.SendMessage(new PositioningCutscene(
                 type,

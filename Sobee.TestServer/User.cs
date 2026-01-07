@@ -16,9 +16,9 @@ namespace Sobee.TestServer
             _log.Debug("{id} initialized.", Id);
         }
 
-        public override Task Update(double delta)
+        public override void Update(double delta)
         {
-            return base.Update(delta);
+            base.Update(delta);
         }
 
         protected override void Dispose(bool disposing)
