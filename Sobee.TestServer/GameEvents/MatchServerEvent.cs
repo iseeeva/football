@@ -1,6 +1,8 @@
-﻿using Sobee.Common;
+﻿using System.Numerics;
+using Sobee.Common;
 using Sobee.TestServer.Match;
 using Sobee.TestServer.Messages;
+using Sobee.TestServer.Messages.Ball;
 using Sobee.TestServer.Messages.Chat;
 using Sobee.TestServer.Messages.Player;
 
@@ -71,13 +73,19 @@ namespace Sobee.TestServer.GameEvents
                 return;
             }
 
-            // TODO: If actioner is disconnected?
-
             if (matchRoom.MatchInformation.GetPlayer(matchPlayer.Id) != null)
             {
                 _log.Warning("[PlayerLeave] Player {playerId} still in match {matchId}.", matchPlayer.Id, matchRoom.Id);
                 matchRoom.Players.TryRemove(matchPlayer.Id, out _);
                 return;
+            }
+
+            // TODO: If actioner is disconnected?
+            if (matchRoom.MatchInformation.Actor.BallOwner == matchPlayer.AuthInformation.Entry.ToSquad())
+            {
+                matchRoom.MatchInformation.Actor.BallOwner = -1;
+                matchRoom.MatchInformation.BallVelocity = Vector3.Zero;
+                matchRoom.Players.SendMessage(new BallUpdateMessage(matchRoom.MatchInformation.BallPosition, new Vector3(0, 0, 0)));
             }
 
             matchRoom.Players.SendMessage(new PlayerLeaveMessage((sbyte)matchPlayer.AuthInformation.Entry.ToSquad()));

@@ -18,7 +18,7 @@ namespace Sobee.TestServer.GameEvents
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallPositioningMessage ballActionerHit) return;
+            if (e.message is not BallPositioningMessage ballPositioningHit) return;
 
             var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
             if (ballComponent == null)
@@ -34,33 +34,33 @@ namespace Sobee.TestServer.GameEvents
                 return;
             }
 
-            var matchPlayerInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
-            var actionerPlayerInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.BallOwner);
+            var playerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
+            var ballOwnerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.BallOwner);
 
-            if (actionerPlayerInfo == null || matchPlayerInfo == null)
+            if (ballOwnerMatchInfo == null || playerMatchInfo == null)
             {
                 _log.Warning("[BallPositioningReceived] Could not find player info in match.");
                 return;
             }
 
-            // Gonderen sadece actioner olsun.
-            if (actionerPlayerInfo.PlayerId != matchPlayerInfo.PlayerId)
+            // Gonderen sadece ballOwner olsun.
+            if (ballOwnerMatchInfo.PlayerId != playerMatchInfo.PlayerId)
             {
-                _log.Warning("[BallPositioningReceived] Player {playerId} is not the actioner {actionerId}.", matchPlayer.Id, actionerPlayerInfo.PlayerId);
+                _log.Warning("[BallPositioningReceived] Player {playerId} is not the BallOwner {ballOwnerId}.", matchPlayer.Id, ballOwnerMatchInfo.PlayerId);
                 return;
             }
 
             // [INFO]: Topu PositioningHit ile atmak zorundasın.
             // Client tarafı MatchState'i güncellemek için PositioningHit bekliyor.
-            // Bu yüzden BallActionerHit, HitSub'ların kendi mesajını değil PositioningHit göndermek zorunda.
+            // Bu yüzden BallPositioningHit, HitSub'ların kendi mesajını değil PositioningHit göndermek zorunda.
             // !!!!!!! HitSub eventlerinin topu atmasına izin verme. !!!!!!!!
 
             // HitSub:
             bool isHitSubDispatch;
-            switch (ballActionerHit.HitSubType)
+            switch (ballPositioningHit.HitSubType)
             {
                 case HitSubType.Shoot:
-                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallShootMessage(ballActionerHit.Strength, ballActionerHit.Direction));
+                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallShootMessage(ballPositioningHit.Strength, ballPositioningHit.Direction));
                     break;
 
                 case HitSubType.Pass: // Client PositioningHit için squad numarası göndermiyor?
@@ -98,9 +98,9 @@ namespace Sobee.TestServer.GameEvents
                     return;
             }
 
-            matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage($"[BallPositioningReceived] {matchRoom.MatchInformation.FieldPositioning} by {actionerPlayerInfo.PlayerName}", Messages.Chat.ChatSystemMessageType.General));
-            matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage($"[BallPositioningReceived] Strength: {ballActionerHit.Strength}, HitSubType: {ballActionerHit.HitSubType}, Direction: {ballActionerHit.Direction}", Messages.Chat.ChatSystemMessageType.General));
-            _log.Information("[BallPositioningReceived] Player {playerId} hit the ball during {fieldPos}.", actionerPlayerInfo.PlayerId, matchRoom.MatchInformation.FieldPositioning);
+            matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage($"[BallPositioningReceived] {matchRoom.MatchInformation.FieldPositioning} by {ballOwnerMatchInfo.PlayerName}", Messages.Chat.ChatSystemMessageType.General));
+            matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage($"[BallPositioningReceived] Strength: {ballPositioningHit.Strength}, HitSubType: {ballPositioningHit.HitSubType}, Direction: {ballPositioningHit.Direction}", Messages.Chat.ChatSystemMessageType.General));
+            _log.Information("[BallPositioningReceived] Player {playerId} hit the ball during {fieldPos}.", ballOwnerMatchInfo.PlayerId, matchRoom.MatchInformation.FieldPositioning);
 
             matchRoom.MatchInformation.Actor.BallOwner = -1;
             matchRoom.MatchInformation.MatchState = MatchStateType.Running;
@@ -179,37 +179,37 @@ namespace Sobee.TestServer.GameEvents
                 return;
             }
 
-            var matchPlayerInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
-            var actionerPlayerInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.BallOwner);
+            var playerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
+            var ballOwnerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.BallOwner);
 
-            if (actionerPlayerInfo == null || matchPlayerInfo == null)
+            if (ballOwnerMatchInfo == null || playerMatchInfo == null)
             {
                 _log.Warning("[BallShootReceived] Could not find player info in match.");
                 return;
             }
 
-            // Gonderen sadece actioner olsun.
-            if (actionerPlayerInfo.PlayerId != matchPlayerInfo.PlayerId)
+            // Gonderen sadece ballOwner olsun.
+            if (ballOwnerMatchInfo.PlayerId != playerMatchInfo.PlayerId)
             {
-                _log.Warning("[BallShootReceived] Player {playerId} is not the actioner {actionerId}.", matchPlayer.Id, actionerPlayerInfo.PlayerId);
+                _log.Warning("[BallShootReceived] Player {playerId} is not the BallOwner {ballOwnerId}.", matchPlayer.Id, ballOwnerMatchInfo.PlayerId);
                 return;
             }
 
             double ballSpeed = ballComponent.BallMaxSpeed * ballShoot.Strength;
-            double ballHitSafe = (ballComponent.BallCollisionRadius + movementComponent.MovementCollisionRadius) + 0.1;
+            double ballHitSafe = ballComponent.BallCollisionRadius + movementComponent.MovementCollisionRadius + (ballSpeed * 0.05);
 
-            actionerPlayerInfo.Direction = ballShoot.Direction;
+            ballOwnerMatchInfo.Direction = ballShoot.Direction;
 
             matchRoom.MatchInformation.BallPosition = new Vector3(
-              (float)(actionerPlayerInfo.Position.X + actionerPlayerInfo.Direction.X * ballHitSafe),
-              (float)(actionerPlayerInfo.Position.Y + actionerPlayerInfo.Direction.Y * ballHitSafe),
+              (float)(ballOwnerMatchInfo.Position.X + ballOwnerMatchInfo.Direction.X * ballHitSafe),
+              (float)(ballOwnerMatchInfo.Position.Y + ballOwnerMatchInfo.Direction.Y * ballHitSafe),
               (float)(ballComponent.BallBoundary.Z)
             );
 
             matchRoom.MatchInformation.BallVelocity = new Vector3(
               (float)(ballShoot.Direction.X * ballSpeed),
               (float)(ballShoot.Direction.Y * ballSpeed),
-              (float)(ballSpeed * 0.5) // TODO: Put somewhere else hardcoded Z velocity
+              (float)(ballSpeed * 0.5) // TODO: Hardcoded Z velocity daha iyi bir yere tasinmali.
             );
 
             // INFO: Bu kontrolün sebebi BallPositioning (PositioningHit)
@@ -217,15 +217,19 @@ namespace Sobee.TestServer.GameEvents
             {
                 matchRoom.Players.SendMessage(new BallShootHitMessage(
                     (sbyte)matchPlayer.AuthInformation.Entry.ToSquad(),
-                    actionerPlayerInfo.Position,
-                    actionerPlayerInfo.Direction,
+                    ballOwnerMatchInfo.Position,
+                    ballOwnerMatchInfo.Direction,
                     matchRoom.MatchInformation.BallVelocity,
                     0,
                     AnimationType.ShootLeft
                 ));
 
+                // Client, topu attıktan sonra oyuncunun hareketini durduruyor.
+                ballOwnerMatchInfo.IsMoving = false;
+                ballOwnerMatchInfo.Velocity = Vector3.Zero;
+
                 matchRoom.MatchInformation.Actor.BallOwner = -1;
-                _log.Information("[BallShootReceived] Player '{actionerName}' attempted a shoot.", actionerPlayerInfo.PlayerName);
+                _log.Information("[BallShootReceived] Player '{actionerName}' attempted a shoot.", ballOwnerMatchInfo.PlayerName);
             }
         }
     }
