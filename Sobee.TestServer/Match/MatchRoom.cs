@@ -50,8 +50,10 @@ namespace Sobee.TestServer.Match
             AddGlobalHandler<MatchStateAlertMessage>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientEvent.MatchStateAlertReceived));
             RegisterMessageEvent<BallPositioningMessage>(OnReceivedMessage);
             AddGlobalHandler<BallPositioningMessage>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.BallPositioningReceived));
-            //RegisterMessageEvent<BallPass>(OnReceivedMessage);
-            //AddGlobalHandler<BallPass>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.BallPassReceived));
+            RegisterMessageEvent<BallPassMessage>(OnReceivedMessage);
+            AddGlobalHandler<BallPassMessage>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.BallPassReceived));
+            RegisterMessageEvent<BallLongPassMessage>(OnReceivedMessage);
+            AddGlobalHandler<BallLongPassMessage>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.BallLongPassReceived));
             RegisterMessageEvent<BallShootMessage>(OnReceivedMessage);
             AddGlobalHandler<BallShootMessage>(new EventHandler<MessageEventArgs>(GameEvents.MatchClientBallEvent.BallShootReceived));
 

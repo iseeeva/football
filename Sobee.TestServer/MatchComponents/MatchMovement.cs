@@ -95,8 +95,11 @@ namespace Sobee.TestServer.MatchComponents
             var ballPos = new Vector2(matchInfo.BallPosition.X, matchInfo.BallPosition.Y);
 
             bool inRange =
-                Vector2.DistanceSquared(playerPos, ballPos) <=
-                Math.Pow(ballComponent.BallCollisionRadius + MovementCollisionRadius, 2);
+                (
+                    Vector2.DistanceSquared(playerPos, ballPos) <=
+                    Math.Pow(ballComponent.BallCollisionRadius + MovementCollisionRadius, 2)
+                ) &&
+                    matchInfo.BallPosition.Z <= 180; // TODO: Boy olcusu icin ekstra kontrol. Ilerde degistirilebilir.
 
             bool ballFree = matchInfo.Actor.BallOwner == -1;
 

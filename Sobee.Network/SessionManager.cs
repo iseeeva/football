@@ -110,7 +110,7 @@ namespace Sobee.Network
             {
                 // WARN: Session.Dispose'un ne yaptigini kontrol et.
                 foreach (var session in _updateList)
-                    session.Dispose();
+                    TryRemove(session.Id, out _);
 
                 _sessions.Clear();
                 _updateList.Clear();

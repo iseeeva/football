@@ -34,17 +34,17 @@ namespace Sobee.TestServer.GameEvents
                 return;
             }
 
-            var playerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
+            var senderMatchInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
             var ballOwnerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.BallOwner);
 
-            if (ballOwnerMatchInfo == null || playerMatchInfo == null)
+            if (ballOwnerMatchInfo == null || senderMatchInfo == null)
             {
                 _log.Warning("[BallPositioningReceived] Could not find player info in match.");
                 return;
             }
 
             // Gonderen sadece ballOwner olsun.
-            if (ballOwnerMatchInfo.PlayerId != playerMatchInfo.PlayerId)
+            if (ballOwnerMatchInfo.PlayerId != senderMatchInfo.PlayerId)
             {
                 _log.Warning("[BallPositioningReceived] Player {playerId} is not the BallOwner {ballOwnerId}.", matchPlayer.Id, ballOwnerMatchInfo.PlayerId);
                 return;
@@ -107,57 +107,171 @@ namespace Sobee.TestServer.GameEvents
             matchRoom.MatchInformation.FieldPositioning = MatchFieldPositioning.Running;
         }
 
-        //public static void BallPassReceived(object? sender, MessageEventArgs e)
-        //{
-        //    if (sender is not MatchRoom matchRoom) return;
-        //    if (e.handler is not MatchPlayer matchPlayer) return;
-        //    if (e.message is not BallPass ballPass) return;
+        public static void BallLongPassReceived(object? sender, MessageEventArgs e)
+        {
+            if (sender is not MatchRoom matchRoom) return;
+            if (e.handler is not MatchPlayer matchPlayer) return;
+            if (e.message is not BallLongPassMessage ballLongPassMessage) return;
 
-        //    var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
-        //    if (ballComponent == null)
-        //    {
-        //        _log.Warning("[BallPassReceived] MatchBallComponent is null in MatchRoom {matchId}.", matchRoom.Id);
-        //        return;
-        //    }
+            var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
+            if (ballComponent == null)
+            {
+                _log.Warning("[BallPassReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
+                return;
+            }
 
-        //    var movementComponent = matchRoom.Components.GetComponent<MatchMovement>();
-        //    if (movementComponent == null)
-        //    {
-        //        _log.Warning("[BallPassReceived] MatchMovementComponent is null in MatchRoom {matchId}.", matchRoom.Id);
-        //        return;
-        //    }
+            var movementComponent = matchRoom.Components.GetComponent<MatchMovement>();
+            if (movementComponent == null)
+            {
+                _log.Warning("[BallPassReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
+                return;
+            }
 
-        //    var matchPlayerInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
-        //    var actionerPlayerInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.Actioner);
-        //    var passPlayerInfo = matchRoom.MatchInformation.GetPlayer(ballPass.SquadNumber);
+            var senderMatchInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
+            var ballOwnerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.BallOwner);
+            if (ballOwnerMatchInfo == null || senderMatchInfo == null)
+            {
+                _log.Warning("[BallPassReceived] Could not find player info in match.");
+                return;
+            }
 
-        //    if (actionerPlayerInfo == null || matchPlayerInfo == null)
-        //    {
-        //        _log.Warning("[BallPassReceived] Could not find player info in match.");
-        //        return;
-        //    }
+            // Gonderen sadece ballOwner olsun.
+            if (ballOwnerMatchInfo.PlayerId != senderMatchInfo.PlayerId)
+            {
+                _log.Warning("[BallPassReceived] Player {playerId} is not the BallOwner {ballOwnerId}.", matchPlayer.Id, ballOwnerMatchInfo.PlayerId);
+                return;
+            }
 
-        //    // Gonderen sadece actioner olsun.
-        //    if (actionerPlayerInfo.PlayerId != matchPlayerInfo.PlayerId)
-        //    {
-        //        _log.Warning("[BallPassReceived] Player {playerId} is not the actioner {actionerId}.", matchPlayer.Id, actionerPlayerInfo.PlayerId);
-        //        return;
-        //    }
+            var ballOwnerTeam = matchRoom.MatchInformation.GetTeam(ballOwnerMatchInfo.StadiumSitting);
+            var passTargetMatchInfo = ballOwnerTeam?.FirstOrDefault(p => p.SquadNumber == ballLongPassMessage.SquadNumber);
 
-        //    if (passPlayerInfo == null)
-        //    {
-        //        matchPlayer.SendMessage(new Messages.Chat.ChatSystemMessage(
-        //            $"[BallPassReceived] Could not find pass target player with SquadNumber {ballPass.SquadNumber}",
-        //            Messages.Chat.ChatSystemMessageType.General
-        //        ));
+            if (passTargetMatchInfo == null)
+            {
+                _log.Warning("[BallPassReceived] Could not find pass target with SquadNumber {squadNumber}.", ballLongPassMessage.SquadNumber);
+                return;
+            }
 
-        //        _log.Warning("[BallPassReceived] Could not find pass target player with SquadNumber {squadNumber}.", ballPass.SquadNumber);
-        //        return;
-        //    }
+            double ballSpeed = ballComponent.BallMaxSpeed * 0.75; // Client, strength gondermiyor.
+            double ballHitSafe = ballComponent.BallCollisionRadius + movementComponent.MovementCollisionRadius + (ballSpeed * 0.05);
 
-        //    // TODO: Implement pass logic here.
-        //    _log.Information("[BallPassReceived] Player '{actionerName}' attempted a pass ball to {passPlayerName}.", actionerPlayerInfo.PlayerName, passPlayerInfo.PlayerName);
-        //}
+            var passTargetDirection = Vector2.Normalize(passTargetMatchInfo.Position - ballOwnerMatchInfo.Position);
+            ballOwnerMatchInfo.Direction = passTargetDirection;
+
+            matchRoom.MatchInformation.BallPosition = new Vector3(
+              (float)(ballOwnerMatchInfo.Position.X + ballOwnerMatchInfo.Direction.X * ballHitSafe),
+              (float)(ballOwnerMatchInfo.Position.Y + ballOwnerMatchInfo.Direction.Y * ballHitSafe),
+              (float)(ballComponent.BallBoundary.Z)
+            );
+
+            matchRoom.MatchInformation.BallVelocity = new Vector3(
+              (float)(ballOwnerMatchInfo.Direction.X * ballSpeed),
+              (float)(ballOwnerMatchInfo.Direction.Y * ballSpeed),
+              (float)(ballSpeed * 1f) // TODO: Hardcoded Z velocity daha iyi bir yere tasinmali.
+            );
+
+            // INFO: Bu kontrolün sebebi BallPositioning (PositioningHit)
+            if (matchRoom.MatchInformation.MatchState == MatchStateType.Running)
+            {
+                matchRoom.Players.SendMessage(new BallShootHitMessage(
+                    (sbyte)matchPlayer.AuthInformation.Entry.ToSquad(),
+                    ballOwnerMatchInfo.Position,
+                    ballOwnerMatchInfo.Direction,
+                    matchRoom.MatchInformation.BallVelocity,
+                    0,
+                    AnimationType.LongPassLeft
+                ));
+
+                // Client, topu attıktan sonra oyuncunun hareketini durduruyor.
+                ballOwnerMatchInfo.IsMoving = false;
+                ballOwnerMatchInfo.Velocity = Vector3.Zero;
+
+                matchRoom.MatchInformation.Actor.BallOwner = -1;
+                _log.Information("[BallPassReceived] Player {playerId} pass the ball to {fieldPos}.", ballOwnerMatchInfo.PlayerName, passTargetMatchInfo.PlayerName);
+            }
+        }
+
+        public static void BallPassReceived(object? sender, MessageEventArgs e)
+        {
+            if (sender is not MatchRoom matchRoom) return;
+            if (e.handler is not MatchPlayer matchPlayer) return;
+            if (e.message is not BallPassMessage ballPassMessage) return;
+
+            var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
+            if (ballComponent == null)
+            {
+                _log.Warning("[BallPassReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
+                return;
+            }
+
+            var movementComponent = matchRoom.Components.GetComponent<MatchMovement>();
+            if (movementComponent == null)
+            {
+                _log.Warning("[BallPassReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
+                return;
+            }
+
+            var senderMatchInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
+            var ballOwnerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.BallOwner);
+            if (ballOwnerMatchInfo == null || senderMatchInfo == null)
+            {
+                _log.Warning("[BallPassReceived] Could not find player info in match.");
+                return;
+            }
+
+            // Gonderen sadece ballOwner olsun.
+            if (ballOwnerMatchInfo.PlayerId != senderMatchInfo.PlayerId)
+            {
+                _log.Warning("[BallPassReceived] Player {playerId} is not the BallOwner {ballOwnerId}.", matchPlayer.Id, ballOwnerMatchInfo.PlayerId);
+                return;
+            }
+
+            var ballOwnerTeam = matchRoom.MatchInformation.GetTeam(ballOwnerMatchInfo.StadiumSitting);
+            var passTargetMatchInfo = ballOwnerTeam?.FirstOrDefault(p => p.SquadNumber == ballPassMessage.SquadNumber);
+
+            if (passTargetMatchInfo == null)
+            {
+                _log.Warning("[BallPassReceived] Could not find pass target with SquadNumber {squadNumber}.", ballPassMessage.SquadNumber);
+                return;
+            }
+
+            double ballSpeed = ballComponent.BallMaxSpeed * 0.75; // Client, strength gondermiyor.
+            double ballHitSafe = ballComponent.BallCollisionRadius + movementComponent.MovementCollisionRadius + (ballSpeed * 0.05);
+
+            var passTargetDirection = Vector2.Normalize(passTargetMatchInfo.Position - ballOwnerMatchInfo.Position);
+            ballOwnerMatchInfo.Direction = passTargetDirection;
+
+            matchRoom.MatchInformation.BallPosition = new Vector3(
+              (float)(ballOwnerMatchInfo.Position.X + ballOwnerMatchInfo.Direction.X * ballHitSafe),
+              (float)(ballOwnerMatchInfo.Position.Y + ballOwnerMatchInfo.Direction.Y * ballHitSafe),
+              (float)(ballComponent.BallBoundary.Z)
+            );
+
+            matchRoom.MatchInformation.BallVelocity = new Vector3(
+              (float)(ballOwnerMatchInfo.Direction.X * ballSpeed),
+              (float)(ballOwnerMatchInfo.Direction.Y * ballSpeed),
+              (float)(0f) // TODO: Hardcoded Z velocity daha iyi bir yere tasinmali.
+            );
+
+            // INFO: Bu kontrolün sebebi BallPositioning (PositioningHit)
+            if (matchRoom.MatchInformation.MatchState == MatchStateType.Running)
+            {
+                matchRoom.Players.SendMessage(new BallShootHitMessage(
+                    (sbyte)matchPlayer.AuthInformation.Entry.ToSquad(),
+                    ballOwnerMatchInfo.Position,
+                    ballOwnerMatchInfo.Direction,
+                    matchRoom.MatchInformation.BallVelocity,
+                    0,
+                    AnimationType.PassLeft
+                ));
+
+                // Client, topu attıktan sonra oyuncunun hareketini durduruyor.
+                ballOwnerMatchInfo.IsMoving = false;
+                ballOwnerMatchInfo.Velocity = Vector3.Zero;
+
+                matchRoom.MatchInformation.Actor.BallOwner = -1;
+                _log.Information("[BallPassReceived] Player {playerId} pass the ball to {fieldPos}.", ballOwnerMatchInfo.PlayerName, passTargetMatchInfo.PlayerName);
+            }
+        }
 
         public static void BallShootReceived(object? sender, MessageEventArgs e)
         {
@@ -179,17 +293,17 @@ namespace Sobee.TestServer.GameEvents
                 return;
             }
 
-            var playerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
+            var senderMatchInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
             var ballOwnerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.BallOwner);
 
-            if (ballOwnerMatchInfo == null || playerMatchInfo == null)
+            if (ballOwnerMatchInfo == null || senderMatchInfo == null)
             {
                 _log.Warning("[BallShootReceived] Could not find player info in match.");
                 return;
             }
 
             // Gonderen sadece ballOwner olsun.
-            if (ballOwnerMatchInfo.PlayerId != playerMatchInfo.PlayerId)
+            if (ballOwnerMatchInfo.PlayerId != senderMatchInfo.PlayerId)
             {
                 _log.Warning("[BallShootReceived] Player {playerId} is not the BallOwner {ballOwnerId}.", matchPlayer.Id, ballOwnerMatchInfo.PlayerId);
                 return;
