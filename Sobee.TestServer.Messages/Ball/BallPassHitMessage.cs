@@ -3,8 +3,8 @@ using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Ball
 {
-    [MessageAttribute(17253)]
-    public class BallShootHitMessage : AnimationMessageAbstract
+    [MessageAttribute(30069)]
+    public class BallPassHitMessage : AnimationMessageAbstract
     {
         public readonly sbyte SquadNumber;
         public readonly Vector2 PlayerPosition;
@@ -12,7 +12,7 @@ namespace Sobee.TestServer.Messages.Ball
         public readonly Vector3 BallVelocity;
         public readonly float PlayerSpeed;
 
-        public BallShootHitMessage(BinaryReader reader) : base(reader)
+        public BallPassHitMessage(BinaryReader reader) : base(reader)
         {
             this.SquadNumber = reader.method_11();
             this.PlayerPosition = reader.method_19();
@@ -21,7 +21,7 @@ namespace Sobee.TestServer.Messages.Ball
             this.PlayerSpeed = reader.method_12();
         }
 
-        public BallShootHitMessage(sbyte squadNumber, Vector2 playerPos, Vector2 playerDir, Vector3 ballVelocity, float playerSpeed, AnimationType animationType) : base(animationType)
+        public BallPassHitMessage(sbyte squadNumber, Vector2 playerPos, Vector2 playerDir, Vector3 ballVelocity, float playerSpeed, AnimationType animationType) : base(animationType)
         {
             this.SquadNumber = squadNumber;
             this.PlayerPosition = playerPos;
@@ -44,7 +44,7 @@ namespace Sobee.TestServer.Messages.Ball
         {
             return string.Concat(new object[]
             {
-            "PlayerShoot - ",
+            "PlayerPass - ",
             this.SquadNumber,
             " - ",
             this.BallVelocity.ToString()

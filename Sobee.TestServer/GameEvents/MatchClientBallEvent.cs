@@ -63,13 +63,19 @@ namespace Sobee.TestServer.GameEvents
                     isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallShootMessage(ballPositioningHit.Strength, ballPositioningHit.Direction));
                     break;
 
-                case HitSubType.Pass: // Client PositioningHit için squad numarası göndermiyor?
-                case HitSubType.LongPass:
-                    isHitSubDispatch = false;
+                case HitSubType.LongPass: // Client PositioningHit icin squadNumber gondermiyor?
+                    // TODO: BallOwner ondan onceki squadNumber'a pas veriyor. Ilerde squadNumber'lar pozisyonlara gore rastgele olursa sorun cikarir.
+                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallLongPassMessage((sbyte)(matchRoom.MatchInformation.Actor.BallOwner - 1)));
+                    break;
+
+                case HitSubType.Pass: // Client PositioningHit icin squadNumber gondermiyor?
+                    // TODO: BallOwner ondan onceki squadNumber'a pas veriyor. Ilerde squadNumber'lar pozisyonlara gore rastgele olursa sorun cikarir.
+                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallPassMessage((sbyte)(matchRoom.MatchInformation.Actor.BallOwner - 1)));
                     break;
 
                 case HitSubType.Invalid:
                 default:
+                    isHitSubDispatch = false;
                     _log.Warning("[BallPositioningReceived] Invalid HitSubType received from player {playerId}.", matchPlayer.Id);
                     return;
             }
@@ -81,17 +87,23 @@ namespace Sobee.TestServer.GameEvents
                 return;
             }
 
+            if (matchRoom.MatchInformation.BallVelocity == Vector3.Zero)
+            {
+                matchPlayer.SendMessage(new Messages.Chat.ChatSystemMessage("[BallPositioningReceived] BallVelocity is zero. HitSub possibly failed.", Messages.Chat.ChatSystemMessageType.General));
+                _log.Warning("[BallPositioningReceived] BallVelocity is zero after HitSub event for player {playerId}.", matchPlayer.Id);
+                return;
+            }
+
             // PositioningHit: 
             switch (matchRoom.MatchInformation.FieldPositioning)
             {
                 case MatchFieldPositioning.Kickoff:
-                    {
-                        matchRoom.Players.SendMessage(new BallKickoffHitMessage(
-                            matchRoom.MatchInformation.BallVelocity,
-                            AnimationType.ShootLeft
-                        ));
-                    }
+                    matchRoom.Players.SendMessage(new BallKickoffHitMessage(
+                        matchRoom.MatchInformation.BallVelocity,
+                        AnimationType.ShootLeft
+                    ));
                     break;
+
                 default:
                     _log.Error($"[BallPositioningReceived] FieldPositioning {matchRoom.MatchInformation.FieldPositioning} not implemented.");
                     matchRoom.Dispose();
@@ -116,14 +128,14 @@ namespace Sobee.TestServer.GameEvents
             var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
             if (ballComponent == null)
             {
-                _log.Warning("[BallPassReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
+                _log.Warning("[BallLongPassReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
             var movementComponent = matchRoom.Components.GetComponent<MatchMovement>();
             if (movementComponent == null)
             {
-                _log.Warning("[BallPassReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
+                _log.Warning("[BallLongPassReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
@@ -131,14 +143,14 @@ namespace Sobee.TestServer.GameEvents
             var ballOwnerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.BallOwner);
             if (ballOwnerMatchInfo == null || senderMatchInfo == null)
             {
-                _log.Warning("[BallPassReceived] Could not find player info in match.");
+                _log.Warning("[BallLongPassReceived] Could not find player info in match.");
                 return;
             }
 
             // Gonderen sadece ballOwner olsun.
             if (ballOwnerMatchInfo.PlayerId != senderMatchInfo.PlayerId)
             {
-                _log.Warning("[BallPassReceived] Player {playerId} is not the BallOwner {ballOwnerId}.", matchPlayer.Id, ballOwnerMatchInfo.PlayerId);
+                _log.Warning("[BallLongPassReceived] Player {playerId} is not the BallOwner {ballOwnerId}.", matchPlayer.Id, ballOwnerMatchInfo.PlayerId);
                 return;
             }
 
@@ -147,7 +159,7 @@ namespace Sobee.TestServer.GameEvents
 
             if (passTargetMatchInfo == null)
             {
-                _log.Warning("[BallPassReceived] Could not find pass target with SquadNumber {squadNumber}.", ballLongPassMessage.SquadNumber);
+                _log.Warning("[BallLongPassReceived] Could not find pass target with SquadNumber {squadNumber}.", ballLongPassMessage.SquadNumber);
                 return;
             }
 
@@ -172,7 +184,7 @@ namespace Sobee.TestServer.GameEvents
             // INFO: Bu kontrolün sebebi BallPositioning (PositioningHit)
             if (matchRoom.MatchInformation.MatchState == MatchStateType.Running)
             {
-                matchRoom.Players.SendMessage(new BallShootHitMessage(
+                matchRoom.Players.SendMessage(new BallLongPassHitMessage(
                     (sbyte)matchPlayer.AuthInformation.Entry.ToSquad(),
                     ballOwnerMatchInfo.Position,
                     ballOwnerMatchInfo.Direction,
@@ -186,7 +198,7 @@ namespace Sobee.TestServer.GameEvents
                 ballOwnerMatchInfo.Velocity = Vector3.Zero;
 
                 matchRoom.MatchInformation.Actor.BallOwner = -1;
-                _log.Information("[BallPassReceived] Player {playerId} pass the ball to {fieldPos}.", ballOwnerMatchInfo.PlayerName, passTargetMatchInfo.PlayerName);
+                _log.Information("[BallLongPassReceived] Player {ballOwnerName} longPass the ball to {targetPlayerName}.", ballOwnerMatchInfo.PlayerName, passTargetMatchInfo.PlayerName);
             }
         }
 
@@ -255,7 +267,7 @@ namespace Sobee.TestServer.GameEvents
             // INFO: Bu kontrolün sebebi BallPositioning (PositioningHit)
             if (matchRoom.MatchInformation.MatchState == MatchStateType.Running)
             {
-                matchRoom.Players.SendMessage(new BallShootHitMessage(
+                matchRoom.Players.SendMessage(new BallPassHitMessage(
                     (sbyte)matchPlayer.AuthInformation.Entry.ToSquad(),
                     ballOwnerMatchInfo.Position,
                     ballOwnerMatchInfo.Direction,
@@ -269,7 +281,7 @@ namespace Sobee.TestServer.GameEvents
                 ballOwnerMatchInfo.Velocity = Vector3.Zero;
 
                 matchRoom.MatchInformation.Actor.BallOwner = -1;
-                _log.Information("[BallPassReceived] Player {playerId} pass the ball to {fieldPos}.", ballOwnerMatchInfo.PlayerName, passTargetMatchInfo.PlayerName);
+                _log.Information("[BallPassReceived] Player {ballOwnerName} pass the ball to {targetPlayerName}.", ballOwnerMatchInfo.PlayerName, passTargetMatchInfo.PlayerName);
             }
         }
 
@@ -343,7 +355,7 @@ namespace Sobee.TestServer.GameEvents
                 ballOwnerMatchInfo.Velocity = Vector3.Zero;
 
                 matchRoom.MatchInformation.Actor.BallOwner = -1;
-                _log.Information("[BallShootReceived] Player '{actionerName}' attempted a shoot.", ballOwnerMatchInfo.PlayerName);
+                _log.Information("[BallShootReceived] Player {ballOwnerName} shoot the ball.", ballOwnerMatchInfo.PlayerName);
             }
         }
     }
