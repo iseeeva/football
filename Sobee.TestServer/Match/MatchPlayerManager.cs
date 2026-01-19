@@ -35,7 +35,7 @@ namespace Sobee.TestServer.Match
             else
                 return false;
 
-            var team = _matchRoom.MatchInformation.GetTeam(matchPlayerInfo.StadiumSitting);
+            var team = _matchRoom.MatchInformation.GetSittingSide(matchPlayerInfo.StadiumSitting);
             if (team == null || team.Any(
                 p => p.PlayerId == matchPlayerInfo.PlayerId ||
                 p.SquadNumber == matchPlayerInfo.SquadNumber

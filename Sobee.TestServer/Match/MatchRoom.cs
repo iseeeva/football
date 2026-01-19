@@ -36,8 +36,9 @@ namespace Sobee.TestServer.Match
             CommunicationType = SessionType.Game;
 
             // Component
-            Components.AddComponent(new MatchMovement(this));
-            Components.AddComponent(new MatchBall(this));
+            Components.AddComponent(new MatchMovementComponent(this));
+            Components.AddComponent(new MatchBallComponent(this));
+            Components.AddComponent(new MatchTimeComponent(this));
 
             // === Player Messages ===
             RegisterMessageEvent<ChatMessage>(OnReceivedMessage);

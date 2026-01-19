@@ -58,7 +58,7 @@ namespace Sobee.TestServer.Helpers
             if (matchRoom.Players.Count > MatchRoom.MAX_PLAYER)
                 return false;
 
-            var team = matchRoom.MatchInformation.GetTeam(playerInformation.StadiumSitting);
+            var team = matchRoom.MatchInformation.GetSittingSide(playerInformation.StadiumSitting);
 
             if (team == null || team.Any(
                     p => p.PlayerId == playerInformation.PlayerId ||
@@ -75,7 +75,7 @@ namespace Sobee.TestServer.Helpers
             if (matchRoom == null || playerInformation == null)
                 return false;
 
-            var team = matchRoom.MatchInformation.GetTeam(playerInformation.StadiumSitting);
+            var team = matchRoom.MatchInformation.GetSittingSide(playerInformation.StadiumSitting);
             if (team == null)
                 return false;
 

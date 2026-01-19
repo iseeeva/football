@@ -20,14 +20,14 @@ namespace Sobee.TestServer.GameEvents
             if (e.handler is not MatchPlayer matchPlayer) return;
             if (e.message is not BallPositioningMessage ballPositioningHit) return;
 
-            var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
+            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
                 _log.Warning("[BallPositioningReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
-            var movementComponent = matchRoom.Components.GetComponent<MatchMovement>();
+            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
                 _log.Warning("[BallPositioningReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
@@ -125,14 +125,14 @@ namespace Sobee.TestServer.GameEvents
             if (e.handler is not MatchPlayer matchPlayer) return;
             if (e.message is not BallLongPassMessage ballLongPassMessage) return;
 
-            var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
+            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
                 _log.Warning("[BallLongPassReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
-            var movementComponent = matchRoom.Components.GetComponent<MatchMovement>();
+            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
                 _log.Warning("[BallLongPassReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
@@ -154,7 +154,7 @@ namespace Sobee.TestServer.GameEvents
                 return;
             }
 
-            var ballOwnerTeam = matchRoom.MatchInformation.GetTeam(ballOwnerMatchInfo.StadiumSitting);
+            var ballOwnerTeam = matchRoom.MatchInformation.GetSittingSide(ballOwnerMatchInfo.StadiumSitting);
             var passTargetMatchInfo = ballOwnerTeam?.FirstOrDefault(p => p.SquadNumber == ballLongPassMessage.SquadNumber);
 
             if (passTargetMatchInfo == null)
@@ -208,14 +208,14 @@ namespace Sobee.TestServer.GameEvents
             if (e.handler is not MatchPlayer matchPlayer) return;
             if (e.message is not BallPassMessage ballPassMessage) return;
 
-            var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
+            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
                 _log.Warning("[BallPassReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
-            var movementComponent = matchRoom.Components.GetComponent<MatchMovement>();
+            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
                 _log.Warning("[BallPassReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
@@ -237,7 +237,7 @@ namespace Sobee.TestServer.GameEvents
                 return;
             }
 
-            var ballOwnerTeam = matchRoom.MatchInformation.GetTeam(ballOwnerMatchInfo.StadiumSitting);
+            var ballOwnerTeam = matchRoom.MatchInformation.GetSittingSide(ballOwnerMatchInfo.StadiumSitting);
             var passTargetMatchInfo = ballOwnerTeam?.FirstOrDefault(p => p.SquadNumber == ballPassMessage.SquadNumber);
 
             if (passTargetMatchInfo == null)
@@ -291,14 +291,14 @@ namespace Sobee.TestServer.GameEvents
             if (e.handler is not MatchPlayer matchPlayer) return;
             if (e.message is not BallShootMessage ballShoot) return;
 
-            var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
+            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
                 _log.Warning("[BallShootReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
-            var movementComponent = matchRoom.Components.GetComponent<MatchMovement>();
+            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
                 _log.Warning("[BallShootReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);

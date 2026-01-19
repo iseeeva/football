@@ -5,9 +5,9 @@ using Sobee.TestServer.Messages.Ball;
 
 namespace Sobee.TestServer.MatchComponents
 {
-    public class MatchBall : MatchComponent
+    public class MatchBallComponent : MatchComponent
     {
-        private readonly Serilog.ILogger _log = Logging.Get<MatchBall>();
+        private readonly Serilog.ILogger _log = Logging.Get<MatchBallComponent>();
         private bool _isDisposed;
 
         /// <summary>Minimum speed before stopping the ball movement</summary>
@@ -24,51 +24,54 @@ namespace Sobee.TestServer.MatchComponents
         /// <summary>Boundary for the ball (Z axis is ground level)</summary>
         public Vector3 BallBoundary { get; set; } = new(0, 0, 11.254f);
 
-        public MatchBall(MatchRoom room) : base(room)
+        public MatchBallComponent(MatchRoom room) : base(room)
         {
             _log.Debug("{id} initialized.", Id);
         }
 
         public override void Update(double delta)
         {
-            var roomMatchInfo = _matchRoom.MatchInformation;
-            var ballOwnerMatchInfo = roomMatchInfo.GetPlayer(roomMatchInfo.Actor.BallOwner);
+            var matchInfo = _matchRoom.MatchInformation;
+            var ballOwnerInfo = matchInfo.GetPlayer(matchInfo.Actor.BallOwner);
 
-            if (ballOwnerMatchInfo != null)
+            // INFO: Eger mac akisina esitlemek istersen TimeMultiplier kullan.
+            var dt = (float)delta; // * matchInfo.TimeMultiplier;
+
+            if (ballOwnerInfo != null)
             {
-                //roomMatchInfo.BallPosition += ballOwnerMatchInfo.Velocity * (float)delta;
+                //roomMatchInfo.BallPosition += ballOwnerMatchInfo.Velocity * dt;
                 //roomMatchInfo.BallVelocity = Vector3.Zero;
             }
             else
             {
-                if (roomMatchInfo.BallVelocity.Length() <= Epsilon)
+                if (matchInfo.BallVelocity.Length() <= Epsilon)
                     return;
 
                 // Velocity 
-                roomMatchInfo.BallVelocity = new Vector3(
-                    roomMatchInfo.BallVelocity.X * Reduction,
-                    roomMatchInfo.BallVelocity.Y * Reduction,
-                    (roomMatchInfo.BallVelocity.Z + Gravity * (float)delta) * Reduction
+                matchInfo.BallVelocity = new Vector3(
+                    matchInfo.BallVelocity.X * Reduction,
+                    matchInfo.BallVelocity.Y * Reduction,
+                    (matchInfo.BallVelocity.Z + Gravity * dt) * Reduction
                 );
 
                 // Position 
-                roomMatchInfo.BallPosition += roomMatchInfo.BallVelocity * (float)delta;
+                matchInfo.BallPosition += matchInfo.BallVelocity * dt;
 
                 // Ground 
-                if (roomMatchInfo.BallPosition.Z <= BallBoundary.Z)
+                if (matchInfo.BallPosition.Z <= BallBoundary.Z)
                 {
-                    roomMatchInfo.BallPosition.Z = BallBoundary.Z;
+                    matchInfo.BallPosition.Z = BallBoundary.Z;
 
-                    roomMatchInfo.BallVelocity = new Vector3(
-                        roomMatchInfo.BallVelocity.X,
-                        roomMatchInfo.BallVelocity.Y,
-                        -roomMatchInfo.BallVelocity.Z * Reduction
+                    matchInfo.BallVelocity = new Vector3(
+                        matchInfo.BallVelocity.X,
+                        matchInfo.BallVelocity.Y,
+                        -matchInfo.BallVelocity.Z * Reduction
                     );
                 }
 
                 _matchRoom.Players.SendMessage(new BallUpdateMessage(
-                    roomMatchInfo.BallPosition,
-                    roomMatchInfo.BallVelocity
+                    matchInfo.BallPosition,
+                    matchInfo.BallVelocity
                 ));
             }
         }

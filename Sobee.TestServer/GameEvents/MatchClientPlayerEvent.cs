@@ -28,7 +28,7 @@ namespace Sobee.TestServer.GameEvents
             if (e.handler is not MatchPlayer player) return;
             if (e.message is not PlayerMoveKeyDownMessage moveKeyDown) return;
 
-            var movementComponent = match.Components.GetComponent<MatchMovement>();
+            var movementComponent = match.Components.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
                 _log.Warning("[PlayerMoveKeyDownReceived] MatchMovement component not found in MatchRoom {matchId}.", match.Id);

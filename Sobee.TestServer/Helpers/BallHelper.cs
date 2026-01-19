@@ -11,7 +11,7 @@ namespace Sobee.TestServer.Helpers
 
         public static bool GetBall(MatchRoom matchRoom, sbyte squadNumber)
         {
-            var ballComponent = matchRoom.Components.GetComponent<MatchBall>();
+            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
                 _log.Warning("[BallHelper] MatchBall is null in match {matchId}.", matchRoom.Id);

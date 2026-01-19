@@ -55,7 +55,7 @@ namespace Sobee.TestServer.Messages
             short_1 = reader.method_8();
         }
 
-        public string GetFormattedTime()
+        public string GetMatchTimeString()
         {
             int minutes = (int)MatchTime / 60;
             int seconds = (int)MatchTime % 60;
