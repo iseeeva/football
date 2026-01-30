@@ -5,7 +5,6 @@ using Serilog;
 using Sobee.Common;
 using Sobee.Network.Messaging;
 using Sobee.Serialization;
-using Sobee.TestServer.Messages.Match;
 
 namespace Sobee.TestServer.Messages
 {
@@ -40,21 +39,23 @@ namespace Sobee.TestServer.Messages
             return team1Size != -1 && team2Size != -1;
         }
 
-        public ScenarioInfo()
+        public ScenarioInfo(ScenarioType scenarioType)
         {
             // TODO: Remove hardcoded values when possible
-            ScenarioType = ScenarioType.ScenarioMatch;
-            var (homeTeamSize, awayTeamSize) = GetScenarioTeamCapacity(ScenarioType);
+            ScenarioType = scenarioType;
+            var teamCapacities = GetScenarioPlayerCapacity(ScenarioType);
+            if (teamCapacities == null)
+                throw new Exception("ScenarioType invalid for getting player capacity.");
 
             team1Color = 2;
             team1Name = "Teams.Home.Name.Full";
             team1ShortName = "Teams.Home.Name.Short";
-            team1Size = homeTeamSize;
+            team1Size = teamCapacities.Value.homePlayerCapacity;
 
             team2Color = 3;
             team2Name = "Teams.Away.Name.Full";
             team2ShortName = "Teams.Away.Name.Short";
-            team2Size = awayTeamSize;
+            team2Size = teamCapacities.Value.awayPlayerCapacity;
 
             xmlCode = "<XMLData><Script></Script></XMLData>";
         }
@@ -174,12 +175,12 @@ namespace Sobee.TestServer.Messages
             gclass316_0.method_14(xmlCode);
         }
 
-        public (int homeTeamSize, int awayTeamSize) GetScenarioTeamCapacity()
+        public (int homePlayerCapacity, int awayPlayerCapacity)? GetScenarioPlayerCapacity()
         {
-            return GetScenarioTeamCapacity(ScenarioType);
+            return GetScenarioPlayerCapacity(ScenarioType);
         }
 
-        public static (int homeTeamSize, int awayTeamSize) GetScenarioTeamCapacity(ScenarioType scenarioType)
+        public static (int homePlayerCapacity, int awayPlayerCapacity)? GetScenarioPlayerCapacity(ScenarioType scenarioType)
         {
             return scenarioType switch
             {
@@ -189,41 +190,8 @@ namespace Sobee.TestServer.Messages
                 ScenarioType.ScenarioMatch3v3 => (3, 3),
                 ScenarioType.ScenarioMatch6v6 => (6, 6),
                 ScenarioType.ScenarioMatch => (11, 11),
-                _ => (1, 0),
+                _ => null,
             };
-        }
-
-        public StadiumSitting GetScenarioSittingFromEntry(int entryId)
-        {
-            return GetScenarioSittingFromEntry(ScenarioType, entryId);
-        }
-
-        public static StadiumSitting GetScenarioSittingFromEntry(ScenarioType scenarioType, int entryId)
-        {
-            if (!MatchEntry.InRange(entryId))
-            {
-                _log.Warning("[GetScenarioSittingFromEntry] entryId not in MatchEntry range: {EntryId}", entryId);
-                return StadiumSitting.Invalid;
-            }
-
-            var (homeTeamSize, awayTeamSize) = GetScenarioTeamCapacity(scenarioType);
-
-            if (entryId <= MAX_TEAM_SIZE) // Home
-            {
-                return entryId <= homeTeamSize
-                    ? StadiumSitting.HomePlayer
-                    : StadiumSitting.HomeSpectator;
-            }
-            else if (entryId <= MAX_TEAM_SIZE * 2) // Away
-            {
-                return entryId - MAX_TEAM_SIZE <= awayTeamSize
-                    ? StadiumSitting.AwayPlayer
-                    : StadiumSitting.AwaySpectator;
-            }
-            else
-            {
-                return StadiumSitting.Invalid;
-            }
         }
 
         public bool IsMatchScenario()

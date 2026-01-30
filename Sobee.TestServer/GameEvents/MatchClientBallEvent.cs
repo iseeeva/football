@@ -64,12 +64,12 @@ namespace Sobee.TestServer.GameEvents
                     break;
 
                 case HitSubType.LongPass: // Client PositioningHit icin squadNumber gondermiyor?
-                    // TODO: BallOwner ondan onceki squadNumber'a pas veriyor. Ilerde squadNumber'lar pozisyonlara gore rastgele olursa sorun cikarir.
+                    // TODO: BallOwner ondan onceki squadNumber'a pas veriyor. SquadNumber'lar pozisyonlara gore rastgele olursa sorun cikarir.
                     isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallLongPassMessage((sbyte)(matchRoom.MatchInformation.Actor.BallOwner - 1)));
                     break;
 
                 case HitSubType.Pass: // Client PositioningHit icin squadNumber gondermiyor?
-                    // TODO: BallOwner ondan onceki squadNumber'a pas veriyor. Ilerde squadNumber'lar pozisyonlara gore rastgele olursa sorun cikarir.
+                    // TODO: BallOwner ondan onceki squadNumber'a pas veriyor. SquadNumber'lar pozisyonlara gore rastgele olursa sorun cikarir.
                     isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallPassMessage((sbyte)(matchRoom.MatchInformation.Actor.BallOwner - 1)));
                     break;
 
@@ -185,7 +185,7 @@ namespace Sobee.TestServer.GameEvents
             if (matchRoom.MatchInformation.MatchState == MatchStateType.Running)
             {
                 matchRoom.Players.SendMessage(new BallLongPassHitMessage(
-                    (sbyte)matchPlayer.AuthInformation.Entry.ToSquad(),
+                    ballOwnerMatchInfo.GetAbsoluteSquadNumber(),
                     ballOwnerMatchInfo.Position,
                     ballOwnerMatchInfo.Direction,
                     matchRoom.MatchInformation.BallVelocity,
@@ -268,7 +268,7 @@ namespace Sobee.TestServer.GameEvents
             if (matchRoom.MatchInformation.MatchState == MatchStateType.Running)
             {
                 matchRoom.Players.SendMessage(new BallPassHitMessage(
-                    (sbyte)matchPlayer.AuthInformation.Entry.ToSquad(),
+                    ballOwnerMatchInfo.GetAbsoluteSquadNumber(),
                     ballOwnerMatchInfo.Position,
                     ballOwnerMatchInfo.Direction,
                     matchRoom.MatchInformation.BallVelocity,
@@ -342,7 +342,7 @@ namespace Sobee.TestServer.GameEvents
             if (matchRoom.MatchInformation.MatchState == MatchStateType.Running)
             {
                 matchRoom.Players.SendMessage(new BallShootHitMessage(
-                    (sbyte)matchPlayer.AuthInformation.Entry.ToSquad(),
+                    ballOwnerMatchInfo.GetAbsoluteSquadNumber(),
                     ballOwnerMatchInfo.Position,
                     ballOwnerMatchInfo.Direction,
                     matchRoom.MatchInformation.BallVelocity,

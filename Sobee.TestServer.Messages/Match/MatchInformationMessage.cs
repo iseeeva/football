@@ -56,7 +56,7 @@ namespace Sobee.TestServer.Messages.Match
 
             SessionRights = new UserSessionRights();
             PhaseInfo = new PhaseInfo(0);
-            ScenarioInfo = new ScenarioInfo();
+            ScenarioInfo = new ScenarioInfo(ScenarioType.ScenarioMatch);
             Class171 = new GClass171();
             Class167 = new GClass167();
             TeamIdInfo = new TeamIdInfo();
@@ -193,6 +193,153 @@ namespace Sobee.TestServer.Messages.Match
             SomeString2 = string_3;
         }
 
+        #region Helpers
+
+        #region Team
+        public List<PlayerMatchInformationMessage> GetHomeTeam()
+        {
+            var homePlayer = GetSittingSide(StadiumSitting.HomePlayer);
+            var homeSpectator = GetSittingSide(StadiumSitting.HomeSpectator);
+            if (homePlayer == null || homeSpectator == null)
+                throw new Exception("Sitting sides is not initialized properly.");
+
+            return [.. homePlayer, .. homeSpectator];
+        }
+
+        public List<PlayerMatchInformationMessage> GetAwayTeam()
+        {
+            var awayPlayer = GetSittingSide(StadiumSitting.AwayPlayer);
+            var awaySpectator = GetSittingSide(StadiumSitting.AwaySpectator);
+            if (awayPlayer == null || awaySpectator == null)
+                throw new Exception("Sitting sides is not initialized properly.");
+
+            return [.. awayPlayer, .. awaySpectator];
+        }
+
+        public List<PlayerMatchInformationMessage> GetTeams()
+        {
+            return [.. GetHomeTeam(), .. GetAwayTeam()];
+        }
+        #endregion Team
+
+        #region Player
+        public List<PlayerMatchInformationMessage> GetPlayers()
+        {
+            var homePlayer = GetSittingSide(StadiumSitting.HomePlayer);
+            var awayPlayer = GetSittingSide(StadiumSitting.AwayPlayer);
+            if (homePlayer == null || awayPlayer == null)
+                throw new Exception("Sitting sides is not initialized properly.");
+
+            return [.. homePlayer, .. awayPlayer];
+        }
+
+        public PlayerMatchInformationMessage? GetPlayer(Guid playerId)
+        {
+            foreach (var player in GetPlayers())
+            {
+                if (player.PlayerId == playerId)
+                    return player;
+            }
+
+            return null;
+        }
+
+        /// <param name="absoluteSquadNumber">(not splited)</param>
+        public PlayerMatchInformationMessage? GetPlayer(sbyte absoluteSquadNumber)
+        {
+            var sittingSide = PlayerSquadNumber.GetSittingFromAbsoluteSquadNumber(absoluteSquadNumber, [
+                StadiumSitting.HomePlayer,
+                StadiumSitting.AwayPlayer
+            ]);
+
+            if (sittingSide == StadiumSitting.Invalid)
+                return null;
+
+            var selectedTeam = GetSittingSide(sittingSide);
+            if (selectedTeam == null)
+                return null;
+
+            foreach (var player in selectedTeam)
+            {
+                if (player.SquadNumber == PlayerSquadNumber.ConvertToSquadNumber(absoluteSquadNumber))
+                    return player;
+            }
+
+            return null;
+        }
+        #endregion Player
+
+        #region Spectator
+        public List<PlayerMatchInformationMessage> GetSpectators()
+        {
+            var homeSpectator = GetSittingSide(StadiumSitting.HomeSpectator);
+            var awaySpectator = GetSittingSide(StadiumSitting.AwaySpectator);
+            if (homeSpectator == null || awaySpectator == null)
+                throw new Exception("Sitting sides is not initialized properly.");
+
+            return [.. homeSpectator, .. awaySpectator];
+        }
+
+        public PlayerMatchInformationMessage? GetSpectator(Guid playerId)
+        {
+            foreach (var player in GetSpectators())
+            {
+                if (player.PlayerId == playerId)
+                    return player;
+            }
+
+            return null;
+        }
+
+        /// <param name="absoluteSquadNumber">(not splited)</param>
+        public PlayerMatchInformationMessage? GetSpectator(sbyte absoluteSquadNumber)
+        {
+            var sittingSide = PlayerSquadNumber.GetSittingFromAbsoluteSquadNumber(absoluteSquadNumber, [
+                StadiumSitting.HomeSpectator,
+                StadiumSitting.AwaySpectator
+            ]);
+
+            if (sittingSide == StadiumSitting.Invalid)
+                return null;
+
+            var selectedTeam = GetSittingSide(sittingSide);
+            if (selectedTeam == null)
+                return null;
+
+            foreach (var player in selectedTeam)
+            {
+                if (player.SquadNumber == PlayerSquadNumber.ConvertToSquadNumber(absoluteSquadNumber))
+                    return player;
+            }
+
+            return null;
+        }
+        #endregion Spectator
+
+        public List<PlayerMatchInformationMessage>? GetSittingSide(StadiumSitting stadiumSitting)
+        {
+            return stadiumSitting switch
+            {
+                StadiumSitting.HomePlayer => HomePlayer,
+                StadiumSitting.AwayPlayer => AwayPlayer,
+                StadiumSitting.HomeSpectator => HomeSpectator,
+                StadiumSitting.AwaySpectator => AwaySpectator,
+                _ => null,
+            };
+        }
+
+        public bool HasPlayer(Func<PlayerMatchInformationMessage, bool> predicate)
+        {
+            foreach (var player in GetTeams())
+            {
+                if (predicate(player))
+                    return true;
+            }
+
+            return false;
+        }
+        #endregion Helpers
+
         public override void Serialize(BinaryWriter gclass316_0)
         {
             base.Serialize(gclass316_0);
@@ -252,155 +399,5 @@ namespace Sobee.TestServer.Messages.Match
             gclass316_0.method_14(SomeString1);
             gclass316_0.method_14(SomeString2);
         }
-
-        #region Helpers
-
-        #region Team
-        public List<PlayerMatchInformationMessage> GetHomeTeam()
-        {
-            return [.. HomePlayer, .. HomeSpectator];
-        }
-
-        public List<PlayerMatchInformationMessage> GetAwayTeam()
-        {
-            return [.. AwayPlayer, .. AwaySpectator];
-        }
-
-        public List<PlayerMatchInformationMessage> GetTeams()
-        {
-            return [.. GetHomeTeam(), .. GetAwayTeam()];
-        }
-        #endregion Team
-
-        #region Player
-        public List<PlayerMatchInformationMessage> GetPlayers()
-        {
-            return [.. HomePlayer, .. AwayPlayer];
-        }
-
-        public PlayerMatchInformationMessage? GetPlayer(Guid playerId)
-        {
-            foreach (var player in GetPlayers())
-            {
-                if (player.PlayerId == playerId)
-                    return player;
-            }
-
-            return null;
-        }
-
-        /// <param name="squadNumber">(not splited)</param>
-        public PlayerMatchInformationMessage? GetPlayer(int squadNumber)
-        {
-            var tempNumber = squadNumber + 1;
-
-            if (!MatchEntry.InRange(tempNumber))
-                return null;
-
-            if (tempNumber <= ScenarioInfo.MAX_TEAM_SIZE) // Home
-            {
-                var homePlayers = GetSittingSide(StadiumSitting.HomePlayer);
-                if (homePlayers == null)
-                    return null;
-
-                foreach (var player in homePlayers)
-                {
-                    if (player.SquadNumber == squadNumber)
-                        return player;
-                }
-            }
-            else if (tempNumber <= ScenarioInfo.MAX_TEAM_SIZE * 2) // Away
-            {
-                var awayPlayers = GetSittingSide(StadiumSitting.AwayPlayer);
-                if (awayPlayers == null)
-                    return null;
-
-                foreach (var player in awayPlayers)
-                {
-                    if (player.SquadNumber == MatchEntry.ToSquad(tempNumber, true))
-                        return player;
-                }
-            }
-
-            return null;
-        }
-        #endregion Player
-
-        #region Spectator
-        public List<PlayerMatchInformationMessage> GetSpectators()
-        {
-            return [.. HomeSpectator, .. AwaySpectator];
-        }
-
-        public PlayerMatchInformationMessage? GetSpectator(Guid playerId)
-        {
-            foreach (var player in GetSpectators())
-            {
-                if (player.PlayerId == playerId)
-                    return player;
-            }
-
-            return null;
-        }
-
-        /// <param name="squadNumber">(not splited)</param>
-        public PlayerMatchInformationMessage? GetSpectator(int squadNumber)
-        {
-            var tempNumber = squadNumber + 1;
-
-            if (!MatchEntry.InRange(tempNumber))
-                return null;
-
-            if (tempNumber <= ScenarioInfo.MAX_TEAM_SIZE) // Home
-            {
-                var homeSpectators = GetSittingSide(StadiumSitting.HomeSpectator);
-                if (homeSpectators == null)
-                    return null;
-
-                foreach (var player in homeSpectators)
-                {
-                    if (player.SquadNumber == squadNumber)
-                        return player;
-                }
-            }
-            else if (tempNumber <= ScenarioInfo.MAX_TEAM_SIZE * 2) // Away
-            {
-                var awaySpectators = GetSittingSide(StadiumSitting.AwaySpectator);
-                if (awaySpectators == null)
-                    return null;
-
-                foreach (var player in awaySpectators)
-                {
-                    if (player.SquadNumber == MatchEntry.ToSquad(tempNumber, true))
-                        return player;
-                }
-            }
-            return null;
-        }
-        #endregion Spectator
-
-        public List<PlayerMatchInformationMessage>? GetSittingSide(StadiumSitting stadiumSitting)
-        {
-            return stadiumSitting switch
-            {
-                StadiumSitting.HomePlayer => HomePlayer,
-                StadiumSitting.AwayPlayer => AwayPlayer,
-                StadiumSitting.HomeSpectator => HomeSpectator,
-                StadiumSitting.AwaySpectator => AwaySpectator,
-                _ => null,
-            };
-        }
-
-        public bool HasPlayer(Func<PlayerMatchInformationMessage, bool> predicate)
-        {
-            foreach (var player in GetTeams())
-            {
-                if (predicate(player))
-                    return true;
-            }
-
-            return false;
-        }
-        #endregion
     }
 }

@@ -17,7 +17,7 @@ namespace Sobee.TestServer.Messages.Player
         public int Stamina;
         public StadiumSitting StadiumSitting;
         /// <summary>(splited)</summary>
-        public sbyte SquadNumber;
+        public PlayerSquadNumber SquadNumber;
         public bool IsMoving;
         public bool UnkBool0;
         public PlayerAppearanceMessage Appearance;
@@ -46,7 +46,7 @@ namespace Sobee.TestServer.Messages.Player
             UserName = string.Empty;
             Stamina = 120;
             StadiumSitting = StadiumSitting.Invalid;
-            SquadNumber = -1;
+            SquadNumber = new PlayerSquadNumber(-1);
             UnkBool0 = false;
             Appearance = new PlayerAppearanceMessage();
             Position = Vector2.Zero;
@@ -69,7 +69,7 @@ namespace Sobee.TestServer.Messages.Player
         public PlayerMatchInformationMessage(
             Guid matchId,
             Guid playerId, string playerName, PlayerAppearanceMessage appearance,
-            StadiumSitting stadiumSitting, sbyte squadNumber,
+            StadiumSitting stadiumSitting, PlayerSquadNumber squadNumber,
             Vector2 position, Vector3 velocity, Vector2 direction,
             MatchCard cardStatus,
             string xmlCode
@@ -95,7 +95,7 @@ namespace Sobee.TestServer.Messages.Player
             PlayerName = reader.method_14();
             Stamina = reader.method_9();
             StadiumSitting = (StadiumSitting)reader.method_9();
-            SquadNumber = reader.method_11();
+            SquadNumber = new PlayerSquadNumber(reader);
             UnkStr0 = reader.method_14();
             UnkBool0 = reader.method_1();
             Appearance = (PlayerAppearanceMessage)reader.method_25();
@@ -133,6 +133,13 @@ namespace Sobee.TestServer.Messages.Player
             }
         }
 
+        #region Helpers
+        public sbyte GetAbsoluteSquadNumber()
+        {
+            return PlayerSquadNumber.ConvertToAbsoluteSquadNumber(StadiumSitting, SquadNumber);
+        }
+        #endregion
+
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
@@ -141,7 +148,7 @@ namespace Sobee.TestServer.Messages.Player
             writer.method_14(PlayerName);
             writer.method_9(Stamina);
             writer.method_9((int)StadiumSitting);
-            writer.method_11(SquadNumber);
+            SquadNumber.Serialize(writer);
             writer.method_14(UnkStr0);
             writer.method_1(UnkBool0);
             writer.method_25(Appearance);

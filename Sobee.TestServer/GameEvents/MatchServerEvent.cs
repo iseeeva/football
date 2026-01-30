@@ -37,7 +37,7 @@ namespace Sobee.TestServer.GameEvents
             ));
 
             // INFO: Set camera and clientId to the joining player for their own view
-            matchRoom.MatchInformation.Actor.Camera = (sbyte)matchPlayer.AuthInformation.Entry.ToSquad();
+            matchRoom.MatchInformation.Actor.Camera = matchInformation.GetAbsoluteSquadNumber();
             matchRoom.MatchInformation.Actor.ClientId = matchInformation.PlayerId;
             matchPlayer.SendMessage(matchRoom.MatchInformation);
 
@@ -81,14 +81,14 @@ namespace Sobee.TestServer.GameEvents
             }
 
             // TODO: If actioner is disconnected?
-            if (matchRoom.MatchInformation.Actor.BallOwner == matchPlayer.AuthInformation.Entry.ToSquad())
+            if (matchRoom.MatchInformation.Actor.BallOwner == matchPlayerInformation.GetAbsoluteSquadNumber())
             {
                 matchRoom.MatchInformation.Actor.BallOwner = -1;
                 matchRoom.MatchInformation.BallVelocity = Vector3.Zero;
                 matchRoom.Players.SendMessage(new BallUpdateMessage(matchRoom.MatchInformation.BallPosition, new Vector3(0, 0, 0)));
             }
 
-            matchRoom.Players.SendMessage(new PlayerLeaveMessage((sbyte)matchPlayer.AuthInformation.Entry.ToSquad()));
+            matchRoom.Players.SendMessage(new PlayerLeaveMessage(matchPlayerInformation.GetAbsoluteSquadNumber()));
             matchRoom.Players.SendMessage(new ChatSystemMessage(
                 $"{matchPlayerInformation.PlayerName} disconnected. (total player: {matchRoom.Players.Count})",
                 ChatSystemMessageType.Anounce

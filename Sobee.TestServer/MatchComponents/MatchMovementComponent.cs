@@ -127,7 +127,7 @@ namespace Sobee.TestServer.MatchComponents
 
             if (inRange && ballFree)
             {
-                if (BallHelper.GetBall(_matchRoom, (sbyte)player.AuthInformation.Entry.ToSquad()))
+                if (BallHelper.GetBall(_matchRoom, playerMatchInfo.GetAbsoluteSquadNumber()))
                 {
                     _log.Information("Player {playerId} took the ball.", player.Id);
                 }

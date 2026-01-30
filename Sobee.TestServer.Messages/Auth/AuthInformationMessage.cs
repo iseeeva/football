@@ -15,7 +15,7 @@ namespace Sobee.TestServer.Messages.Auth
         public int Ram { get; }
         public string Software { get; }
         public string Mac { get; }
-        public MatchEntry Entry { get; }
+        public MatchEntryNumber Entry { get; }
         public string Session { get; }
         public bool Autorun { get; }
 
@@ -29,7 +29,7 @@ namespace Sobee.TestServer.Messages.Auth
             Ram = reader.method_9();
             Software = reader.method_14();
             Mac = reader.method_14();
-            Entry = new MatchEntry(reader);
+            Entry = new MatchEntryNumber(reader);
             Session = reader.method_14();
             Autorun = reader.method_1();
         }
@@ -39,7 +39,7 @@ namespace Sobee.TestServer.Messages.Auth
             long unknown,
             string password,
             string cpu, string gpu, int ram, string software,
-            string mac, MatchEntry entry, string session, bool autorun)
+            string mac, MatchEntryNumber entry, string session, bool autorun)
         {
             Version = version;
             Unknown = unknown;
@@ -72,7 +72,7 @@ namespace Sobee.TestServer.Messages.Auth
 
         public override string ToString()
         {
-            return $"Ver: {Version} MP: {Unknown} Pass: {Password} EntryID: {Entry.EntryNumber} WEB: {Session} Auto: {Autorun}";
+            return $"Ver: {Version} MP: {Unknown} Pass: {Password} EntryID: {Entry.Value} WEB: {Session} Auto: {Autorun}";
         }
     }
 }

@@ -52,7 +52,7 @@ namespace Sobee.TestServer.GameEvents
             );
 
             match.Players.SendMessage(new PlayerMoveMessage(
-                (sbyte)player.AuthInformation.Entry.ToSquad(),
+                playerMatchInfo.GetAbsoluteSquadNumber(),
                 playerMatchInfo.Position,
                 new Vector2(playerMatchInfo.Velocity.X, playerMatchInfo.Velocity.Y),
                 moveKeyDown.IsSprint,
@@ -78,7 +78,7 @@ namespace Sobee.TestServer.GameEvents
             }
 
             matchRoom.Players.SendMessage(new PlayerStopMessage(
-                (sbyte)matchPlayer.AuthInformation.Entry.ToSquad(),
+                playerInformation.GetAbsoluteSquadNumber(),
                 playerInformation.Position,
                 playerInformation.Direction,
                 false,

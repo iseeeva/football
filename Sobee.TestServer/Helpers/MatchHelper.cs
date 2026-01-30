@@ -2,6 +2,7 @@
 using System.Numerics;
 using Sobee.TestServer.Auth;
 using Sobee.TestServer.Match;
+using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Match;
 using Sobee.TestServer.Messages.Player;
 
@@ -16,7 +17,7 @@ namespace Sobee.TestServer.Helpers
             [NotNullWhen(true)] out PlayerMatchInformationMessage? playerMatchInformation
         )
         {
-            // TODO: Database den kontrol edilecek
+            // TODO: Database den kontrol edilecek.
 
             matchPlayer = null;
             playerMatchInformation = null;
@@ -24,20 +25,46 @@ namespace Sobee.TestServer.Helpers
             if (authUser.Socket == null || authUser.AuthInformation == null)
                 return false;
 
+            // TODO: Gecici squad numarasi, database eklenince duzeltilmesi gerek.
+            sbyte tempAbsoluteSquadNo0 = (sbyte)(authUser.AuthInformation.Entry.Value - 1);
+            if (!PlayerSquadNumber.IsValidAbsoluteSquadNumber(tempAbsoluteSquadNo0))
+                return false;
+
+            var tempSquadNo0 = tempAbsoluteSquadNo0 % ScenarioInfo.MAX_TEAM_SIZE;
+            // ----
+
+            // TODO: Gecici squad atamalari, database eklenince duzeltilmesi gerek.
+            var homePlayer = matchRoom.MatchInformation.GetSittingSide(StadiumSitting.HomePlayer);
+            var awayPlayer = matchRoom.MatchInformation.GetSittingSide(StadiumSitting.AwayPlayer);
+            var homeSpectator = matchRoom.MatchInformation.GetSittingSide(StadiumSitting.HomeSpectator);
+            var awaySpectator = matchRoom.MatchInformation.GetSittingSide(StadiumSitting.AwaySpectator);
+            if (homePlayer == null || awayPlayer == null || homeSpectator == null || awaySpectator == null)
+                return false;
+
+            var tempSittingSide = PlayerSquadNumber.GetSittingFromAbsoluteSquadNumber(tempAbsoluteSquadNo0, [
+                homePlayer.Count<matchRoom.MatchInformation.ScenarioInfo.team1Size
+                    ? StadiumSitting.HomePlayer
+                    : homeSpectator.Count < homeSpectator.Capacity ? StadiumSitting.HomeSpectator : StadiumSitting.Invalid,
+                awayPlayer.Count<matchRoom.MatchInformation.ScenarioInfo.team2Size
+                    ? StadiumSitting.AwayPlayer
+                    : awaySpectator.Count < awaySpectator.Capacity ? StadiumSitting.AwaySpectator : StadiumSitting.Invalid
+            ]);
+            // ----
+
             matchPlayer = new MatchPlayer(authUser.Socket, authUser.AuthInformation, matchRoom);
             playerMatchInformation = new PlayerMatchInformationMessage(
                   matchRoom.Id,
                   matchPlayer.Id,
-                  $"Temporary {authUser.AuthInformation.Entry.EntryNumber}",
-                  new PlayerAppearanceMessage(),
-                  matchRoom.MatchInformation.ScenarioInfo.GetScenarioSittingFromEntry(authUser.AuthInformation.Entry.EntryNumber),
-                  (sbyte)authUser.AuthInformation.Entry.ToSquad(true),
-                  new Vector2(0, 0),
-                  new Vector3(0, 0, 0),
-                  new Vector2(0, 0),
-                  MatchCard.None,
-                  "<XMLData><Script></Script></XMLData>"
-            );
+                      $"Temporary {authUser.AuthInformation.Entry.Value}",
+                      new PlayerAppearanceMessage(),
+                      tempSittingSide,
+                      new PlayerSquadNumber((sbyte)tempSquadNo0),
+                      new Vector2(0, 0),
+                      new Vector3(0, 0, 0),
+                      new Vector2(0, 0),
+                      MatchCard.None,
+                      "<XMLData><Script></Script></XMLData>"
+                );
 
             return true;
         }
@@ -58,15 +85,19 @@ namespace Sobee.TestServer.Helpers
             if (matchRoom.Players.Count > MatchRoom.MAX_PLAYER)
                 return false;
 
-            var team = matchRoom.MatchInformation.GetSittingSide(playerInformation.StadiumSitting);
+            var sittingSide = matchRoom.MatchInformation.GetSittingSide(playerInformation.StadiumSitting);
 
-            if (team == null || team.Any(
+            if (
+                sittingSide == null ||
+                sittingSide.Count >= sittingSide.Capacity ||
+                sittingSide.Any(
                     p => p.PlayerId == playerInformation.PlayerId ||
                     p.SquadNumber == playerInformation.SquadNumber
-               ))
+                )
+               )
                 return false;
 
-            team.Add(playerInformation);
+            sittingSide.Add(playerInformation);
             return true;
         }
 
@@ -75,18 +106,17 @@ namespace Sobee.TestServer.Helpers
             if (matchRoom == null || playerInformation == null)
                 return false;
 
-            var team = matchRoom.MatchInformation.GetSittingSide(playerInformation.StadiumSitting);
-            if (team == null)
+            var sittingSide = matchRoom.MatchInformation.GetSittingSide(playerInformation.StadiumSitting);
+            if (
+                sittingSide == null ||
+                !sittingSide.Any(p =>
+                    p.PlayerId == playerInformation.PlayerId &&
+                    p.SquadNumber == playerInformation.SquadNumber
+                )
+               )
                 return false;
 
-            var targetInformation = team.FirstOrDefault(p =>
-                p.PlayerId == playerInformation.PlayerId &&
-                p.SquadNumber == playerInformation.SquadNumber);
-
-            if (targetInformation == null)
-                return false;
-
-            team.Remove(targetInformation);
+            sittingSide.Remove(playerInformation);
             return true;
         }
     }
