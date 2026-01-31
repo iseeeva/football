@@ -2,6 +2,7 @@
 using Sobee.Common;
 using Sobee.Network;
 using Sobee.Network.Messaging;
+using Sobee.TestServer.ClientEvents;
 using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Auth;
 using Sobee.TestServer.Messages.Chat;
@@ -25,10 +26,11 @@ namespace Sobee.TestServer.Match
             SessionType = SessionType.User;
             AuthInformation = authInformation;
 
-            communication.AddSessionHandler<HeartbeatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.HeartbeatReceived));
-            communication.AddSessionHandler<PlayerMoveKeyDownMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.PlayerMoveKeyDownReceived));
-            communication.AddSessionHandler<PlayerMoveKeyUpMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerEvent.PlayerMoveKeyUpReceived));
-            communication.AddSessionHandler<ChatMessage>(this, new EventHandler<MessageEventArgs>(GameEvents.MatchClientPlayerChatEvent.ChatMessageReceived));
+            communication.AddSessionHandler<PlayerHeartbeatMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerEvent.PlayerHeartbeatReceived));
+            communication.AddSessionHandler<PlayerMatchStateAlertMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerEvent.PlayerMatchStateAlertReceived));
+            communication.AddSessionHandler<PlayerMoveKeyDownMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerMovementEvent.PlayerMoveKeyDownReceived));
+            communication.AddSessionHandler<PlayerMoveKeyUpMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerMovementEvent.PlayerMoveKeyUpReceived));
+            communication.AddSessionHandler<ChatPlayerInputMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerChatEvent.ChatPlayerInputReceived));
 
             _log.Debug("{id} initialized.", Id);
         }

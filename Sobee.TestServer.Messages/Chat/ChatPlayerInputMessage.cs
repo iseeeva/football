@@ -3,16 +3,16 @@
 namespace Sobee.TestServer.Messages.Chat
 {
     [MessageAttribute(21144)]
-    public class ChatMessage : ChatBaseMessage
+    public class ChatPlayerInputMessage : ChatBaseMessage
     {
         public string MessageText { get; }
 
-        public ChatMessage(Guid teamId, string text) : base(teamId)
+        public ChatPlayerInputMessage(Guid teamId, string text) : base(teamId)
         {
             MessageText = text;
         }
 
-        public ChatMessage(BinaryReader reader) : base(reader)
+        public ChatPlayerInputMessage(BinaryReader reader) : base(reader)
         {
             MessageText = reader.method_14();
         }

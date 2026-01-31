@@ -8,7 +8,7 @@ using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Ball;
 using Sobee.TestServer.Messages.Match;
 
-namespace Sobee.TestServer.GameEvents
+namespace Sobee.TestServer.ClientEvents
 {
     public class MatchClientBallEvent
     {

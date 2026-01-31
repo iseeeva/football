@@ -1,11 +1,11 @@
 ﻿using Sobee.Network.Messaging;
 using Sobee.Serialization;
 
-namespace Sobee.TestServer.Messages
+namespace Sobee.TestServer.Messages.Player
 {
     // Token: 0x02000006 RID: 6
-    [MessageAttribute(3)]
-    public class HeartbeatMessage : Message
+    [Message(3)]
+    public class PlayerHeartbeatMessage : Message
     {
         // Token: 0x0600005D RID: 93 RVA: 0x000025A5 File Offset: 0x000007A5
         public override bool vmethod_0()
@@ -14,12 +14,12 @@ namespace Sobee.TestServer.Messages
         }
 
         // Token: 0x0600005E RID: 94 RVA: 0x000025A8 File Offset: 0x000007A8
-        public HeartbeatMessage()
+        public PlayerHeartbeatMessage()
         {
         }
 
         // Token: 0x0600005F RID: 95 RVA: 0x000025B0 File Offset: 0x000007B0
-        public HeartbeatMessage(BinaryReader gclass315_0) : base(gclass315_0)
+        public PlayerHeartbeatMessage(BinaryReader gclass315_0) : base(gclass315_0)
         {
         }
 

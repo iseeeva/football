@@ -5,17 +5,17 @@ using Sobee.TestServer.Helpers;
 using Sobee.TestServer.Match;
 using Sobee.TestServer.Messages.Chat;
 
-namespace Sobee.TestServer.GameEvents
+namespace Sobee.TestServer.ClientEvents
 {
     public class MatchClientPlayerChatEvent
     {
         private static readonly Serilog.ILogger _log = Logging.Get<MatchClientPlayerChatEvent>();
 
-        public static void ChatMessageReceived(object? sender, MessageEventArgs e)
+        public static void ChatPlayerInputReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not ChatMessage chatMessage) return;
+            if (e.message is not ChatPlayerInputMessage chatInputMessage) return;
 
             if (matchRoom.MatchInformation == null)
             {
@@ -31,7 +31,7 @@ namespace Sobee.TestServer.GameEvents
             }
 
             // TODO: [TEST] Isin bitince sil
-            switch (chatMessage.MessageText)
+            switch (chatInputMessage.MessageText)
             {
                 case "kickoff":
                     PositioningHelper.ChangePosition(matchRoom, MatchFieldPositioning.Kickoff);
@@ -45,8 +45,8 @@ namespace Sobee.TestServer.GameEvents
                     return;
             }
 
-            matchRoom.Players.SendMessage(new ChatPlayerMessage(matchRoom.MatchInformation.SittingIdInfo.GetIdFromSitting(playerMatchInfo.StadiumSitting), playerMatchInfo.PlayerId, chatMessage.MessageText, 0));
-            _log.Information("[ChatMessageReceived] {playerId}: {messageText}", playerMatchInfo.PlayerId, chatMessage);
+            matchRoom.Players.SendMessage(new ChatPlayerMessage(matchRoom.MatchInformation.SittingIdInfo.GetIdFromSitting(playerMatchInfo.StadiumSitting), playerMatchInfo.PlayerId, chatInputMessage.MessageText, 0));
+            _log.Information("[ChatMessageReceived] {playerId}: {messageText}", playerMatchInfo.PlayerId, chatInputMessage);
         }
     }
 }

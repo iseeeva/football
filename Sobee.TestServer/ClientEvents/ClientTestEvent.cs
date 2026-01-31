@@ -4,11 +4,11 @@ using Sobee.Network;
 using Sobee.Network.Messaging;
 using Sobee.TestServer.Messages.Auth;
 
-namespace Sobee.TestServer.GameEvents
+namespace Sobee.TestServer.ClientEvents
 {
-    public class TestEvent
+    public class ClientTestEvent
     {
-        private static readonly ILogger _log = Logging.Get<TestEvent>();
+        private static readonly ILogger _log = Logging.Get<ClientTestEvent>();
 
         public static void GlobalTest(object? sender, MessageEventArgs e)
         {

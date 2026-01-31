@@ -3,24 +3,13 @@ using Sobee.Common;
 using Sobee.Network.Messaging;
 using Sobee.TestServer.Match;
 using Sobee.TestServer.MatchComponents;
-using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Player;
 
-namespace Sobee.TestServer.GameEvents
+namespace Sobee.TestServer.ClientEvents
 {
-    public class MatchClientPlayerEvent
+    public class MatchClientPlayerMovementEvent
     {
-        private static readonly Serilog.ILogger _log = Logging.Get<MatchClientPlayerEvent>();
-
-        public static void HeartbeatReceived(object? sender, MessageEventArgs e)
-        {
-            if (sender is not MatchRoom matchRoom) return;
-            if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not HeartbeatMessage heartbeatMessage) return;
-
-            //matchPlayer.SendMessage(new Sobee.TestServer.Messages.HeartbeatMessage(heartbeatMessage.Timestamp));
-            //_log.Debug("[HeartbeatMessageReceived] Heartbeat received from {playerId}", matchPlayer.Id);
-        }
+        private static readonly Serilog.ILogger _log = Logging.Get<MatchClientPlayerMovementEvent>();
 
         public static void PlayerMoveKeyDownReceived(object? sender, MessageEventArgs e)
         {

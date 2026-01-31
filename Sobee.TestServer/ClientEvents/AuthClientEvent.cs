@@ -4,7 +4,7 @@ using Sobee.Network.Messaging;
 using Sobee.TestServer.Auth;
 using Sobee.TestServer.Messages.Auth;
 
-namespace Sobee.TestServer.GameEvents
+namespace Sobee.TestServer.ClientEvents
 {
     public class AuthClientEvent
     {

@@ -1,22 +1,21 @@
 ﻿using System.Numerics;
 using Sobee.Common;
 using Sobee.TestServer.Match;
-using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Ball;
 using Sobee.TestServer.Messages.Chat;
 using Sobee.TestServer.Messages.Player;
 
-namespace Sobee.TestServer.GameEvents
+namespace Sobee.TestServer.ServerEvents
 {
-    public class MatchServerEvent
+    public class MatchServerPlayerEvent
     {
-        private static readonly Serilog.ILogger _log = Logging.Get<MatchServerEvent>();
+        private static readonly Serilog.ILogger _log = Logging.Get<MatchServerPlayerEvent>();
 
-        public static void PlayerJoin(MatchRoom matchRoom, MatchPlayer matchPlayer)
+        public static void PlayerJoinReceived(MatchRoom matchRoom, MatchPlayer matchPlayer)
         {
             // TODO: Additional logic for when a player joins can be added here.
 
-            if (matchRoom == null || (matchPlayer == null || matchPlayer.AuthInformation == null))
+            if (matchRoom == null || matchPlayer == null || matchPlayer.AuthInformation == null)
             {
                 _log.Warning("[PlayerJoin] Match or player is null.");
                 return;
@@ -45,7 +44,7 @@ namespace Sobee.TestServer.GameEvents
 
             // Wait for heartbeat message before invoke the match event.
             // Heartbeat is the first message sent by the client after going match screen.
-            matchPlayer.WaitForMessage<HeartbeatMessage>((player, heartbeat) =>
+            matchPlayer.WaitForMessage<PlayerHeartbeatMessage>((player, heartbeat) =>
             {
                 player.SendMessage(new ChatSystemMessage(
                     $"[PlayerJoin] Room Id: {matchRoom.Id}",
@@ -65,9 +64,9 @@ namespace Sobee.TestServer.GameEvents
             });
         }
 
-        public static void PlayerLeave(MatchRoom matchRoom, MatchPlayer matchPlayer, PlayerMatchInformationMessage matchPlayerInformation)
+        public static void PlayerLeaveReceived(MatchRoom matchRoom, MatchPlayer matchPlayer, PlayerMatchInformationMessage matchPlayerInformation)
         {
-            if (matchRoom == null || (matchPlayer == null || matchPlayer.AuthInformation == null))
+            if (matchRoom == null || matchPlayer == null || matchPlayer.AuthInformation == null)
             {
                 _log.Warning("[PlayerLeave] Match or player is null.");
                 return;
