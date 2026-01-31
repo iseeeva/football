@@ -32,7 +32,7 @@ namespace Sobee.TestServer.MatchComponents
         public override void Update(double delta)
         {
             var matchInfo = _matchRoom.MatchInformation;
-            var ballOwnerInfo = matchInfo.GetPlayer(matchInfo.Actor.BallOwner);
+            var ballOwnerInfo = matchInfo.GetPlayer(matchInfo.BallOwner);
 
             // INFO: Eger mac akisina esitlemek istersen TimeMultiplier kullan.
             var dt = (float)delta; // * matchInfo.TimeMultiplier;

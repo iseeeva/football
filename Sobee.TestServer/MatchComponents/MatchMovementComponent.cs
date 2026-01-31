@@ -123,7 +123,7 @@ namespace Sobee.TestServer.MatchComponents
                 ) &&
                     matchInfo.BallPosition.Z <= 180; // TODO: Boy olcusu icin ekstra kontrol. Ilerde degistirilebilir.
 
-            bool ballFree = matchInfo.Actor.BallOwner == -1;
+            bool ballFree = matchInfo.BallOwner == -1;
 
             if (inRange && ballFree)
             {

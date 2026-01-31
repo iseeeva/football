@@ -6,7 +6,7 @@ namespace Sobee.TestServer.Messages.Player
     {
         // INFO:
         // Q: What is the "Absolute" squad number? (h0-a11)
-        // A: Absolute squad number is used by client for identify players by combines both teams squad numbers into a single range.
+        // A: Absolute squad number is used by client for identify players by combines both squads squad numbers into a single range.
         // For example, look GetSittingFromAbsoluteSquadNumber and ConvertToAbsoluteSquadNumber methods.
 
         private sbyte _value;

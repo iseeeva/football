@@ -9,36 +9,48 @@ namespace Sobee.TestServer.Messages.Match
     [MessageAttribute(12835)]
     public class MatchInformationMessage : Message
     {
-        public MatchActor Actor { get; private set; }
+        /// <summary> Client id of the user who requested this message </summary>
+        public Guid ClientId;
+        /// <summary> Squad number (absolute) of the active client camera </summary>
+        public sbyte ClientCamera;
 
-        public List<PlayerMatchInformationMessage> HomePlayer { get; private set; }
-        public List<PlayerMatchInformationMessage> AwayPlayer { get; private set; }
-        public List<PlayerMatchInformationMessage> HomeSpectator { get; private set; }
-        public List<PlayerMatchInformationMessage> AwaySpectator { get; private set; }
+        /// <summary> Sitting ID infos for sitting sides </summary>
+        public readonly SittingIdInfo SittingIdInfo; // SittingIdInfo
+        public readonly List<PlayerMatchInformationMessage> HomePlayer; // StadiumSitting.HomePlayer
+        public readonly List<PlayerMatchInformationMessage> AwayPlayer; // StadiumSitting.AwayPlayer
+        public readonly List<PlayerMatchInformationMessage> HomeSpectator; // StadiumSitting.HomeSpectator
+        public readonly List<PlayerMatchInformationMessage> AwaySpectator; // StadiumSitting.AwaySpectator
 
+        /// <summary> Squad number (absolute) of the who have ball </summary>
+        public sbyte BallOwner;
+        /// <summary> Position of the ball </summary>
         public Vector3 BallPosition;
+        /// <summary> Velocity of the ball </summary>
         public Vector3 BallVelocity;
 
+        /// <summary> Scenario information of the match </summary>
+        public readonly ScenarioInfo ScenarioInfo;
+        /// <summary> State of the match </summary>
         public MatchStateType MatchState;
+        /// <summary> Field positioning of the match </summary>
         public MatchFieldPositioning FieldPositioning;
 
-        public UserSessionRights SessionRights { get; private set; }
-        public PhaseInfo PhaseInfo { get; private set; }
-        public ScenarioInfo ScenarioInfo { get; private set; }
-        public GClass171 Class171 { get; private set; }
-        public GClass167 Class167 { get; private set; }
-        public TeamIdInfo TeamIdInfo { get; private set; }
-        public List<GClass163> List163 { get; private set; }
-        public List<GClass172> List172 { get; private set; }
-
+        /// <summary> Phase information of the match </summary>
+        public readonly PhaseInfo PhaseInfo;
         /// <summary> Time multiplier for the match speed </summary>
         public float TimeMultiplier;
 
-        public double SomeDouble { get; private set; }
-        public List<string> SomeStrings1 { get; private set; }
-        public List<string> SomeStrings2 { get; private set; }
-        public string SomeString1 { get; private set; }
-        public string SomeString2 { get; private set; }
+        public readonly UserSessionRights SessionRights;
+        public readonly GClass171 Class171;
+        public readonly GClass167 Class167;
+        public readonly List<GClass163> List163;
+        public readonly List<GClass172> List172;
+
+        public readonly double SomeDouble;
+        public readonly List<string> SomeStrings1;
+        public readonly List<string> SomeStrings2;
+        public readonly string SomeString1;
+        public readonly string SomeString2;
 
         public MatchInformationMessage()
         {
@@ -48,18 +60,22 @@ namespace Sobee.TestServer.Messages.Match
             HomeSpectator = new List<PlayerMatchInformationMessage>(11);
             AwaySpectator = new List<PlayerMatchInformationMessage>(11);
 
-            Actor = new MatchActor(-1, -1, Guid.Empty);
+            ClientId = Guid.Empty;
+            ClientCamera = -1;
+
+            BallOwner = -1;
             BallPosition = Vector3.Zero;
             BallVelocity = Vector3.Zero;
+
             MatchState = MatchStateType.Positioning;
             FieldPositioning = MatchFieldPositioning.Kickoff;
 
             SessionRights = new UserSessionRights();
             PhaseInfo = new PhaseInfo(0);
-            ScenarioInfo = new ScenarioInfo(ScenarioType.ScenarioMatch);
+            ScenarioInfo = new ScenarioInfo();
             Class171 = new GClass171();
             Class167 = new GClass167();
-            TeamIdInfo = new TeamIdInfo();
+            SittingIdInfo = new SittingIdInfo();
             List163 = new List<GClass163>();
             List172 = new List<GClass172>();
 
@@ -74,7 +90,9 @@ namespace Sobee.TestServer.Messages.Match
 
         public MatchInformationMessage(BinaryReader gclass315_0) : base(gclass315_0)
         {
-            Actor = new MatchActor(gclass315_0);
+            ClientCamera = gclass315_0.method_11();
+            BallOwner = gclass315_0.method_11();
+            ClientId = GuidConverter.ConvertFromInt(gclass315_0.method_9());
 
             ushort num = gclass315_0.method_15();
             HomePlayer = new List<PlayerMatchInformationMessage>(num);
@@ -125,7 +143,7 @@ namespace Sobee.TestServer.Messages.Match
             {
                 SomeStrings2.Add(gclass315_0.method_14());
             }
-            TeamIdInfo = (TeamIdInfo)gclass315_0.method_25();
+            SittingIdInfo = (SittingIdInfo)gclass315_0.method_25();
             num = gclass315_0.method_15();
             List163 = new List<GClass163>(num);
             for (int num2 = 0; num2 < num; num2++)
@@ -149,7 +167,9 @@ namespace Sobee.TestServer.Messages.Match
             IEnumerable<PlayerMatchInformationMessage> ienumerable_1,
             IEnumerable<PlayerMatchInformationMessage> ienumerable_2,
             IEnumerable<PlayerMatchInformationMessage> ienumerable_3,
-            MatchActor Actor,
+            Guid clientId,
+            sbyte clientCamera,
+            sbyte ballOwner,
             Vector3 vector3_2,
             Vector3 vector3_3,
             MatchStateType matchStateType_1,
@@ -160,7 +180,7 @@ namespace Sobee.TestServer.Messages.Match
             double double_1,
             float float_1,
             IEnumerable<string> ienumerable_4,
-            IEnumerable<string> ienumerable_5, TeamIdInfo gclass156_1,
+            IEnumerable<string> ienumerable_5, SittingIdInfo gclass156_1,
             IEnumerable<GClass163> ienumerable_6, IEnumerable<GClass172> ienumerable_7,
             UserSessionRights userSessionRights_1,
             GClass171 gclass171_1,
@@ -168,7 +188,9 @@ namespace Sobee.TestServer.Messages.Match
             string string_3
             )
         {
-            this.Actor = Actor;
+            ClientId = clientId;
+            ClientCamera = clientCamera;
+            BallOwner = ballOwner;
             HomePlayer = new List<PlayerMatchInformationMessage>(ienumerable_0);
             AwayPlayer = new List<PlayerMatchInformationMessage>(ienumerable_1);
             HomeSpectator = new List<PlayerMatchInformationMessage>(ienumerable_2);
@@ -184,7 +206,7 @@ namespace Sobee.TestServer.Messages.Match
             TimeMultiplier = float_1;
             SomeStrings1 = new List<string>(ienumerable_4);
             SomeStrings2 = new List<string>(ienumerable_5);
-            TeamIdInfo = gclass156_1;
+            SittingIdInfo = gclass156_1;
             List163 = new List<GClass163>(ienumerable_6);
             List172 = new List<GClass172>(ienumerable_7);
             SessionRights = userSessionRights_1;
@@ -340,64 +362,66 @@ namespace Sobee.TestServer.Messages.Match
         }
         #endregion Helpers
 
-        public override void Serialize(BinaryWriter gclass316_0)
+        public override void Serialize(BinaryWriter writer)
         {
-            base.Serialize(gclass316_0);
-            Actor.Serialize(gclass316_0);
-            gclass316_0.method_15((ushort)HomePlayer.Count);
+            base.Serialize(writer);
+            writer.method_11(ClientCamera);
+            writer.method_11(BallOwner);
+            writer.method_9(GuidConverter.ConvertToInt(ClientId));
+            writer.method_15((ushort)HomePlayer.Count);
             for (int i = 0; i < HomePlayer.Count; i++)
             {
-                gclass316_0.method_25(HomePlayer[i]);
+                writer.method_25(HomePlayer[i]);
             }
-            gclass316_0.method_15((ushort)AwayPlayer.Count);
+            writer.method_15((ushort)AwayPlayer.Count);
             for (int j = 0; j < AwayPlayer.Count; j++)
             {
-                gclass316_0.method_25(AwayPlayer[j]);
+                writer.method_25(AwayPlayer[j]);
             }
-            gclass316_0.method_15((ushort)HomeSpectator.Count);
+            writer.method_15((ushort)HomeSpectator.Count);
             for (int k = 0; k < HomeSpectator.Count; k++)
             {
-                gclass316_0.method_25(HomeSpectator[k]);
+                writer.method_25(HomeSpectator[k]);
             }
-            gclass316_0.method_15((ushort)AwaySpectator.Count);
+            writer.method_15((ushort)AwaySpectator.Count);
             for (int l = 0; l < AwaySpectator.Count; l++)
             {
-                gclass316_0.method_25(AwaySpectator[l]);
+                writer.method_25(AwaySpectator[l]);
             }
-            gclass316_0.method_20(BallPosition);
-            gclass316_0.method_20(BallVelocity);
-            gclass316_0.method_9((int)MatchState);
-            gclass316_0.method_9((int)FieldPositioning);
-            gclass316_0.method_25(PhaseInfo);
-            gclass316_0.method_25(ScenarioInfo);
-            gclass316_0.method_25(Class167);
-            gclass316_0.method_12(TimeMultiplier);
-            gclass316_0.method_7(SomeDouble);
-            gclass316_0.method_15((ushort)SomeStrings1.Count);
+            writer.method_20(BallPosition);
+            writer.method_20(BallVelocity);
+            writer.method_9((int)MatchState);
+            writer.method_9((int)FieldPositioning);
+            writer.method_25(PhaseInfo);
+            writer.method_25(ScenarioInfo);
+            writer.method_25(Class167);
+            writer.method_12(TimeMultiplier);
+            writer.method_7(SomeDouble);
+            writer.method_15((ushort)SomeStrings1.Count);
             for (int m = 0; m < SomeStrings1.Count; m++)
             {
-                gclass316_0.method_14(SomeStrings1[m]);
+                writer.method_14(SomeStrings1[m]);
             }
-            gclass316_0.method_15((ushort)SomeStrings2.Count);
+            writer.method_15((ushort)SomeStrings2.Count);
             for (int n = 0; n < SomeStrings2.Count; n++)
             {
-                gclass316_0.method_14(SomeStrings2[n]);
+                writer.method_14(SomeStrings2[n]);
             }
-            gclass316_0.method_25(TeamIdInfo);
-            gclass316_0.method_15((ushort)List163.Count);
+            writer.method_25(SittingIdInfo);
+            writer.method_15((ushort)List163.Count);
             for (int num = 0; num < List163.Count; num++)
             {
-                gclass316_0.method_25(List163[num]);
+                writer.method_25(List163[num]);
             }
-            gclass316_0.method_15((ushort)List172.Count);
+            writer.method_15((ushort)List172.Count);
             for (int num2 = 0; num2 < List172.Count; num2++)
             {
-                gclass316_0.method_25(List172[num2]);
+                writer.method_25(List172[num2]);
             }
-            gclass316_0.method_25(SessionRights);
-            gclass316_0.method_25(Class171);
-            gclass316_0.method_14(SomeString1);
-            gclass316_0.method_14(SomeString2);
+            writer.method_25(SessionRights);
+            writer.method_25(Class171);
+            writer.method_14(SomeString1);
+            writer.method_14(SomeString2);
         }
     }
 }

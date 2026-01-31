@@ -40,12 +40,12 @@ namespace Sobee.TestServer.GameEvents
                     matchPlayer.SendMessage(new ChatSystemMessage($"Phase: {matchRoom.MatchInformation.PhaseInfo.MatchPhase}", ChatSystemMessageType.General));
                     return;
                 case "actioner":
-                    var actionerInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.Actor.BallOwner);
+                    var actionerInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.BallOwner);
                     matchPlayer.SendMessage(new ChatSystemMessage($"Actioner: {(actionerInfo != null ? actionerInfo.PlayerName : "Unknown")}", ChatSystemMessageType.General));
                     return;
             }
 
-            matchRoom.Players.SendMessage(new ChatPlayerMessage(matchRoom.MatchInformation.TeamIdInfo.GetId(playerMatchInfo.StadiumSitting), playerMatchInfo.PlayerId, chatMessage.MessageText, 0));
+            matchRoom.Players.SendMessage(new ChatPlayerMessage(matchRoom.MatchInformation.SittingIdInfo.GetIdFromSitting(playerMatchInfo.StadiumSitting), playerMatchInfo.PlayerId, chatMessage.MessageText, 0));
             _log.Information("[ChatMessageReceived] {playerId}: {messageText}", playerMatchInfo.PlayerId, chatMessage);
         }
     }

@@ -39,23 +39,24 @@ namespace Sobee.TestServer.Messages
             return team1Size != -1 && team2Size != -1;
         }
 
-        public ScenarioInfo(ScenarioType scenarioType)
+        public ScenarioInfo()
         {
             // TODO: Remove hardcoded values when possible
-            ScenarioType = scenarioType;
-            var teamCapacities = GetScenarioPlayerCapacity(ScenarioType);
+            ScenarioType = ScenarioType.ScenarioMatch;
+
+            var teamCapacities = GetDefaultScenarioCapacity(ScenarioType);
             if (teamCapacities == null)
                 throw new Exception("ScenarioType invalid for getting player capacity.");
 
             team1Color = 2;
-            team1Name = "Teams.Home.Name.Full";
-            team1ShortName = "Teams.Home.Name.Short";
-            team1Size = teamCapacities.Value.homePlayerCapacity;
+            team1Name = "HomeTeam.NameFull";
+            team1ShortName = "HomeTeam.NameShort";
+            team1Size = teamCapacities.Value.homeCapacity;
 
             team2Color = 3;
-            team2Name = "Teams.Away.Name.Full";
-            team2ShortName = "Teams.Away.Name.Short";
-            team2Size = teamCapacities.Value.awayPlayerCapacity;
+            team2Name = "AwayTeam.NameFull";
+            team2ShortName = "AwayTeam.NameShort";
+            team2Size = teamCapacities.Value.awayCapacity;
 
             xmlCode = "<XMLData><Script></Script></XMLData>";
         }
@@ -175,12 +176,7 @@ namespace Sobee.TestServer.Messages
             gclass316_0.method_14(xmlCode);
         }
 
-        public (int homePlayerCapacity, int awayPlayerCapacity)? GetScenarioPlayerCapacity()
-        {
-            return GetScenarioPlayerCapacity(ScenarioType);
-        }
-
-        public static (int homePlayerCapacity, int awayPlayerCapacity)? GetScenarioPlayerCapacity(ScenarioType scenarioType)
+        public static (int homeCapacity, int awayCapacity)? GetDefaultScenarioCapacity(ScenarioType scenarioType)
         {
             return scenarioType switch
             {

@@ -4,7 +4,7 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages
 {
     [MessageAttribute(4932)]
-    public sealed class TeamIdInfo : Message
+    public sealed class SittingIdInfo : Message
     {
         public Guid InvalidId { get; }
         public Guid HomePlayerId { get; }
@@ -13,7 +13,7 @@ namespace Sobee.TestServer.Messages
         public Guid HomeSpectatorId { get; }
         public Guid AwaySpectatorId { get; }
 
-        public TeamIdInfo()
+        public SittingIdInfo()
         {
             InvalidId = Guid.NewGuid();
             HomePlayerId = Guid.NewGuid();
@@ -23,7 +23,7 @@ namespace Sobee.TestServer.Messages
             AwaySpectatorId = Guid.NewGuid();
         }
 
-        public TeamIdInfo(BinaryReader reader)
+        public SittingIdInfo(BinaryReader reader)
         {
             InvalidId = GuidConverter.ConvertFromInt(reader.method_9());
             HomePlayerId = GuidConverter.ConvertFromInt(reader.method_9());
@@ -33,7 +33,7 @@ namespace Sobee.TestServer.Messages
             AwaySpectatorId = GuidConverter.ConvertFromInt(reader.method_9());
         }
 
-        public TeamIdInfo(
+        public SittingIdInfo(
             Guid invalidId,
             Guid homePlayerId,
             Guid awayPlayerId,
@@ -49,7 +49,7 @@ namespace Sobee.TestServer.Messages
             AwaySpectatorId = awaySpectatorId;
         }
 
-        public Guid GetId(StadiumSitting sitting) => sitting switch
+        public Guid GetIdFromSitting(StadiumSitting sitting) => sitting switch
         {
             StadiumSitting.Invalid => InvalidId,
             StadiumSitting.HomePlayer => HomePlayerId,
