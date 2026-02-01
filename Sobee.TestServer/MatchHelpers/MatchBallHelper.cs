@@ -5,9 +5,9 @@ using Sobee.TestServer.MatchComponents;
 using Sobee.TestServer.Messages.Ball;
 namespace Sobee.TestServer.Helpers
 {
-    public class BallHelper
+    public class MatchBallHelper
     {
-        private static readonly Serilog.ILogger _log = Logging.Get<BallHelper>();
+        private static readonly Serilog.ILogger _log = Logging.Get<MatchBallHelper>();
 
         public static bool GetBall(MatchRoom matchRoom, sbyte squadNumber)
         {

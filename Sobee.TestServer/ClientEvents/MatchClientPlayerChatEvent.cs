@@ -34,7 +34,7 @@ namespace Sobee.TestServer.ClientEvents
             switch (chatInputMessage.MessageText)
             {
                 case "kickoff":
-                    PositioningHelper.ChangePosition(matchRoom, MatchFieldPositioning.Kickoff);
+                    MatchPositioningHelper.ChangePosition(matchRoom, MatchFieldPositioning.Kickoff);
                     return;
                 case "phase":
                     matchPlayer.SendMessage(new ChatSystemMessage($"Phase: {matchRoom.MatchInformation.PhaseInfo.MatchPhase}", ChatSystemMessageType.General));
