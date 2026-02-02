@@ -2,7 +2,7 @@
 using Sobee.Common;
 using Sobee.Network;
 using Sobee.TestServer.Auth;
-using Sobee.TestServer.Helpers;
+using Sobee.TestServer.MatchHelpers;
 using Sobee.TestServer.Messages.Player;
 
 namespace Sobee.TestServer.Match

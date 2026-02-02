@@ -2,7 +2,7 @@
 using Sobee.Common;
 using Sobee.Network;
 using Sobee.Network.Messaging;
-using Sobee.TestServer.ClientEvents;
+using Sobee.TestServer.AuthEvents;
 
 namespace Sobee.TestServer.Auth
 {

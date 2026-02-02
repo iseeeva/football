@@ -3,7 +3,7 @@ using Sobee.Common;
 using Sobee.TestServer.Match;
 using Sobee.TestServer.MatchComponents;
 using Sobee.TestServer.Messages.Ball;
-namespace Sobee.TestServer.Helpers
+namespace Sobee.TestServer.MatchHelpers
 {
     public class MatchBallHelper
     {
@@ -33,7 +33,7 @@ namespace Sobee.TestServer.Helpers
             }
 
             var playerPosition = playerMatchInformation.Position;
-            matchRoom.MatchInformation.BallPosition = new Vector3(playerPosition.X, playerPosition.Y, (float)ballComponent.BallBoundary.Z);
+            matchRoom.MatchInformation.BallPosition = new Vector3(playerPosition.X, playerPosition.Y, ballComponent.BallBoundary.Z);
 
             var playerDirection = playerMatchInformation.Direction;
             matchRoom.MatchInformation.BallVelocity = Vector3.Zero;

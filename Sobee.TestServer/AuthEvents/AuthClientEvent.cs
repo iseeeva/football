@@ -4,7 +4,7 @@ using Sobee.Network.Messaging;
 using Sobee.TestServer.Auth;
 using Sobee.TestServer.Messages.Auth;
 
-namespace Sobee.TestServer.ClientEvents
+namespace Sobee.TestServer.AuthEvents
 {
     public class AuthClientEvent
     {
@@ -18,20 +18,21 @@ namespace Sobee.TestServer.ClientEvents
 
             if (authRoom.ConnectedHub is not Hub hub) return;
 
-            // TODO: Process auth information here
+            // TODO: Process auth information here when database integration is done
             authUser.AuthInformation = authInformation;
 
+            // TODO: Remove this temporary code after implementing proper matchmaking flow
             #region Temporary
             if (authUser.Socket == null)
             {
-                _log.Error("[TEMPORARY] Auth session socket is null.");
+                _log.Error("[AuthInformationReceived] Auth session socket is null.");
                 return;
             }
 
             if (hub.RoomManager.TryCreate(out var matchRoom))
             {
                 if (!matchRoom.Players.TryCreate(authUser))
-                    _log.Error("[TEMPORARY] Failed to add auth user {authId} to match room.", authUser.Id);
+                    _log.Error("[AuthInformationReceived] Failed to add auth user {authId} to match room.", authUser.Id);
             }
             #endregion
 

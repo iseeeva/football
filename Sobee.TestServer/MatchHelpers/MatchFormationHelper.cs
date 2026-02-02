@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using Sobee.TestServer.Messages;
 
-namespace Sobee.TestServer.Helpers
+namespace Sobee.TestServer.MatchHelpers
 {
     public class MatchFormationHelper
     {

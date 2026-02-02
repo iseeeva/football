@@ -7,7 +7,7 @@ using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Match;
 using Sobee.TestServer.Messages.Player;
 
-namespace Sobee.TestServer.Helpers
+namespace Sobee.TestServer.MatchHelpers
 {
     public class MatchPositioningHelper
     {

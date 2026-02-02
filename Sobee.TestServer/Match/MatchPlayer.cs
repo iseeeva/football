@@ -2,7 +2,7 @@
 using Sobee.Common;
 using Sobee.Network;
 using Sobee.Network.Messaging;
-using Sobee.TestServer.ClientEvents;
+using Sobee.TestServer.MatchEvents;
 using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Auth;
 using Sobee.TestServer.Messages.Chat;

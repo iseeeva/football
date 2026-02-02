@@ -3,7 +3,7 @@ using Sobee.Network.Messaging;
 using Sobee.TestServer.Match;
 using Sobee.TestServer.Messages.Player;
 
-namespace Sobee.TestServer.ClientEvents
+namespace Sobee.TestServer.MatchEvents
 {
     public class MatchClientPlayerEvent
     {

@@ -5,7 +5,7 @@ using Sobee.TestServer.Match;
 using Sobee.TestServer.MatchComponents;
 using Sobee.TestServer.Messages.Player;
 
-namespace Sobee.TestServer.ClientEvents
+namespace Sobee.TestServer.MatchEvents
 {
     public class MatchClientPlayerMovementEvent
     {

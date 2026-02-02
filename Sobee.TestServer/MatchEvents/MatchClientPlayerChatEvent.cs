@@ -1,11 +1,11 @@
 ﻿using Sobee.Common;
 using Sobee.Network.Messaging;
 using Sobee.Serialization.GameServer;
-using Sobee.TestServer.Helpers;
 using Sobee.TestServer.Match;
+using Sobee.TestServer.MatchHelpers;
 using Sobee.TestServer.Messages.Chat;
 
-namespace Sobee.TestServer.ClientEvents
+namespace Sobee.TestServer.MatchEvents
 {
     public class MatchClientPlayerChatEvent
     {
@@ -19,14 +19,14 @@ namespace Sobee.TestServer.ClientEvents
 
             if (matchRoom.MatchInformation == null)
             {
-                _log.Warning("[ChatMessageReceived] MatchInformation is null");
+                _log.Warning("[ChatPlayerInputReceived] MatchInformation is null");
                 return;
             }
 
             var playerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
             if (playerMatchInfo == null)
             {
-                _log.Warning("[ChatMessageReceived] Chat sender not found (Id={playerId})", matchPlayer.Id);
+                _log.Warning("[ChatPlayerInputReceived] Chat sender not found (Id={playerId})", matchPlayer.Id);
                 return;
             }
 
@@ -46,7 +46,7 @@ namespace Sobee.TestServer.ClientEvents
             }
 
             matchRoom.Players.SendMessage(new ChatPlayerMessage(matchRoom.MatchInformation.SittingIdInfo.GetIdFromSitting(playerMatchInfo.StadiumSitting), playerMatchInfo.PlayerId, chatInputMessage.MessageText, 0));
-            _log.Information("[ChatMessageReceived] {playerId}: {messageText}", playerMatchInfo.PlayerId, chatInputMessage);
+            _log.Information("[ChatPlayerInputReceived] {playerId}: {messageText}", playerMatchInfo.PlayerId, chatInputMessage);
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System.Numerics;
 using Sobee.Common;
 using Sobee.Serialization.GameServer;
-using Sobee.TestServer.Helpers;
 using Sobee.TestServer.Match;
+using Sobee.TestServer.MatchHelpers;
 using Sobee.TestServer.Messages.Match;
 
 namespace Sobee.TestServer.MatchComponents
