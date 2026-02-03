@@ -119,6 +119,29 @@ namespace Sobee.TestServer.MatchEvents
             matchRoom.MatchInformation.FieldPositioning = MatchFieldPositioning.Running;
         }
 
+        public static void BallInterceptReceived(object? sender, MessageEventArgs e)
+        {
+            if (sender is not MatchRoom matchRoom) return;
+            if (e.handler is not MatchPlayer matchPlayer) return;
+            if (e.message is not BallInterceptMessage ballIntercept) return;
+
+            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
+            if (ballComponent == null)
+            {
+                _log.Warning("[BallInterceptReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
+                return;
+            }
+
+            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
+            if (movementComponent == null)
+            {
+                _log.Warning("[BallInterceptReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
+                return;
+            }
+
+            throw new NotImplementedException("[BallInterceptReceived] This event not implemented yet.");
+        }
+
         public static void BallLongPassReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
