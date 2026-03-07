@@ -14,7 +14,7 @@ namespace Sobee.TestServer.AuthEvents
         {
             //if (sender is not AuthCommunication Hub) return;
             if (e.handler is not Session Session) return;
-            if (e.message is not AuthInformationMessage Message) return;
+            if (e.message is not AuthInformationRxMessage Message) return;
 
             _log.Information($"[GlobalTest] {Session.Id} - {Message}");
         }
@@ -23,7 +23,7 @@ namespace Sobee.TestServer.AuthEvents
         {
             //if (sender is not AuthCommunication Hub) return;
             if (e.handler is not Session Session) return;
-            if (e.message is not AuthInformationMessage Message) return;
+            if (e.message is not AuthInformationRxMessage Message) return;
 
             _log.Information($"[SessionTest] {Session.Id} - {Message}");
         }

@@ -15,22 +15,22 @@ namespace Sobee.TestServer.Match
         private static readonly ILogger _log = Logging.Get<MatchPlayer>();
         private bool _isDisposed;
 
-        public AuthInformationMessage AuthInformation;
+        public AuthInformationRxMessage AuthInformation;
 
         public MatchPlayer(
             SocketWrapper userSocket,
-            AuthInformationMessage authInformation,
+            AuthInformationRxMessage authInformation,
             MessageCommunication communication
         ) : base(userSocket, communication)
         {
             SessionType = SessionType.User;
             AuthInformation = authInformation;
 
-            communication.AddSessionHandler<PlayerHeartbeatMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerEvent.PlayerHeartbeatReceived));
-            communication.AddSessionHandler<PlayerMatchStateAlertMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerEvent.PlayerMatchStateAlertReceived));
-            communication.AddSessionHandler<PlayerMoveKeyDownMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerMovementEvent.PlayerMoveKeyDownReceived));
-            communication.AddSessionHandler<PlayerMoveKeyUpMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerMovementEvent.PlayerMoveKeyUpReceived));
-            communication.AddSessionHandler<ChatPlayerInputMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerChatEvent.ChatPlayerInputReceived));
+            communication.AddSessionHandler<PlayerHeartbeatRxMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerEvent.PlayerHeartbeatReceived));
+            communication.AddSessionHandler<PlayerMatchStateAlertRxMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerEvent.PlayerMatchStateAlertReceived));
+            communication.AddSessionHandler<PlayerMoveKeyDownRxMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerMovementEvent.PlayerMoveKeyDownReceived));
+            communication.AddSessionHandler<PlayerMoveKeyUpRxMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerMovementEvent.PlayerMoveKeyUpReceived));
+            communication.AddSessionHandler<ChatPlayerTextRxMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerChatEvent.ChatPlayerInputReceived));
 
             _log.Debug("{id} initialized.", Id);
         }

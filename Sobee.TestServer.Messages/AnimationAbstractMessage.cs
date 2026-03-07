@@ -1,16 +1,15 @@
 ﻿using Sobee.Network.Messaging;
-using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages
 {
-    public abstract class AnimationMessageAbstract : Message
+    public abstract class AnimationAbstractMessage : Message
     {
-        public AnimationMessageAbstract(BinaryReader gclass315_0) : base(gclass315_0)
+        public AnimationAbstractMessage(BinaryReader gclass315_0) : base(gclass315_0)
         {
             this.AnimationType = (AnimationType)gclass315_0.method_15();
         }
 
-        public AnimationMessageAbstract(AnimationType animationType_1)
+        public AnimationAbstractMessage(AnimationType animationType_1)
         {
             this.AnimationType = animationType_1;
         }

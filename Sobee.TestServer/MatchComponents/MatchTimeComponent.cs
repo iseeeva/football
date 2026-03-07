@@ -19,7 +19,7 @@ namespace Sobee.TestServer.MatchComponents
             var matchInfo = _matchRoom.MatchInformation;
             var phaseInfo = matchInfo.PhaseInfo;
 
-            if (matchInfo.MatchState == MatchStateType.Running)
+            if (matchInfo.MatchState == MatchState.Running)
             {
                 //if (matchInfo.TimeMultiplier <= 0)
                 //{

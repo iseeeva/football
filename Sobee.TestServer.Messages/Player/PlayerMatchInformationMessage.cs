@@ -16,7 +16,7 @@ namespace Sobee.TestServer.Messages.Player
         public string UserName = string.Empty;
         public int Stamina;
         public StadiumSitting StadiumSitting;
-        /// <summary>(splited)</summary>
+        /// <summary> not absolute </summary>
         public PlayerSquadNumber SquadNumber;
         public bool IsMoving;
         public bool UnkBool0;

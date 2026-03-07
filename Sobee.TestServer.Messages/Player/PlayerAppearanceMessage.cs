@@ -6,66 +6,66 @@ namespace Sobee.TestServer.Messages.Player
     [MessageAttribute(8993)]
     public class PlayerAppearanceMessage : Message
     {
-        public byte Part0 { get; set; }
-        public byte Part1 { get; set; }
-        public byte Part2 { get; set; }
-        public byte Part3 { get; set; }
-        public byte Part4 { get; set; }
-        public byte Part5 { get; set; }
-        public byte Part6 { get; set; }
-        public byte Part7 { get; set; }
-        public byte Part8 { get; set; }
-        public byte Part9 { get; set; }
-        public byte Part10 { get; set; }
-        public byte Part11 { get; set; }
-        public byte Part12 { get; set; }
-        public byte Part13 { get; set; }
-        public byte Part14 { get; set; }
-        public byte Part15 { get; set; }
-        public byte Part16 { get; set; }
-        public byte Part17 { get; set; }
-        public byte Part18 { get; set; }
-        public byte Part19 { get; set; }
-        public byte Part20 { get; set; }
-        public byte Part21 { get; set; }
-        public byte Part22 { get; set; }
-        public byte Part23 { get; set; }
-        public byte Part24 { get; set; }
-        public byte Part25 { get; set; }
-        public byte Part26 { get; set; }
-        public byte Part27 { get; set; }
-        public byte Part28 { get; set; }
-        public byte Part29 { get; set; }
-        public byte Part30 { get; set; }
-        public byte Part31 { get; set; }
-        public byte Part32 { get; set; }
-        public byte Part33 { get; set; }
-        public byte Part34 { get; set; }
-        public byte Part35 { get; set; }
-        public byte Part36 { get; set; }
-        public byte Part37 { get; set; }
-        public byte Part38 { get; set; }
-        public byte Part39 { get; set; }
-        public byte Part40 { get; set; }
-        public byte Part41 { get; set; }
-        public byte Part42 { get; set; }
-        public byte Part43 { get; set; }
-        public byte Part44 { get; set; }
-        public byte Part45 { get; set; }
-        public byte Part46 { get; set; }
-        public byte Part47 { get; set; }
-        public byte Part48 { get; set; }
-        public byte Part49 { get; set; }
-        public byte Part50 { get; set; }
-        public byte Part51 { get; set; }
-        public byte Part52 { get; set; }
-        public byte Part53 { get; set; }
-        public byte Part54 { get; set; }
-        public byte Part55 { get; set; }
-        public byte Part56 { get; set; }
-        public byte Part57 { get; set; }
-        public byte Part58 { get; set; }
-        public byte Part59 { get; set; }
+        public byte Part0 { get; private set; }
+        public byte Part1 { get; private set; }
+        public byte Part2 { get; private set; }
+        public byte Part3 { get; private set; }
+        public byte Part4 { get; private set; }
+        public byte Part5 { get; private set; }
+        public byte Part6 { get; private set; }
+        public byte Part7 { get; private set; }
+        public byte Part8 { get; private set; }
+        public byte Part9 { get; private set; }
+        public byte Part10 { get; private set; }
+        public byte Part11 { get; private set; }
+        public byte Part12 { get; private set; }
+        public byte Part13 { get; private set; }
+        public byte Part14 { get; private set; }
+        public byte Part15 { get; private set; }
+        public byte Part16 { get; private set; }
+        public byte Part17 { get; private set; }
+        public byte Part18 { get; private set; }
+        public byte Part19 { get; private set; }
+        public byte Part20 { get; private set; }
+        public byte Part21 { get; private set; }
+        public byte Part22 { get; private set; }
+        public byte Part23 { get; private set; }
+        public byte Part24 { get; private set; }
+        public byte Part25 { get; private set; }
+        public byte Part26 { get; private set; }
+        public byte Part27 { get; private set; }
+        public byte Part28 { get; private set; }
+        public byte Part29 { get; private set; }
+        public byte Part30 { get; private set; }
+        public byte Part31 { get; private set; }
+        public byte Part32 { get; private set; }
+        public byte Part33 { get; private set; }
+        public byte Part34 { get; private set; }
+        public byte Part35 { get; private set; }
+        public byte Part36 { get; private set; }
+        public byte Part37 { get; private set; }
+        public byte Part38 { get; private set; }
+        public byte Part39 { get; private set; }
+        public byte Part40 { get; private set; }
+        public byte Part41 { get; private set; }
+        public byte Part42 { get; private set; }
+        public byte Part43 { get; private set; }
+        public byte Part44 { get; private set; }
+        public byte Part45 { get; private set; }
+        public byte Part46 { get; private set; }
+        public byte Part47 { get; private set; }
+        public byte Part48 { get; private set; }
+        public byte Part49 { get; private set; }
+        public byte Part50 { get; private set; }
+        public byte Part51 { get; private set; }
+        public byte Part52 { get; private set; }
+        public byte Part53 { get; private set; }
+        public byte Part54 { get; private set; }
+        public byte Part55 { get; private set; }
+        public byte Part56 { get; private set; }
+        public byte Part57 { get; private set; }
+        public byte Part58 { get; private set; }
+        public byte Part59 { get; private set; }
 
         public PlayerAppearanceMessage()
         {

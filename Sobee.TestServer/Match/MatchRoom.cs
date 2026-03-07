@@ -42,23 +42,23 @@ namespace Sobee.TestServer.Match
             Components.AddComponent(new MatchTimeComponent(this));
 
             // === Player Messages ===
-            RegisterMessageEvent<PlayerHeartbeatMessage>(OnReceivedMessage);
-            RegisterMessageEvent<PlayerMoveKeyUpMessage>(OnReceivedMessage);
-            RegisterMessageEvent<PlayerMoveKeyDownMessage>(OnReceivedMessage);
-            RegisterMessageEvent<PlayerMatchStateAlertMessage>(OnReceivedMessage);
-            RegisterMessageEvent<ChatPlayerInputMessage>(OnReceivedMessage);
+            RegisterMessageEvent<PlayerHeartbeatRxMessage>(OnReceivedMessage);
+            RegisterMessageEvent<PlayerMoveKeyUpRxMessage>(OnReceivedMessage);
+            RegisterMessageEvent<PlayerMoveKeyDownRxMessage>(OnReceivedMessage);
+            RegisterMessageEvent<PlayerMatchStateAlertRxMessage>(OnReceivedMessage);
+            RegisterMessageEvent<ChatPlayerTextRxMessage>(OnReceivedMessage);
 
             // === Match Messages ===
-            RegisterMessageEvent<BallPositioningMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallPositioningMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallPositioningReceived));
-            RegisterMessageEvent<BallInterceptMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallInterceptMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallInterceptReceived));
-            RegisterMessageEvent<BallPassMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallPassMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallPassReceived));
-            RegisterMessageEvent<BallLongPassMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallLongPassMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallLongPassReceived));
-            RegisterMessageEvent<BallShootMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallShootMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallShootReceived));
+            RegisterMessageEvent<BallPositioningRxMessage>(OnReceivedMessage);
+            AddGlobalHandler<BallPositioningRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallPositioningReceived));
+            RegisterMessageEvent<BallInterceptRxMessage>(OnReceivedMessage);
+            AddGlobalHandler<BallInterceptRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallInterceptReceived));
+            RegisterMessageEvent<BallPassRxMessage>(OnReceivedMessage);
+            AddGlobalHandler<BallPassRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallPassReceived));
+            RegisterMessageEvent<BallLongPassRxMessage>(OnReceivedMessage);
+            AddGlobalHandler<BallLongPassRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallLongPassReceived));
+            RegisterMessageEvent<BallShootRxMessage>(OnReceivedMessage);
+            AddGlobalHandler<BallShootRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallShootReceived));
 
             _log.Debug("{id} initialized.", Id);
         }

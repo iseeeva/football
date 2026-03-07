@@ -29,8 +29,8 @@ namespace Sobee.TestServer.MatchEvents
                 return;
             }
 
-            matchRoom.Players.SendMessage(new PlayerJoinMessage(matchInformation));
-            matchRoom.Players.SendMessage(new ChatSystemMessage(
+            matchRoom.Players.SendMessage(new PlayerJoinTxMessage(matchInformation));
+            matchRoom.Players.SendMessage(new ChatSystemTextTxMessage(
                 $"{matchInformation.PlayerName} connected. (total player: {matchRoom.Players.Count})",
                 ChatSystemMessageType.Anounce
             ));
@@ -44,21 +44,21 @@ namespace Sobee.TestServer.MatchEvents
 
             // Wait for heartbeat message before invoke the match event.
             // Heartbeat is the first message sent by the client after going match screen.
-            matchPlayer.WaitForMessage<PlayerHeartbeatMessage>((player, heartbeat) =>
+            matchPlayer.WaitForMessage<PlayerHeartbeatRxMessage>((player, heartbeat) =>
             {
-                player.SendMessage(new ChatSystemMessage(
+                player.SendMessage(new ChatSystemTextTxMessage(
                     $"[PlayerJoinReceived] Room Id: {matchRoom.Id}",
                     ChatSystemMessageType.General));
 
-                player.SendMessage(new ChatSystemMessage(
+                player.SendMessage(new ChatSystemTextTxMessage(
                     $"[PlayerJoinReceived] Your Id: {player.Id}",
                     ChatSystemMessageType.General));
 
-                player.SendMessage(new ChatSystemMessage(
+                player.SendMessage(new ChatSystemTextTxMessage(
                     $"[PlayerJoinReceived] (SessionType: {player.SessionType})",
                     ChatSystemMessageType.General));
 
-                player.SendMessage(new ChatSystemMessage(
+                player.SendMessage(new ChatSystemTextTxMessage(
                     $"[PlayerJoinReceived] (PlayerMatchInformation: {matchInformation})",
                     ChatSystemMessageType.General));
             });
@@ -84,11 +84,11 @@ namespace Sobee.TestServer.MatchEvents
             {
                 matchRoom.MatchInformation.BallOwner = -1;
                 matchRoom.MatchInformation.BallVelocity = Vector3.Zero;
-                matchRoom.Players.SendMessage(new BallUpdateMessage(matchRoom.MatchInformation.BallPosition, new Vector3(0, 0, 0)));
+                matchRoom.Players.SendMessage(new BallUpdateTxMessage(matchRoom.MatchInformation.BallPosition, new Vector3(0, 0, 0)));
             }
 
-            matchRoom.Players.SendMessage(new PlayerLeaveMessage(matchPlayerInformation.GetAbsoluteSquadNumber()));
-            matchRoom.Players.SendMessage(new ChatSystemMessage(
+            matchRoom.Players.SendMessage(new PlayerLeaveTxMessage(matchPlayerInformation.GetAbsoluteSquadNumber()));
+            matchRoom.Players.SendMessage(new ChatSystemTextTxMessage(
                 $"{matchPlayerInformation.PlayerName} disconnected. (total player: {matchRoom.Players.Count})",
                 ChatSystemMessageType.Anounce
             ));

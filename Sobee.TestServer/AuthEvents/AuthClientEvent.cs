@@ -14,7 +14,7 @@ namespace Sobee.TestServer.AuthEvents
         {
             if (sender is not AuthRoom authRoom) return;
             if (e.handler is not AuthUser authUser) return;
-            if (e.message is not AuthInformationMessage authInformation) return;
+            if (e.message is not AuthInformationRxMessage authInformation) return;
 
             if (authRoom.ConnectedHub is not Hub hub) return;
 

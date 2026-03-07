@@ -18,7 +18,7 @@ namespace Sobee.TestServer.MatchEvents
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallPositioningMessage ballPositioningHit) return;
+            if (e.message is not BallPositioningRxMessage ballPositioningHit) return;
 
             var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
@@ -60,17 +60,17 @@ namespace Sobee.TestServer.MatchEvents
             switch (ballPositioningHit.HitSubType)
             {
                 case HitSubType.Shoot:
-                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallShootMessage(ballPositioningHit.Strength, ballPositioningHit.Direction));
+                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallShootRxMessage(ballPositioningHit.HitStrength, ballPositioningHit.HitDirection));
                     break;
 
                 case HitSubType.LongPass: // Client PositioningHit icin squadNumber gondermiyor?
                     // TODO: BallOwner ondan onceki squadNumber'a pas veriyor. SquadNumber'lar pozisyonlara gore rastgele olursa sorun cikarir.
-                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallLongPassMessage((sbyte)(matchRoom.MatchInformation.BallOwner - 1)));
+                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallLongPassRxMessage((sbyte)(matchRoom.MatchInformation.BallOwner - 1)));
                     break;
 
                 case HitSubType.Pass: // Client PositioningHit icin squadNumber gondermiyor?
                     // TODO: BallOwner ondan onceki squadNumber'a pas veriyor. SquadNumber'lar pozisyonlara gore rastgele olursa sorun cikarir.
-                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallPassMessage((sbyte)(matchRoom.MatchInformation.BallOwner - 1)));
+                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallPassRxMessage((sbyte)(matchRoom.MatchInformation.BallOwner - 1)));
                     break;
 
                 case HitSubType.Invalid:
@@ -82,14 +82,14 @@ namespace Sobee.TestServer.MatchEvents
 
             if (!isHitSubDispatch)
             {
-                matchPlayer.SendMessage(new Messages.Chat.ChatSystemMessage("[BallPositioningReceived] Could not dispatch HitSub event.", Messages.Chat.ChatSystemMessageType.General));
+                matchPlayer.SendMessage(new Messages.Chat.ChatSystemTextTxMessage("[BallPositioningReceived] Could not dispatch HitSub event.", Messages.Chat.ChatSystemMessageType.General));
                 _log.Warning("[BallPositioningReceived] Could not dispatch HitSub event for player {playerId}.", matchPlayer.Id);
                 return;
             }
 
             if (matchRoom.MatchInformation.BallVelocity == Vector3.Zero)
             {
-                matchPlayer.SendMessage(new Messages.Chat.ChatSystemMessage("[BallPositioningReceived] BallVelocity is zero. HitSub possibly failed.", Messages.Chat.ChatSystemMessageType.General));
+                matchPlayer.SendMessage(new Messages.Chat.ChatSystemTextTxMessage("[BallPositioningReceived] BallVelocity is zero. HitSub possibly failed.", Messages.Chat.ChatSystemMessageType.General));
                 _log.Warning("[BallPositioningReceived] BallVelocity is zero after HitSub event for player {playerId}.", matchPlayer.Id);
                 return;
             }
@@ -98,7 +98,7 @@ namespace Sobee.TestServer.MatchEvents
             switch (matchRoom.MatchInformation.FieldPositioning)
             {
                 case MatchFieldPositioning.Kickoff:
-                    matchRoom.Players.SendMessage(new BallKickoffHitMessage(
+                    matchRoom.Players.SendMessage(new BallKickoffTxMessage(
                         matchRoom.MatchInformation.BallVelocity,
                         AnimationType.ShootLeft
                     ));
@@ -110,12 +110,12 @@ namespace Sobee.TestServer.MatchEvents
                     return;
             }
 
-            matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage($"[BallPositioningReceived] {matchRoom.MatchInformation.FieldPositioning} by {ballOwnerMatchInfo.PlayerName}", Messages.Chat.ChatSystemMessageType.General));
-            matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemMessage($"[BallPositioningReceived] Strength: {ballPositioningHit.Strength}, HitSubType: {ballPositioningHit.HitSubType}, Direction: {ballPositioningHit.Direction}", Messages.Chat.ChatSystemMessageType.General));
+            matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemTextTxMessage($"[BallPositioningReceived] {matchRoom.MatchInformation.FieldPositioning} by {ballOwnerMatchInfo.PlayerName}", Messages.Chat.ChatSystemMessageType.General));
+            matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemTextTxMessage($"[BallPositioningReceived] Strength: {ballPositioningHit.HitStrength}, HitSubType: {ballPositioningHit.HitSubType}, Direction: {ballPositioningHit.HitDirection}", Messages.Chat.ChatSystemMessageType.General));
             _log.Information("[BallPositioningReceived] Player {playerId} hit the ball during {fieldPos}.", ballOwnerMatchInfo.PlayerId, matchRoom.MatchInformation.FieldPositioning);
 
             matchRoom.MatchInformation.BallOwner = -1;
-            matchRoom.MatchInformation.MatchState = MatchStateType.Running;
+            matchRoom.MatchInformation.MatchState = MatchState.Running;
             matchRoom.MatchInformation.FieldPositioning = MatchFieldPositioning.Running;
         }
 
@@ -123,7 +123,7 @@ namespace Sobee.TestServer.MatchEvents
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallInterceptMessage ballIntercept) return;
+            if (e.message is not BallInterceptRxMessage ballIntercept) return;
 
             var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
@@ -146,7 +146,7 @@ namespace Sobee.TestServer.MatchEvents
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallLongPassMessage ballLongPassMessage) return;
+            if (e.message is not BallLongPassRxMessage ballLongPassMessage) return;
 
             var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
@@ -205,9 +205,9 @@ namespace Sobee.TestServer.MatchEvents
             );
 
             // INFO: Bu kontrolün sebebi BallPositioning (PositioningHit)
-            if (matchRoom.MatchInformation.MatchState == MatchStateType.Running)
+            if (matchRoom.MatchInformation.MatchState == MatchState.Running)
             {
-                matchRoom.Players.SendMessage(new BallLongPassHitMessage(
+                matchRoom.Players.SendMessage(new BallLongPassTxMessage(
                     ballOwnerMatchInfo.GetAbsoluteSquadNumber(),
                     ballOwnerMatchInfo.Position,
                     ballOwnerMatchInfo.Direction,
@@ -229,7 +229,7 @@ namespace Sobee.TestServer.MatchEvents
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallPassMessage ballPassMessage) return;
+            if (e.message is not BallPassRxMessage ballPassMessage) return;
 
             var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
@@ -288,9 +288,9 @@ namespace Sobee.TestServer.MatchEvents
             );
 
             // INFO: Bu kontrolün sebebi BallPositioning (PositioningHit)
-            if (matchRoom.MatchInformation.MatchState == MatchStateType.Running)
+            if (matchRoom.MatchInformation.MatchState == MatchState.Running)
             {
-                matchRoom.Players.SendMessage(new BallPassHitMessage(
+                matchRoom.Players.SendMessage(new BallPassTxMessage(
                     ballOwnerMatchInfo.GetAbsoluteSquadNumber(),
                     ballOwnerMatchInfo.Position,
                     ballOwnerMatchInfo.Direction,
@@ -312,7 +312,7 @@ namespace Sobee.TestServer.MatchEvents
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallShootMessage ballShoot) return;
+            if (e.message is not BallShootRxMessage ballShoot) return;
 
             var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
@@ -344,10 +344,10 @@ namespace Sobee.TestServer.MatchEvents
                 return;
             }
 
-            double ballSpeed = ballComponent.BallMaxSpeed * ballShoot.Strength;
+            double ballSpeed = ballComponent.BallMaxSpeed * ballShoot.ShootStrength;
             double ballHitSafe = ballComponent.BallCollisionRadius + movementComponent.MovementCollisionRadius + (ballSpeed * 0.05);
 
-            ballOwnerMatchInfo.Direction = ballShoot.Direction;
+            ballOwnerMatchInfo.Direction = ballShoot.ShootDirection;
 
             matchRoom.MatchInformation.BallPosition = new Vector3(
               (float)(ballOwnerMatchInfo.Position.X + ballOwnerMatchInfo.Direction.X * ballHitSafe),
@@ -356,15 +356,15 @@ namespace Sobee.TestServer.MatchEvents
             );
 
             matchRoom.MatchInformation.BallVelocity = new Vector3(
-              (float)(ballShoot.Direction.X * ballSpeed),
-              (float)(ballShoot.Direction.Y * ballSpeed),
+              (float)(ballShoot.ShootDirection.X * ballSpeed),
+              (float)(ballShoot.ShootDirection.Y * ballSpeed),
               (float)(ballSpeed * 0.5) // TODO: Hardcoded Z velocity daha iyi bir yere tasinmali.
             );
 
             // INFO: Bu kontrolün sebebi BallPositioning (PositioningHit)
-            if (matchRoom.MatchInformation.MatchState == MatchStateType.Running)
+            if (matchRoom.MatchInformation.MatchState == MatchState.Running)
             {
-                matchRoom.Players.SendMessage(new BallShootHitMessage(
+                matchRoom.Players.SendMessage(new BallShootTxMessage(
                     ballOwnerMatchInfo.GetAbsoluteSquadNumber(),
                     ballOwnerMatchInfo.Position,
                     ballOwnerMatchInfo.Direction,

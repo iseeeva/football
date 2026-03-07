@@ -69,7 +69,7 @@ namespace Sobee.TestServer.MatchComponents
                     );
                 }
 
-                _matchRoom.Players.SendMessage(new BallUpdateMessage(
+                _matchRoom.Players.SendMessage(new BallUpdateTxMessage(
                     matchInfo.BallPosition,
                     matchInfo.BallVelocity
                 ));

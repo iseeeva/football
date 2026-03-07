@@ -22,7 +22,7 @@ namespace Sobee.TestServer.Messages
         }
 
         // Token: 0x06000151 RID: 337 RVA: 0x000032EA File Offset: 0x000014EA
-        public MatchUIEventType method_2()
+        public MatchUIEvent method_2()
         {
             return matchUIEventType_0;
         }
@@ -37,13 +37,13 @@ namespace Sobee.TestServer.Messages
         public GClass162(BinaryReader gclass315_0)
         {
             string_0 = gclass315_0.method_14();
-            matchUIEventType_0 = (MatchUIEventType)gclass315_0.method_2();
+            matchUIEventType_0 = (MatchUIEvent)gclass315_0.method_2();
             sbyte_0 = gclass315_0.method_11();
             float_0 = gclass315_0.method_12();
         }
 
         // Token: 0x06000154 RID: 340 RVA: 0x00003332 File Offset: 0x00001532
-        public GClass162(double double_0, MatchUIEventType matchUIEventType_1, sbyte sbyte_1, string string_1)
+        public GClass162(double double_0, MatchUIEvent matchUIEventType_1, sbyte sbyte_1, string string_1)
         {
             matchUIEventType_0 = matchUIEventType_1;
             string_0 = string_1;
@@ -64,7 +64,7 @@ namespace Sobee.TestServer.Messages
         private string string_0;
 
         // Token: 0x040004E6 RID: 1254
-        private MatchUIEventType matchUIEventType_0;
+        private MatchUIEvent matchUIEventType_0;
 
         // Token: 0x040004E7 RID: 1255
         private sbyte sbyte_0;

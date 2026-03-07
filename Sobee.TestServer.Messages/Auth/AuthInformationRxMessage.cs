@@ -5,21 +5,21 @@ using Sobee.TestServer.Messages.Match;
 namespace Sobee.TestServer.Messages.Auth
 {
     [MessageAttribute(29475)]
-    public sealed class AuthInformationMessage : Message
+    public sealed class AuthInformationRxMessage : Message
     {
-        public Version Version { get; }
-        public long Unknown { get; }
-        public string Password { get; }
-        public string Cpu { get; }
-        public string Gpu { get; }
-        public int Ram { get; }
-        public string Software { get; }
-        public string Mac { get; }
-        public MatchEntryNumber Entry { get; }
-        public string Session { get; }
-        public bool Autorun { get; }
+        public readonly Version Version;
+        public readonly long Unknown;
+        public readonly string Password;
+        public readonly string Cpu;
+        public readonly string Gpu;
+        public readonly int Ram;
+        public readonly string Software;
+        public readonly string Mac;
+        public readonly MatchEntryNumber Entry;
+        public readonly string Session;
+        public readonly bool Autorun;
 
-        public AuthInformationMessage(BinaryReader reader) : base(reader)
+        public AuthInformationRxMessage(BinaryReader reader) : base(reader)
         {
             Version = reader.method_24();
             Unknown = reader.method_10();
@@ -34,7 +34,7 @@ namespace Sobee.TestServer.Messages.Auth
             Autorun = reader.method_1();
         }
 
-        public AuthInformationMessage(
+        public AuthInformationRxMessage(
             Version version,
             long unknown,
             string password,

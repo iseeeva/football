@@ -21,8 +21,8 @@ namespace Sobee.TestServer.Auth
             ConnectedHub = connectedHub;
 
             // Bu handler ın bütün sessionlardan gelen mesajları işlemesi gerekiyor.
-            RegisterMessageEvent<Messages.Auth.AuthInformationMessage>(OnReceivedMessage);
-            AddGlobalHandler<Messages.Auth.AuthInformationMessage>(new EventHandler<MessageEventArgs>(AuthClientEvent.AuthInformationReceived));
+            RegisterMessageEvent<Messages.Auth.AuthInformationRxMessage>(OnReceivedMessage);
+            AddGlobalHandler<Messages.Auth.AuthInformationRxMessage>(new EventHandler<MessageEventArgs>(AuthClientEvent.AuthInformationReceived));
 
             _log.Debug("{id} initialized.", Id);
         }

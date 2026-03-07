@@ -61,7 +61,7 @@ namespace Sobee.TestServer.MatchHelpers
             ApplyDefaultToUnuseds(formation.Home.Positions, formation.Home.Directions, matchInfo.HomePlayer.Count);
             ApplyDefaultToUnuseds(formation.Away.Positions, formation.Away.Directions, matchInfo.AwayPlayer.Count);
 
-            matchInfo.MatchState = MatchStateType.Positioning;
+            matchInfo.MatchState = MatchState.Positioning;
             matchInfo.FieldPositioning = type;
 
             ApplyPositions(matchInfo.HomePlayer, formation.Home);

@@ -15,7 +15,7 @@ namespace Sobee.TestServer.MatchEvents
         {
             if (sender is not MatchRoom match) return;
             if (e.handler is not MatchPlayer player) return;
-            if (e.message is not PlayerMoveKeyDownMessage moveKeyDown) return;
+            if (e.message is not PlayerMoveKeyDownRxMessage moveKeyDown) return;
 
             var movementComponent = match.Components.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
@@ -33,14 +33,14 @@ namespace Sobee.TestServer.MatchEvents
 
             float movementSpeed = (float)(moveKeyDown.IsSprint ? movementComponent.MovementSprintSpeed : movementComponent.MovementWalkSpeed);
 
-            playerMatchInfo.Direction = Vector2.Normalize(moveKeyDown.Velocity);
+            playerMatchInfo.Direction = Vector2.Normalize(moveKeyDown.Direction);
             playerMatchInfo.Velocity = new Vector3(
                 playerMatchInfo.Direction.X * movementSpeed,
                 playerMatchInfo.Direction.Y * movementSpeed,
                 0f
             );
 
-            match.Players.SendMessage(new PlayerMoveMessage(
+            match.Players.SendMessage(new PlayerMoveTxMessage(
                 playerMatchInfo.GetAbsoluteSquadNumber(),
                 playerMatchInfo.Position,
                 new Vector2(playerMatchInfo.Velocity.X, playerMatchInfo.Velocity.Y),
@@ -57,7 +57,7 @@ namespace Sobee.TestServer.MatchEvents
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not PlayerMoveKeyUpMessage moveReleased) return;
+            if (e.message is not PlayerMoveKeyUpRxMessage moveReleased) return;
 
             var playerInformation = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
             if (playerInformation == null)
@@ -66,7 +66,7 @@ namespace Sobee.TestServer.MatchEvents
                 return;
             }
 
-            matchRoom.Players.SendMessage(new PlayerStopMessage(
+            matchRoom.Players.SendMessage(new PlayerStopTxMessage(
                 playerInformation.GetAbsoluteSquadNumber(),
                 playerInformation.Position,
                 playerInformation.Direction,

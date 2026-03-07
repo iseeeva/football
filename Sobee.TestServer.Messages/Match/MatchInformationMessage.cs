@@ -31,7 +31,7 @@ namespace Sobee.TestServer.Messages.Match
         /// <summary> Scenario information of the match </summary>
         public readonly ScenarioInfo ScenarioInfo;
         /// <summary> State of the match </summary>
-        public MatchStateType MatchState;
+        public MatchState MatchState;
         /// <summary> Field positioning of the match </summary>
         public MatchFieldPositioning FieldPositioning;
 
@@ -67,7 +67,7 @@ namespace Sobee.TestServer.Messages.Match
             BallPosition = Vector3.Zero;
             BallVelocity = Vector3.Zero;
 
-            MatchState = MatchStateType.Positioning;
+            MatchState = MatchState.Positioning;
             FieldPositioning = MatchFieldPositioning.Kickoff;
 
             SessionRights = new UserSessionRights();
@@ -124,7 +124,7 @@ namespace Sobee.TestServer.Messages.Match
 
             BallPosition = gclass315_0.method_20();
             BallVelocity = gclass315_0.method_20();
-            MatchState = (MatchStateType)gclass315_0.method_9();
+            MatchState = (MatchState)gclass315_0.method_9();
             FieldPositioning = (MatchFieldPositioning)gclass315_0.method_9();
             PhaseInfo = (PhaseInfo)gclass315_0.method_25();
             ScenarioInfo = (ScenarioInfo)gclass315_0.method_25();
@@ -172,7 +172,7 @@ namespace Sobee.TestServer.Messages.Match
             sbyte ballOwner,
             Vector3 vector3_2,
             Vector3 vector3_3,
-            MatchStateType matchStateType_1,
+            MatchState matchStateType_1,
             MatchFieldPositioning matchFieldPositioning_1,
             PhaseInfo gclass166_1,
             ScenarioInfo gclass170_1,

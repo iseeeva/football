@@ -4,16 +4,16 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Chat
 {
     [MessageAttribute(13335)]
-    public abstract class ChatBaseMessage : Message
+    public abstract class ChatPlayerTextAbstractMessage : Message
     {
-        public Guid TeamId { get; }
+        public readonly Guid TeamId;
 
-        public ChatBaseMessage(Guid teamId)
+        public ChatPlayerTextAbstractMessage(Guid teamId)
         {
             TeamId = teamId;
         }
 
-        public ChatBaseMessage(BinaryReader reader) : base(reader)
+        public ChatPlayerTextAbstractMessage(BinaryReader reader) : base(reader)
         {
             TeamId = GuidConverter.ConvertFromInt(reader.method_9());
         }

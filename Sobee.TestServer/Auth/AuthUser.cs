@@ -11,7 +11,7 @@ namespace Sobee.TestServer.Auth
         private static readonly ILogger _log = Logging.Get<AuthUser>();
         private bool _isDisposed;
 
-        public AuthInformationMessage? AuthInformation;
+        public AuthInformationRxMessage? AuthInformation;
 
         public AuthUser(
             SocketWrapper userSocket,

@@ -52,11 +52,11 @@ namespace Sobee.TestServer.Messages
             List<GClass162> list = new List<GClass162>();
             for (int i = 0; i < list_0.Count; i++)
             {
-                if (list_0[i].method_0() < 11 && list_0[i].method_2() == MatchUIEventType.Goal)
+                if (list_0[i].method_0() < 11 && list_0[i].method_2() == MatchUIEvent.Goal)
                 {
                     list.Add(list_0[i]);
                 }
-                if (list_0[i].method_0() > 10 && list_0[i].method_2() == MatchUIEventType.OwnGoal)
+                if (list_0[i].method_0() > 10 && list_0[i].method_2() == MatchUIEvent.OwnGoal)
                 {
                     list.Add(list_0[i]);
                 }
@@ -70,11 +70,11 @@ namespace Sobee.TestServer.Messages
             List<GClass162> list = new List<GClass162>();
             for (int i = 0; i < list_0.Count; i++)
             {
-                if (list_0[i].method_0() > 10 && list_0[i].method_2() == MatchUIEventType.Goal)
+                if (list_0[i].method_0() > 10 && list_0[i].method_2() == MatchUIEvent.Goal)
                 {
                     list.Add(list_0[i]);
                 }
-                if (list_0[i].method_0() < 11 && list_0[i].method_2() == MatchUIEventType.OwnGoal)
+                if (list_0[i].method_0() < 11 && list_0[i].method_2() == MatchUIEvent.OwnGoal)
                 {
                     list.Add(list_0[i]);
                 }
@@ -83,7 +83,7 @@ namespace Sobee.TestServer.Messages
         }
 
         // Token: 0x060003AA RID: 938 RVA: 0x0000E0BC File Offset: 0x0000C2BC
-        public List<GClass162> method_4(MatchUIEventType matchUIEventType_0)
+        public List<GClass162> method_4(MatchUIEvent matchUIEventType_0)
         {
             List<GClass162> list = new List<GClass162>();
             for (int i = 0; i < list_0.Count; i++)
@@ -97,7 +97,7 @@ namespace Sobee.TestServer.Messages
         }
 
         // Token: 0x060003AB RID: 939 RVA: 0x0000E10C File Offset: 0x0000C30C
-        public List<GClass162> method_5(MatchUIEventType matchUIEventType_0)
+        public List<GClass162> method_5(MatchUIEvent matchUIEventType_0)
         {
             List<GClass162> list = new List<GClass162>();
             for (int i = 0; i < list_0.Count; i++)
@@ -111,7 +111,7 @@ namespace Sobee.TestServer.Messages
         }
 
         // Token: 0x060003AC RID: 940 RVA: 0x0000E174 File Offset: 0x0000C374
-        public List<GClass162> method_6(MatchUIEventType matchUIEventType_0)
+        public List<GClass162> method_6(MatchUIEvent matchUIEventType_0)
         {
             List<GClass162> list = new List<GClass162>();
             for (int i = 0; i < list_0.Count; i++)
@@ -125,7 +125,7 @@ namespace Sobee.TestServer.Messages
         }
 
         // Token: 0x060003AD RID: 941 RVA: 0x0000E1DC File Offset: 0x0000C3DC
-        public List<GClass162> method_7(MatchUIEventType matchUIEventType_0, string string_0)
+        public List<GClass162> method_7(MatchUIEvent matchUIEventType_0, string string_0)
         {
             List<GClass162> list = new List<GClass162>();
             for (int i = 0; i < list_0.Count; i++)

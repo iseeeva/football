@@ -4,14 +4,16 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Player
 {
     [Message(49149)]
-    public class PlayerMatchStateAlertMessage : Message
+    public class PlayerMatchStateAlertRxMessage : Message
     {
-        public PlayerMatchStateAlertMessage(BinaryReader gclass315_0) : base(gclass315_0)
+        public readonly bool IsAlerted;
+
+        public PlayerMatchStateAlertRxMessage(BinaryReader gclass315_0) : base(gclass315_0)
         {
             IsAlerted = gclass315_0.method_1();
         }
 
-        public PlayerMatchStateAlertMessage(bool isAlerted)
+        public PlayerMatchStateAlertRxMessage(bool isAlerted)
         {
             IsAlerted = isAlerted;
         }
@@ -21,8 +23,5 @@ namespace Sobee.TestServer.Messages.Player
             base.Serialize(gclass316_0);
             gclass316_0.method_1(IsAlerted);
         }
-
-        public readonly bool IsAlerted;
     }
-
 }
