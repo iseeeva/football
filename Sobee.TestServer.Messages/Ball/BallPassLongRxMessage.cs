@@ -3,17 +3,17 @@ using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages.Ball
 {
-    [MessageAttribute(43635)]
-    public class BallPassRxMessage : Message
+    [MessageAttribute(17)]
+    public class BallPassLongRxMessage : Message
     {
         public readonly sbyte SquadNumber;
 
-        public BallPassRxMessage(BinaryReader reader) : base(reader)
+        public BallPassLongRxMessage(BinaryReader reader) : base(reader)
         {
             SquadNumber = reader.method_11();
         }
 
-        public BallPassRxMessage(sbyte squadNumber)
+        public BallPassLongRxMessage(sbyte squadNumber)
         {
             SquadNumber = squadNumber;
         }

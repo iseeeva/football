@@ -53,10 +53,12 @@ namespace Sobee.TestServer.Match
             AddGlobalHandler<BallPositioningRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallPositioningReceived));
             RegisterMessageEvent<BallInterceptRxMessage>(OnReceivedMessage);
             AddGlobalHandler<BallInterceptRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallInterceptReceived));
-            RegisterMessageEvent<BallPassRxMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallPassRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallPassReceived));
-            RegisterMessageEvent<BallLongPassRxMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallLongPassRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallLongPassReceived));
+            RegisterMessageEvent<BallPassNormalRxMessage>(OnReceivedMessage);
+            AddGlobalHandler<BallPassNormalRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallPassNormalReceived));
+            RegisterMessageEvent<BallPassThroughRxMessage>(OnReceivedMessage);
+            AddGlobalHandler<BallPassThroughRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallPassThroughReceived));
+            RegisterMessageEvent<BallPassLongRxMessage>(OnReceivedMessage);
+            AddGlobalHandler<BallPassLongRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallPassLongReceived));
             RegisterMessageEvent<BallShootRxMessage>(OnReceivedMessage);
             AddGlobalHandler<BallShootRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallShootReceived));
 

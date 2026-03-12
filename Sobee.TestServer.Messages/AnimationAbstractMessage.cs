@@ -4,22 +4,22 @@ namespace Sobee.TestServer.Messages
 {
     public abstract class AnimationAbstractMessage : Message
     {
-        public AnimationAbstractMessage(BinaryReader gclass315_0) : base(gclass315_0)
-        {
-            this.AnimationType = (AnimationType)gclass315_0.method_15();
-        }
-
-        public AnimationAbstractMessage(AnimationType animationType_1)
-        {
-            this.AnimationType = animationType_1;
-        }
-
-        public override void Serialize(BinaryWriter gclass316_0)
-        {
-            base.Serialize(gclass316_0);
-            gclass316_0.method_15((ushort)this.AnimationType);
-        }
-
         public AnimationType AnimationType;
+
+        public AnimationAbstractMessage(BinaryReader reader) : base(reader)
+        {
+            this.AnimationType = (AnimationType)reader.method_15();
+        }
+
+        public AnimationAbstractMessage(AnimationType animationType)
+        {
+            this.AnimationType = animationType;
+        }
+
+        public override void Serialize(BinaryWriter writer)
+        {
+            base.Serialize(writer);
+            writer.method_15((ushort)this.AnimationType);
+        }
     }
 }

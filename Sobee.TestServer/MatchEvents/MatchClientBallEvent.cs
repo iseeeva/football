@@ -65,12 +65,12 @@ namespace Sobee.TestServer.MatchEvents
 
                 case HitSubType.LongPass: // Client PositioningHit icin squadNumber gondermiyor?
                     // TODO: BallOwner ondan onceki squadNumber'a pas veriyor. SquadNumber'lar pozisyonlara gore rastgele olursa sorun cikarir.
-                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallLongPassRxMessage((sbyte)(matchRoom.MatchInformation.BallOwner - 1)));
+                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallPassLongRxMessage((sbyte)(matchRoom.MatchInformation.BallOwner - 1)));
                     break;
 
                 case HitSubType.Pass: // Client PositioningHit icin squadNumber gondermiyor?
                     // TODO: BallOwner ondan onceki squadNumber'a pas veriyor. SquadNumber'lar pozisyonlara gore rastgele olursa sorun cikarir.
-                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallPassRxMessage((sbyte)(matchRoom.MatchInformation.BallOwner - 1)));
+                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallPassNormalRxMessage((sbyte)(matchRoom.MatchInformation.BallOwner - 1)));
                     break;
 
                 case HitSubType.Invalid:
@@ -142,23 +142,23 @@ namespace Sobee.TestServer.MatchEvents
             throw new NotImplementedException("[BallInterceptReceived] This event not implemented yet.");
         }
 
-        public static void BallLongPassReceived(object? sender, MessageEventArgs e)
+        public static void BallPassLongReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallLongPassRxMessage ballLongPassMessage) return;
+            if (e.message is not BallPassLongRxMessage ballLongPassMessage) return;
 
             var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
-                _log.Warning("[BallLongPassReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
+                _log.Warning("[BallPassLongReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
             var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
-                _log.Warning("[BallLongPassReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
+                _log.Warning("[BallPassLongReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
@@ -166,14 +166,14 @@ namespace Sobee.TestServer.MatchEvents
             var ballOwnerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.BallOwner);
             if (ballOwnerMatchInfo == null || senderMatchInfo == null)
             {
-                _log.Warning("[BallLongPassReceived] Could not find player info in match.");
+                _log.Warning("[BallPassLongReceived] Could not find player info in match.");
                 return;
             }
 
             // Gonderen sadece ballOwner olsun.
             if (ballOwnerMatchInfo.PlayerId != senderMatchInfo.PlayerId)
             {
-                _log.Warning("[BallLongPassReceived] Player {playerId} is not the BallOwner {ballOwnerId}.", matchPlayer.Id, ballOwnerMatchInfo.PlayerId);
+                _log.Warning("[BallPassLongReceived] Player {playerId} is not the BallOwner {ballOwnerId}.", matchPlayer.Id, ballOwnerMatchInfo.PlayerId);
                 return;
             }
 
@@ -182,7 +182,7 @@ namespace Sobee.TestServer.MatchEvents
 
             if (passTargetMatchInfo == null)
             {
-                _log.Warning("[BallLongPassReceived] Could not find pass target with SquadNumber {squadNumber}.", ballLongPassMessage.SquadNumber);
+                _log.Warning("[BallPassLongReceived] Could not find pass target with SquadNumber {squadNumber}.", ballLongPassMessage.SquadNumber);
                 return;
             }
 
@@ -207,7 +207,7 @@ namespace Sobee.TestServer.MatchEvents
             // INFO: Bu kontrolün sebebi BallPositioning (PositioningHit)
             if (matchRoom.MatchInformation.MatchState == MatchState.Running)
             {
-                matchRoom.Players.SendMessage(new BallLongPassTxMessage(
+                matchRoom.Players.SendMessage(new BallPassLongTxMessage(
                     ballOwnerMatchInfo.GetAbsoluteSquadNumber(),
                     ballOwnerMatchInfo.Position,
                     ballOwnerMatchInfo.Direction,
@@ -221,27 +221,27 @@ namespace Sobee.TestServer.MatchEvents
                 ballOwnerMatchInfo.Velocity = Vector3.Zero;
 
                 matchRoom.MatchInformation.BallOwner = -1;
-                _log.Information("[BallLongPassReceived] Player {ballOwnerName} longPass the ball to {targetPlayerName}.", ballOwnerMatchInfo.PlayerName, passTargetMatchInfo.PlayerName);
+                _log.Information("[BallPassLongReceived] Player {ballOwnerName} longPass the ball to {targetPlayerName}.", ballOwnerMatchInfo.PlayerName, passTargetMatchInfo.PlayerName);
             }
         }
 
-        public static void BallPassReceived(object? sender, MessageEventArgs e)
+        public static void BallPassNormalReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallPassRxMessage ballPassMessage) return;
+            if (e.message is not BallPassNormalRxMessage ballPassMessage) return;
 
             var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
-                _log.Warning("[BallPassReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
+                _log.Warning("[BallPassNormalReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
             var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
-                _log.Warning("[BallPassReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
+                _log.Warning("[BallPassNormalReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
@@ -249,14 +249,14 @@ namespace Sobee.TestServer.MatchEvents
             var ballOwnerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.BallOwner);
             if (ballOwnerMatchInfo == null || senderMatchInfo == null)
             {
-                _log.Warning("[BallPassReceived] Could not find player info in match.");
+                _log.Warning("[BallPassNormalReceived] Could not find player info in match.");
                 return;
             }
 
             // Gonderen sadece ballOwner olsun.
             if (ballOwnerMatchInfo.PlayerId != senderMatchInfo.PlayerId)
             {
-                _log.Warning("[BallPassReceived] Player {playerId} is not the BallOwner {ballOwnerId}.", matchPlayer.Id, ballOwnerMatchInfo.PlayerId);
+                _log.Warning("[BallPassNormalReceived] Player {playerId} is not the BallOwner {ballOwnerId}.", matchPlayer.Id, ballOwnerMatchInfo.PlayerId);
                 return;
             }
 
@@ -265,7 +265,7 @@ namespace Sobee.TestServer.MatchEvents
 
             if (passTargetMatchInfo == null)
             {
-                _log.Warning("[BallPassReceived] Could not find pass target with SquadNumber {squadNumber}.", ballPassMessage.SquadNumber);
+                _log.Warning("[BallPassNormalReceived] Could not find pass target with SquadNumber {squadNumber}.", ballPassMessage.SquadNumber);
                 return;
             }
 
@@ -290,7 +290,7 @@ namespace Sobee.TestServer.MatchEvents
             // INFO: Bu kontrolün sebebi BallPositioning (PositioningHit)
             if (matchRoom.MatchInformation.MatchState == MatchState.Running)
             {
-                matchRoom.Players.SendMessage(new BallPassTxMessage(
+                matchRoom.Players.SendMessage(new BallPassNormalTxMessage(
                     ballOwnerMatchInfo.GetAbsoluteSquadNumber(),
                     ballOwnerMatchInfo.Position,
                     ballOwnerMatchInfo.Direction,
@@ -304,8 +304,31 @@ namespace Sobee.TestServer.MatchEvents
                 ballOwnerMatchInfo.Velocity = Vector3.Zero;
 
                 matchRoom.MatchInformation.BallOwner = -1;
-                _log.Information("[BallPassReceived] Player {ballOwnerName} pass the ball to {targetPlayerName}.", ballOwnerMatchInfo.PlayerName, passTargetMatchInfo.PlayerName);
+                _log.Information("[BallPassNormalReceived] Player {ballOwnerName} pass the ball to {targetPlayerName}.", ballOwnerMatchInfo.PlayerName, passTargetMatchInfo.PlayerName);
             }
+        }
+
+        public static void BallPassThroughReceived(object? sender, MessageEventArgs e)
+        {
+            if (sender is not MatchRoom matchRoom) return;
+            if (e.handler is not MatchPlayer matchPlayer) return;
+            if (e.message is not BallPassThroughRxMessage ballPassMessage) return;
+
+            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
+            if (ballComponent == null)
+            {
+                _log.Warning("[BallPassThroughReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
+                return;
+            }
+
+            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
+            if (movementComponent == null)
+            {
+                _log.Warning("[BallPassThroughReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
+                return;
+            }
+
+            throw new NotImplementedException("[BallPassThroughReceived] This event not implemented yet.");
         }
 
         public static void BallShootReceived(object? sender, MessageEventArgs e)
