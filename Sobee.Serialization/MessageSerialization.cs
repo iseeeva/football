@@ -21,6 +21,9 @@ namespace Sobee.Serialization
 
         public void WriteMessage(IMessage message)
         {
+            if (binaryWriter == null)
+                throw new ArgumentException("Stream was not writeable.");
+
             ushort num = messageTypeToId(message.GetType());
             num ^= 7779;
             binaryWriter.method_15(num);
@@ -30,9 +33,8 @@ namespace Sobee.Serialization
         public IMessage ReadMessage()
         {
             if (binaryReader == null)
-            {
                 throw new ArgumentException("Stream was not readable.");
-            }
+
             ushort num = binaryReader.method_15();
             num ^= 7779;
             return (IMessage)dispatchToMessage(num, binaryReader);

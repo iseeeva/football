@@ -6,6 +6,7 @@ namespace Sobee.TestServer.Messages.Ball
     [MessageAttribute(50549)]
     public class BallInterceptTxMessage : AnimationAbstractMessage
     {
+        /// <summary> absolute </summary>
         public readonly sbyte SquadNumber;
         public readonly Vector2 PlayerPosition;
         public readonly Vector2 PlayerDirection;

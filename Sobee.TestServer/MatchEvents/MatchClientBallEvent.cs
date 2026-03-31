@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using Sobee.Common;
+﻿using Sobee.Common;
 using Sobee.Network.Messaging;
 using Sobee.Serialization.GameServer;
 using Sobee.TestServer.Match;
@@ -7,6 +6,7 @@ using Sobee.TestServer.MatchComponents;
 using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Ball;
 using Sobee.TestServer.Messages.Match;
+using System.Numerics;
 
 namespace Sobee.TestServer.MatchEvents
 {
@@ -123,7 +123,7 @@ namespace Sobee.TestServer.MatchEvents
         {
             if (sender is not MatchRoom matchRoom) return;
             if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallInterceptRxMessage ballIntercept) return;
+            if (e.message is not BallInterceptRxMessage ballInterceptMessage) return;
 
             var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
@@ -139,7 +139,48 @@ namespace Sobee.TestServer.MatchEvents
                 return;
             }
 
+            var senderMatchInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
+            var ballOwnerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.BallOwner);
+            if (ballOwnerMatchInfo == null || senderMatchInfo == null)
+            {
+                _log.Warning("[BallInterceptReceived] Could not find player info in match.");
+                return;
+            }
+
             throw new NotImplementedException("[BallInterceptReceived] This event not implemented yet.");
+        }
+
+        public static void BallTackleReceived(object? sender, MessageEventArgs e)
+        {
+            if (sender is not MatchRoom matchRoom) return;
+            if (e.handler is not MatchPlayer matchPlayer) return;
+            if (e.message is not BallTackleRxMessage ballTackleMessage) return;
+
+            // INFO: Client, top 500 den yakinsa tackle degilse intercept gonderiyor
+
+            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
+            if (ballComponent == null)
+            {
+                _log.Warning("[BallTackleReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
+                return;
+            }
+
+            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
+            if (movementComponent == null)
+            {
+                _log.Warning("[BallTackleReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
+                return;
+            }
+
+            var senderMatchInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
+            var ballOwnerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchRoom.MatchInformation.BallOwner);
+            if (ballOwnerMatchInfo == null || senderMatchInfo == null)
+            {
+                _log.Warning("[BallTackleReceived] Could not find player info in match.");
+                return;
+            }
+
+            throw new NotImplementedException("[BallTackleReceived] This event not implemented yet.");
         }
 
         public static void BallPassLongReceived(object? sender, MessageEventArgs e)
