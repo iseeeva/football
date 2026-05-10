@@ -4,7 +4,7 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Ball
 {
     [MessageAttribute(8756)]
-    public class BallKickoffTxMessage : AnimationAbstractMessage
+    public class BallKickoffTxMessage : AnimationMessage
     {
         public readonly Vector3 BallVelocity;
 

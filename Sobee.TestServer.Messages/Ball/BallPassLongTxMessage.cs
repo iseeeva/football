@@ -1,10 +1,10 @@
-﻿using System.Numerics;
-using Sobee.Serialization;
+﻿using Sobee.Serialization;
+using System.Numerics;
 
 namespace Sobee.TestServer.Messages.Ball
 {
     [MessageAttribute(47924)]
-    public class BallPassLongTxMessage : AnimationAbstractMessage
+    public class BallPassLongTxMessage : AnimationMessage
     {
         public readonly sbyte SquadNumber;
         public readonly Vector2 PlayerPosition;

@@ -2,16 +2,16 @@
 
 namespace Sobee.TestServer.Messages
 {
-    public abstract class AnimationAbstractMessage : Message
+    public abstract class AnimationMessage : Message
     {
         public AnimationType AnimationType;
 
-        public AnimationAbstractMessage(BinaryReader reader) : base(reader)
+        public AnimationMessage(BinaryReader reader) : base(reader)
         {
             this.AnimationType = (AnimationType)reader.method_15();
         }
 
-        public AnimationAbstractMessage(AnimationType animationType)
+        public AnimationMessage(AnimationType animationType)
         {
             this.AnimationType = animationType;
         }

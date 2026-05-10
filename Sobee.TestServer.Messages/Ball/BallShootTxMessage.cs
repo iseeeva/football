@@ -4,7 +4,7 @@ using Sobee.Serialization;
 namespace Sobee.TestServer.Messages.Ball
 {
     [MessageAttribute(17253)]
-    public class BallShootTxMessage : AnimationAbstractMessage
+    public class BallShootTxMessage : AnimationMessage
     {
         public readonly sbyte SquadNumber;
         public readonly Vector2 PlayerPosition;
