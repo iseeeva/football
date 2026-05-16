@@ -1,15 +1,15 @@
-﻿using System.Numerics;
-using Sobee.Common;
+﻿using Sobee.Common;
 using Sobee.TestServer.Match;
 using Sobee.TestServer.Messages.Ball;
 using Sobee.TestServer.Messages.Chat;
 using Sobee.TestServer.Messages.Player;
+using System.Numerics;
 
 namespace Sobee.TestServer.MatchEvents
 {
     public class MatchServerPlayerEvent
     {
-        private static readonly Serilog.ILogger _log = Logging.Get<MatchServerPlayerEvent>();
+        private static readonly Serilog.ILogger _log = LogFactory.GetContextForType<MatchServerPlayerEvent>();
 
         public static void PlayerJoinReceived(MatchRoom matchRoom, MatchPlayer matchPlayer)
         {
@@ -44,7 +44,7 @@ namespace Sobee.TestServer.MatchEvents
 
             // Wait for heartbeat message before invoke the match event.
             // Heartbeat is the first message sent by the client after going match screen.
-            matchPlayer.WaitForMessage<PlayerHeartbeatRxMessage>((player, heartbeat) =>
+            matchRoom.Communication.AddOneShotMessageHandler<PlayerHeartbeatRxMessage>(matchPlayer, (player, heartbeat) =>
             {
                 player.SendMessage(new ChatSystemTextTxMessage(
                     $"[PlayerJoinReceived] Room Id: {matchRoom.Id}",

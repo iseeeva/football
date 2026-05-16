@@ -1,51 +1,38 @@
-﻿using Sobee.Common;
-using Sobee.Network;
+﻿using Sobee.Network;
 
 namespace Sobee.TestServer.Auth
 {
-    public class AuthUserManager : SessionManager<AuthUser>
+    public class AuthUserManager<TUser> : SessionManager<AuthRoom, TUser>
+      where TUser : AuthUser
     {
-        private static readonly Serilog.ILogger _log = Logging.Get<AuthUserManager>();
-        private bool _isDisposed;
-
-        private readonly AuthRoom _authRoom;
-
-        public AuthUserManager(AuthRoom authRoom) : base(authRoom)
+        public AuthUserManager()
         {
-            _authRoom = authRoom;
+
         }
 
-        public override bool TryAdd(AuthUser session)
+        #region Users
+        public override bool TryAdd(TUser session)
         {
-            _log.Warning("TryAdd doesn't implemented, use TryCreate for now.");
-            return false;
+            throw new NotImplementedException("TryAdd is not implemented. Use TryCreate instead.");
+            //_log.Warning("TryAdd is not implemented. Use TryCreate instead.");
+            //return false;
         }
 
         public virtual bool TryCreate(SocketWrapper socketWrapper)
         {
-            var authUser = new AuthUser(socketWrapper, _authRoom);
-
-            if (base.TryAdd(authUser))
-                return true;
-            else
-                authUser.Dispose();
-
-            return false;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (!_isDisposed)
+            if (Owner == null)
             {
-                _isDisposed = true;
-
-                if (disposing)
-                {
-                    _log.Debug("{id} disposed.", Id);
-                }
+                _log.Error("Owner is null. TryCreate method aborted.");
+                return false;
             }
 
-            base.Dispose(disposing);
+            var authUser = new AuthUser(socketWrapper, Owner.Communication);
+            if (base.TryAdd((TUser)authUser))
+                return true;
+
+            authUser.Dispose();
+            return false;
         }
+        #endregion
     }
 }

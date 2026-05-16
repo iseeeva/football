@@ -1,10 +1,8 @@
-﻿using System.ComponentModel;
+﻿using Sobee.Network.Messaging;
+using Sobee.Serialization;
+using System.ComponentModel;
 using System.IO.Compression;
 using System.Text;
-using Serilog;
-using Sobee.Common;
-using Sobee.Network.Messaging;
-using Sobee.Serialization;
 
 namespace Sobee.TestServer.Messages
 {
@@ -13,8 +11,6 @@ namespace Sobee.TestServer.Messages
     [MessageAttribute(26929)]
     public class ScenarioInfo : Message
     {
-        private static readonly ILogger _log = Logging.Get<ScenarioInfo>();
-
         // Token: 0x06000363 RID: 867 RVA: 0x00004D46 File Offset: 0x00002F46
         public ScenarioType method_0()
         {

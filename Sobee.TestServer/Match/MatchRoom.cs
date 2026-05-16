@@ -1,7 +1,4 @@
-﻿using Serilog;
-using Sobee.Common;
-using Sobee.Network;
-using Sobee.Network.Messaging;
+﻿using Sobee.Network;
 using Sobee.TestServer.MatchComponents;
 using Sobee.TestServer.MatchEvents;
 using Sobee.TestServer.Messages;
@@ -12,98 +9,82 @@ using Sobee.TestServer.Messages.Player;
 
 namespace Sobee.TestServer.Match
 {
-    public class MatchRoom : Room<MatchPlayer>
+    public class MatchRoom : Room<MatchRoom, MatchPlayer>
     {
-        private static readonly ILogger _log = Logging.Get<MatchRoom>();
-        private bool _isDisposed;
-
-        public MatchPlayerManager Players => (MatchPlayerManager)_sessions;
-        public readonly ComponentManager<MatchComponent> Components = new();
         public readonly MatchInformationMessage MatchInformation = new();
+        public MatchPlayerManager<MatchRoom, MatchPlayer> Players => (MatchPlayerManager<MatchRoom, MatchPlayer>)_sessions;
+        public RoomCommunication Communication => _communication;
 
-        // Constants
-        public static readonly TimeSpan MAX_IDLE_TIME = new(0, 1, 0); // 1 dakika
-        public static readonly int MAX_PLAYER = ScenarioInfo.MAX_TEAM_SIZE; // TODO: Senaryoya göre ayarlanmalı
+        public static readonly TimeSpan MAX_IDLE_TIME = TimeSpan.FromMinutes(1);
+        public static readonly int MAX_PLAYER = ScenarioInfo.MAX_TEAM_SIZE * 2;
 
-        public MatchRoom() : base()
+        #region Constructor
+        public MatchRoom()
         {
-            _log.Debug("{id} initializing.", Id);
-
-            // Events
+            // === Events ===
             Players.PlayerJoinEvent += MatchServerPlayerEvent.PlayerJoinReceived;
             Players.PlayerLeaveEvent += MatchServerPlayerEvent.PlayerLeaveReceived;
 
-            // Communication 
-            CommunicationType = SessionType.Game;
+            // === Components ===
+            AddComponent(new MatchMovementComponent());
+            AddComponent(new MatchBallComponent());
+            AddComponent(new MatchTimeComponent());
 
-            // Component
-            Components.AddComponent(new MatchMovementComponent(this));
-            Components.AddComponent(new MatchBallComponent(this));
-            Components.AddComponent(new MatchTimeComponent(this));
+            // === Communication ===
+            Communication.CommunicationType = SessionType.Game;
 
             // === Player Messages ===
-            RegisterMessageEvent<PlayerHeartbeatRxMessage>(OnReceivedMessage);
-            RegisterMessageEvent<PlayerMoveKeyUpRxMessage>(OnReceivedMessage);
-            RegisterMessageEvent<PlayerMoveKeyDownRxMessage>(OnReceivedMessage);
-            RegisterMessageEvent<PlayerMatchStateAlertRxMessage>(OnReceivedMessage);
-            RegisterMessageEvent<ChatPlayerTextRxMessage>(OnReceivedMessage);
+            Communication.RegisterMessage<PlayerHeartbeatRxMessage>();
+            Communication.RegisterMessage<PlayerMoveKeyUpRxMessage>();
+            Communication.RegisterMessage<PlayerMoveKeyDownRxMessage>();
+            Communication.RegisterMessage<PlayerMatchStateAlertRxMessage>();
+            Communication.RegisterMessage<ChatPlayerTextRxMessage>();
 
             // === Match Messages ===
-            RegisterMessageEvent<BallPositioningRxMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallPositioningRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallPositioningReceived));
-            RegisterMessageEvent<BallTackleRxMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallTackleRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallTackleReceived));
-            RegisterMessageEvent<BallInterceptRxMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallInterceptRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallInterceptReceived));
-            RegisterMessageEvent<BallPassNormalRxMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallPassNormalRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallPassNormalReceived));
-            RegisterMessageEvent<BallPassThroughRxMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallPassThroughRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallPassThroughReceived));
-            RegisterMessageEvent<BallPassLongRxMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallPassLongRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallPassLongReceived));
-            RegisterMessageEvent<BallShootRxMessage>(OnReceivedMessage);
-            AddGlobalHandler<BallShootRxMessage>(new EventHandler<MessageEventArgs>(MatchClientBallEvent.BallShootReceived));
-
-            _log.Debug("{id} initialized.", Id);
+            Communication.RegisterMessage<BallPositioningRxMessage>();
+            Communication.AddGlobalMessageHandler<BallPositioningRxMessage>(MatchClientBallEvent.BallPositioningReceived);
+            Communication.RegisterMessage<BallTackleRxMessage>();
+            Communication.AddGlobalMessageHandler<BallTackleRxMessage>(MatchClientBallEvent.BallTackleReceived);
+            Communication.RegisterMessage<BallInterceptRxMessage>();
+            Communication.AddGlobalMessageHandler<BallInterceptRxMessage>(MatchClientBallEvent.BallInterceptReceived);
+            Communication.RegisterMessage<BallPassNormalRxMessage>();
+            Communication.AddGlobalMessageHandler<BallPassNormalRxMessage>(MatchClientBallEvent.BallPassNormalReceived);
+            Communication.RegisterMessage<BallPassThroughRxMessage>();
+            Communication.AddGlobalMessageHandler<BallPassThroughRxMessage>(MatchClientBallEvent.BallPassThroughReceived);
+            Communication.RegisterMessage<BallPassLongRxMessage>();
+            Communication.AddGlobalMessageHandler<BallPassLongRxMessage>(MatchClientBallEvent.BallPassLongReceived);
+            Communication.RegisterMessage<BallShootRxMessage>();
+            Communication.AddGlobalMessageHandler<BallShootRxMessage>(MatchClientBallEvent.BallShootReceived);
         }
+        #endregion
 
-        protected override SessionManager<MatchPlayer> CreateSessionManager()
-        {
-            return new MatchPlayerManager(this);
-        }
+        #region Lifecycle
+        //protected override void OnStart()
+        //{
+        //    base.OnStart();
+        //}
 
-        protected override void OnReceivedMessage<T>(Session sender, T message)
-        {
-            //if (((MatchPlayer)sender).IsReadyForMatch == false)
-            //{
-            //    _log.Warning("MatchPlayer {playerId} tried sent a message before having IsReadyForMatch set.", sender.Id);
-            //    return;
-            //}
+        //protected override void OnStop()
+        //{
+        //    base.OnStop();
+        //}
 
-            base.OnReceivedMessage(sender, message);
-        }
+        //protected override void OnUpdate(double delta)
+        //{
+        //    base.OnUpdate(delta);
+        //}
+        #endregion
 
-        public override void Update(double delta)
-        {
-            Players?.Update(delta);
-            Components?.Update(delta);
-            base.Update(delta);
-        }
+        #region Session Manager
+        protected override SessionManager<MatchRoom, MatchPlayer> CreateSessionManager()
+               => new MatchPlayerManager<MatchRoom, MatchPlayer>();
+        #endregion
 
-        protected override void Dispose(bool disposing)
-        {
-            if (_isDisposed)
-                return;
-
-            _isDisposed = true;
-
-            if (disposing)
-            {
-                Components.Dispose();
-                _log.Debug("{id} disposed.", Id);
-            }
-
-            base.Dispose(disposing);
-        }
+        #region Dispose
+        //protected override void OnDispose()
+        //{
+        //    base.OnDispose();
+        //}
+        #endregion
     }
 }

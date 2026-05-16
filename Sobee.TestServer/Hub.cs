@@ -1,25 +1,21 @@
-﻿using System.Net;
-using System.Net.Sockets;
-using Sobee.Common;
+﻿using Sobee.Common;
 using Sobee.Network;
-using Sobee.Tasks;
 using Sobee.TestServer.Auth;
-using Sobee.TestServer.Match;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Sobee.TestServer
 {
-    public sealed class Hub : TickController
+    public sealed class Hub : ComponentManager<Component>
     {
-        private static readonly Serilog.ILogger _log = Logging.Get<Hub>();
-        private bool _isDisposed;
-
         public readonly int Port;
-        private readonly Socket _socket;
+        public readonly Socket Socket;
 
         public readonly AuthRoom AuthRoom;
         public readonly MatchRoomManager RoomManager;
 
-        public Hub(int port) : base()
+        #region Constructor
+        public Hub(int port)
         {
             if (port <= IPEndPoint.MinPort || port >= IPEndPoint.MaxPort)
                 throw new ArgumentOutOfRangeException(nameof(port));
@@ -28,88 +24,83 @@ namespace Sobee.TestServer
 
             try
             {
-                _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                _socket.Bind(new IPEndPoint(IPAddress.Loopback, Port));
-                _socket.Listen(100);
-                _socket.Blocking = false;
+                Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                Socket.Bind(new IPEndPoint(IPAddress.Loopback, Port));
+                Socket.Listen(100);
+                Socket.Blocking = false;
 
-                AuthRoom = new AuthRoom(this);
+                AuthRoom = new AuthRoom();
+                AddComponent(AuthRoom);
+
                 RoomManager = new MatchRoomManager();
-                TickStart();
+                AddComponent(RoomManager);
 
-                _log.Information("{id} initialized on port {port}.", Id, Port);
+                _log.Information("initialized on port {port}.", Port);
             }
             catch (Exception ex)
             {
-                _log.Fatal(ex, "{id} failed to initialize on port {port}.", Id, Port);
+                _log.Error(ex, "failed to initialize on port {port}.", Port);
                 throw;
             }
         }
+        #endregion
 
-        public override void Update(double delta)
+        #region Lifecycle
+        //protected override void OnStart()
+        //{
+        //    base.OnStart();
+        //}
+
+        //protected override void OnStop()
+        //{
+        //    base.OnStop();
+        //}
+
+        protected override void OnUpdate(double delta)
         {
+            base.OnUpdate(delta);
             AcceptClients();
-            AuthRoom.Update(delta);
-            RoomManager.Update(delta);
-            base.Update(delta);
         }
 
         private void AcceptClients()
         {
-            if (_socket == null || !IsRunning)
-                return;
+            if (!IsRunning) return;
 
             try
             {
-                while (_socket.Poll(0, SelectMode.SelectRead))
+                while (Socket.Poll(0, SelectMode.SelectRead))
                 {
-                    Socket clientSocket = _socket.Accept();
+                    Socket clientSocket = Socket.Accept();
                     clientSocket.Blocking = false;
-                    _log.Information("{id} client connected from {ep}", Id, clientSocket.RemoteEndPoint);
-
+                    _log.Information("client connected from {ep}", clientSocket.RemoteEndPoint);
                     AuthRoom.Users.TryCreate(new SocketWrapper(clientSocket));
                 }
             }
-            catch (ObjectDisposedException)
-            {
-
-            }
+            catch (ObjectDisposedException) { }
             catch (SocketException ex)
             {
-                _log.Error(ex, "{id} error while accepting client.", Id);
+                _log.Error(ex, "error while accepting client.");
             }
         }
+        #endregion
 
-        protected override void Dispose(bool disposing)
+        #region Dispose
+        protected override void OnDispose()
         {
-            if (_isDisposed)
-                return;
-
-            _isDisposed = true;
-
-            if (disposing)
+            try
             {
-                TickStop();
-
-                try
-                {
-                    if (_socket.Connected)
-                        _socket.Shutdown(SocketShutdown.Both);
-
-                    _socket.Close();
-                    _socket.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    _log.Debug(ex, "{id} socket dispose error.", Id);
-                }
-
-                AuthRoom?.Dispose();
-
-                _log.Debug("{id} disposed.", Id);
+                if (Socket.Connected)
+                    Socket.Shutdown(SocketShutdown.Both);
+                Socket.Close();
+                Socket.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _log.Information(ex, "socket dispose error.");
             }
 
-            base.Dispose(disposing);
+            base.OnDispose();
         }
+        #endregion
     }
 }

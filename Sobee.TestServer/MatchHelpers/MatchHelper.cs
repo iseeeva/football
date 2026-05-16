@@ -1,10 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Numerics;
-using Sobee.TestServer.Auth;
+﻿using Sobee.TestServer.Auth;
 using Sobee.TestServer.Match;
 using Sobee.TestServer.Messages;
 using Sobee.TestServer.Messages.Match;
 using Sobee.TestServer.Messages.Player;
+using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 
 namespace Sobee.TestServer.MatchHelpers
 {
@@ -51,7 +51,7 @@ namespace Sobee.TestServer.MatchHelpers
             ]);
             // ----
 
-            matchPlayer = new MatchPlayer(authUser.Socket, authUser.AuthInformation, matchRoom);
+            matchPlayer = new MatchPlayer(authUser.Socket, authUser.AuthInformation, matchRoom.Communication);
             playerMatchInformation = new PlayerMatchInformationMessage(
                   matchRoom.Id,
                   matchPlayer.Id,

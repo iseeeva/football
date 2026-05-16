@@ -1,39 +1,14 @@
-﻿using Serilog;
-using Sobee.Common;
-using Sobee.Network;
+﻿using Sobee.Network;
 using Sobee.Network.Messaging;
 
 namespace Sobee.TestServer
 {
     public class User : Session
     {
-        private static readonly ILogger _log = Logging.Get<User>();
-        private bool _isDisposed;
-
-        public User(SocketWrapper socket, MessageCommunication playerComm) : base(socket, playerComm)
+        public User(SocketWrapper socket, MessageCommunication communication)
+            : base(socket, communication)
         {
             SessionType = SessionType.User;
-            _log.Debug("{id} initialized.", Id);
-        }
-
-        public override void Update(double delta)
-        {
-            base.Update(delta);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (!_isDisposed)
-            {
-                _isDisposed = true;
-
-                if (disposing)
-                {
-                    _log.Debug("{id} disposed.", Id);
-                }
-            }
-
-            base.Dispose(disposing);
         }
     }
 }

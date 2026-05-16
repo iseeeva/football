@@ -11,7 +11,7 @@ namespace Sobee.TestServer.MatchHelpers
 {
     public class MatchPositioningHelper
     {
-        private static readonly ILogger _log = Logging.Get<MatchPositioningHelper>();
+        private static readonly ILogger _log = LogFactory.GetContextForType<MatchPositioningHelper>();
         private static readonly int MAX_TEAM_SIZE = ScenarioInfo.MAX_TEAM_SIZE;
 
         public static MatchFormationHelper? ChangePosition(MatchRoom room, MatchFieldPositioning fieldType)

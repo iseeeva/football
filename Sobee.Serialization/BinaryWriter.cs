@@ -1,9 +1,7 @@
-﻿
+﻿using Sobee.Serialization;
 using System.Numerics;
-using Sobee.Common;
-using Sobee.Serialization;
 
-public class BinaryWriter : Disposable
+public class BinaryWriter : IDisposable
 {
     private bool _isDisposed;
 
@@ -12,10 +10,12 @@ public class BinaryWriter : Disposable
     private readonly DispatchToMessageDelegate _dispatchToMessage;
     private readonly MessageIdFromTypeDelegate _messageIdFromType;
 
+    public bool CanWrite
+        => _stream.CanWrite;
+
     public BinaryWriter(Stream stream, DispatchToMessageDelegate dispatchToMessageDelegate, MessageIdFromTypeDelegate messageIdFromTypeDelegate)
     {
         _stream = stream;
-
         if (_stream.CanWrite)
             _binaryWriter = new System.IO.BinaryWriter(_stream);
         else
@@ -211,7 +211,14 @@ public class BinaryWriter : Disposable
         gclass.WriteMessage(ginterface7_0);
     }
 
-    protected override void Dispose(bool disposing)
+    #region Dispose
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
     {
         if (_isDisposed)
             return;
@@ -222,7 +229,6 @@ public class BinaryWriter : Disposable
         {
             _binaryWriter.Dispose();
         }
-
-        base.Dispose(disposing);
     }
+    #endregion
 }

@@ -1,127 +1,116 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Sobee.Common;
+﻿using Sobee.Common;
 using Sobee.Network.Messaging;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sobee.Network
 {
-    public class SessionManager<T> : Component where T : Session
+    public class SessionManager<TOwner, TSession> : Component<TOwner>
+        where TOwner : IComponentOwner
+        where TSession : Session
     {
-        private static readonly Serilog.ILogger _log = Logging.Get<SessionManager<T>>();
-        private bool _isDisposed;
+        private readonly Dictionary<Guid, TSession> _sessions = new();
+        private readonly List<TSession> _sessionUpdateList = new();
 
-        private readonly Dictionary<Guid, T> _sessions = new();
-        private readonly List<T> _updateList = new();
+        public TSession? this[Guid sessionId] => _sessions.TryGetValue(sessionId, out var s) ? s : null;
+        public int Count => _sessions.Count;
 
-        private readonly MessageCommunication _communication;
+        public event Action<TSession>? SessionAdded;
+        public event Action<TSession>? SessionRemoved;
 
-        public event Action<T>? SessionAdded;
-        public event Action<T>? SessionRemoved;
-
-        public SessionManager(MessageCommunication communication)
+        #region Constructor
+        public SessionManager()
         {
-            _communication = communication;
-            _log.Information("{id} initialized.", Id);
+
         }
+        #endregion
 
-        public T this[Guid id] => _sessions[id];
+        #region Sessions
+        public bool TryGet(Guid sessionId, [NotNullWhen(true)] out TSession? session)
+            => _sessions.TryGetValue(sessionId, out session);
 
-        public bool TryGet(Guid id, out T? session)
-            => _sessions.TryGetValue(id, out session);
-
-        public virtual bool TryAdd(T session)
+        public virtual bool TryAdd(TSession session)
         {
             if (_sessions.ContainsKey(session.Id))
             {
-                _log.Warning("Session {id} already exists.", session.Id);
+                _log.Warning("session ({id}) already exists.", session.Id);
                 return false;
             }
 
             _sessions.Add(session.Id, session);
-            _updateList.Add(session);
+            _sessionUpdateList.Add(session);
 
             session.Start();
             SessionAdded?.Invoke(session);
 
-            _log.Information("Session {id} added.", session.Id);
+            _log.Information("session ({id}) added.", session.Id);
             return true;
         }
 
-        public virtual bool TryRemove(Guid sessionId, [NotNullWhen(true)] out T? session)
+        public virtual bool TryRemove(Guid sessionId, [NotNullWhen(true)] out TSession? session)
         {
             if (!_sessions.Remove(sessionId, out session))
             {
-                _log.Information("Session {id} not found.", sessionId);
+                _log.Warning("session ({id}) not found.", sessionId);
                 return false;
             }
 
-            _updateList.Remove(session);
-
-            _communication.RemoveAllSessionHandlers(session);
+            _sessionUpdateList.Remove(session);
             session.Dispose();
 
             SessionRemoved?.Invoke(session);
-            _log.Information("Session {id} removed.", sessionId);
+            _log.Information("session ({id}) removed.", session.Id);
             return true;
         }
+        #endregion
 
-        public override void Update(double delta)
+        #region Lifecycle
+        protected override void OnUpdate(double delta)
         {
-            for (int i = _updateList.Count - 1; i >= 0; i--)
+            for (int i = _sessionUpdateList.Count - 1; i >= 0; i--)
             {
-                var session = _updateList[i];
-
+                var session = _sessionUpdateList[i];
                 if (!session.IsConnected)
                 {
                     TryRemove(session.Id, out _);
                     continue;
                 }
-
                 try
                 {
                     session.Update(delta);
                 }
                 catch (Exception ex)
                 {
-                    _log.Error(ex, "Session {id} update failed.", session.Id);
+                    _log.Error(ex, "session ({id}) update failed.", session.Id);
                     TryRemove(session.Id, out _);
                 }
             }
         }
+        #endregion
 
+        #region Messaging
         public void SendMessage(Message message)
         {
-            foreach (var session in _updateList)
+            for (int i = 0; i < _sessionUpdateList.Count; i++)
             {
-                if (session.IsRunning)
+                var session = _sessionUpdateList[i];
+                if (session.IsConnected)
                     session.SendMessage(message);
             }
         }
+        #endregion
 
-        public int Count => _sessions.Count;
-
-        protected override void Dispose(bool disposing)
+        #region Dispose
+        protected override void OnDispose()
         {
-            if (_isDisposed)
-                return;
+            for (int i = _sessionUpdateList.Count - 1; i >= 0; i--)
+                TryRemove(_sessionUpdateList[i].Id, out _);
 
-            _isDisposed = true;
+            _sessions.Clear();
+            _sessionUpdateList.Clear();
 
-            if (disposing)
-            {
-                // WARN: Session.Dispose'un ne yaptigini kontrol et.
-                foreach (var session in _updateList)
-                    TryRemove(session.Id, out _);
-
-                _sessions.Clear();
-                _updateList.Clear();
-
-                SessionAdded = null;
-                SessionRemoved = null;
-
-                _log.Debug("{id} disposed.", Id);
-            }
-
-            base.Dispose(disposing);
+            SessionAdded = null;
+            SessionRemoved = null;
         }
+        #endregion
     }
 }

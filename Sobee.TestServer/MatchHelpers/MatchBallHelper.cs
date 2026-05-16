@@ -1,17 +1,17 @@
-﻿using System.Numerics;
-using Sobee.Common;
+﻿using Sobee.Common;
 using Sobee.TestServer.Match;
 using Sobee.TestServer.MatchComponents;
 using Sobee.TestServer.Messages.Ball;
+using System.Numerics;
 namespace Sobee.TestServer.MatchHelpers
 {
     public class MatchBallHelper
     {
-        private static readonly Serilog.ILogger _log = Logging.Get<MatchBallHelper>();
+        private static readonly Serilog.ILogger _log = LogFactory.GetContextForType<MatchBallHelper>();
 
         public static bool GetBall(MatchRoom matchRoom, sbyte squadNumber)
         {
-            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
+            var ballComponent = matchRoom.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
                 _log.Warning("[BallHelper] MatchBall is null in match {matchId}.", matchRoom.Id);

@@ -12,22 +12,22 @@ namespace Sobee.TestServer.MatchEvents
 {
     public class MatchClientBallEvent
     {
-        private static readonly Serilog.ILogger _log = Logging.Get<MatchClientBallEvent>();
+        private static readonly Serilog.ILogger _log = LogFactory.GetContextForType<MatchClientBallEvent>();
 
         public static void BallPositioningReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
-            if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallPositioningRxMessage ballPositioningHit) return;
+            if (e.Handler is not MatchPlayer matchPlayer) return;
+            if (e.Message is not BallPositioningRxMessage ballPositioningHit) return;
 
-            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
+            var ballComponent = matchRoom.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
                 _log.Warning("[BallPositioningReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
-            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
+            var movementComponent = matchRoom.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
                 _log.Warning("[BallPositioningReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
@@ -60,17 +60,32 @@ namespace Sobee.TestServer.MatchEvents
             switch (ballPositioningHit.HitSubType)
             {
                 case HitSubType.Shoot:
-                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallShootRxMessage(ballPositioningHit.HitStrength, ballPositioningHit.HitDirection));
+                    isHitSubDispatch = matchRoom.Communication.DispatchToMessageEvent(
+                        new MessageEventArgs(
+                            matchPlayer,
+                            new BallShootRxMessage(ballPositioningHit.HitStrength, ballPositioningHit.HitDirection)
+                        )
+                    );
                     break;
 
                 case HitSubType.LongPass: // Client PositioningHit icin squadNumber gondermiyor?
                     // TODO: BallOwner ondan onceki squadNumber'a pas veriyor. SquadNumber'lar pozisyonlara gore rastgele olursa sorun cikarir.
-                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallPassLongRxMessage((sbyte)(matchRoom.MatchInformation.BallOwner - 1)));
+                    isHitSubDispatch = matchRoom.Communication.DispatchToMessageEvent(
+                        new MessageEventArgs(
+                            matchPlayer,
+                            new BallPassLongRxMessage((sbyte)(matchRoom.MatchInformation.BallOwner - 1))
+                        )
+                    );
                     break;
 
                 case HitSubType.Pass: // Client PositioningHit icin squadNumber gondermiyor?
                     // TODO: BallOwner ondan onceki squadNumber'a pas veriyor. SquadNumber'lar pozisyonlara gore rastgele olursa sorun cikarir.
-                    isHitSubDispatch = matchRoom.DispatchTo(matchPlayer, new BallPassNormalRxMessage((sbyte)(matchRoom.MatchInformation.BallOwner - 1)));
+                    isHitSubDispatch = matchRoom.Communication.DispatchToMessageEvent(
+                        new MessageEventArgs(
+                            matchPlayer,
+                            new BallPassNormalRxMessage((sbyte)(matchRoom.MatchInformation.BallOwner - 1))
+                        )
+                    );
                     break;
 
                 case HitSubType.Invalid:
@@ -122,17 +137,17 @@ namespace Sobee.TestServer.MatchEvents
         public static void BallInterceptReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
-            if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallInterceptRxMessage ballInterceptMessage) return;
+            if (e.Handler is not MatchPlayer matchPlayer) return;
+            if (e.Message is not BallInterceptRxMessage ballInterceptMessage) return;
 
-            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
+            var ballComponent = matchRoom.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
                 _log.Warning("[BallInterceptReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
-            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
+            var movementComponent = matchRoom.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
                 _log.Warning("[BallInterceptReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
@@ -153,19 +168,19 @@ namespace Sobee.TestServer.MatchEvents
         public static void BallTackleReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
-            if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallTackleRxMessage ballTackleMessage) return;
+            if (e.Handler is not MatchPlayer matchPlayer) return;
+            if (e.Message is not BallTackleRxMessage ballTackleMessage) return;
 
             // INFO: Client, top 500 den yakinsa tackle degilse intercept gonderiyor
 
-            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
+            var ballComponent = matchRoom.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
                 _log.Warning("[BallTackleReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
-            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
+            var movementComponent = matchRoom.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
                 _log.Warning("[BallTackleReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
@@ -186,17 +201,17 @@ namespace Sobee.TestServer.MatchEvents
         public static void BallPassLongReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
-            if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallPassLongRxMessage ballLongPassMessage) return;
+            if (e.Handler is not MatchPlayer matchPlayer) return;
+            if (e.Message is not BallPassLongRxMessage ballLongPassMessage) return;
 
-            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
+            var ballComponent = matchRoom.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
                 _log.Warning("[BallPassLongReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
-            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
+            var movementComponent = matchRoom.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
                 _log.Warning("[BallPassLongReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
@@ -269,17 +284,17 @@ namespace Sobee.TestServer.MatchEvents
         public static void BallPassNormalReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
-            if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallPassNormalRxMessage ballPassMessage) return;
+            if (e.Handler is not MatchPlayer matchPlayer) return;
+            if (e.Message is not BallPassNormalRxMessage ballPassMessage) return;
 
-            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
+            var ballComponent = matchRoom.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
                 _log.Warning("[BallPassNormalReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
-            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
+            var movementComponent = matchRoom.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
                 _log.Warning("[BallPassNormalReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
@@ -352,17 +367,17 @@ namespace Sobee.TestServer.MatchEvents
         public static void BallPassThroughReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
-            if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallPassThroughRxMessage ballPassMessage) return;
+            if (e.Handler is not MatchPlayer matchPlayer) return;
+            if (e.Message is not BallPassThroughRxMessage ballPassMessage) return;
 
-            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
+            var ballComponent = matchRoom.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
                 _log.Warning("[BallPassThroughReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
-            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
+            var movementComponent = matchRoom.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
                 _log.Warning("[BallPassThroughReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);
@@ -375,17 +390,17 @@ namespace Sobee.TestServer.MatchEvents
         public static void BallShootReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
-            if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not BallShootRxMessage ballShoot) return;
+            if (e.Handler is not MatchPlayer matchPlayer) return;
+            if (e.Message is not BallShootRxMessage ballShoot) return;
 
-            var ballComponent = matchRoom.Components.GetComponent<MatchBallComponent>();
+            var ballComponent = matchRoom.GetComponent<MatchBallComponent>();
             if (ballComponent == null)
             {
                 _log.Warning("[BallShootReceived] MatchBall is null in match {matchId}.", matchRoom.Id);
                 return;
             }
 
-            var movementComponent = matchRoom.Components.GetComponent<MatchMovementComponent>();
+            var movementComponent = matchRoom.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
                 _log.Warning("[BallShootReceived] MatchMovement is null in match {matchId}.", matchRoom.Id);

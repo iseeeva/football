@@ -1,33 +1,33 @@
-﻿using System.Numerics;
-using Sobee.Common;
+﻿using Sobee.Common;
 using Sobee.Network.Messaging;
 using Sobee.TestServer.Match;
 using Sobee.TestServer.MatchComponents;
 using Sobee.TestServer.Messages.Player;
+using System.Numerics;
 
 namespace Sobee.TestServer.MatchEvents
 {
     public class MatchClientPlayerMovementEvent
     {
-        private static readonly Serilog.ILogger _log = Logging.Get<MatchClientPlayerMovementEvent>();
+        private static readonly Serilog.ILogger _log = LogFactory.GetContextForType<MatchClientPlayerMovementEvent>();
 
         public static void PlayerMoveKeyDownReceived(object? sender, MessageEventArgs e)
         {
-            if (sender is not MatchRoom match) return;
-            if (e.handler is not MatchPlayer player) return;
-            if (e.message is not PlayerMoveKeyDownRxMessage moveKeyDown) return;
+            if (sender is not MatchRoom matchRoom) return;
+            if (e.Handler is not MatchPlayer matchPlayer) return;
+            if (e.Message is not PlayerMoveKeyDownRxMessage moveKeyDown) return;
 
-            var movementComponent = match.Components.GetComponent<MatchMovementComponent>();
+            var movementComponent = matchRoom.GetComponent<MatchMovementComponent>();
             if (movementComponent == null)
             {
-                _log.Warning("[PlayerMoveKeyDownReceived] MatchMovement component not found in MatchRoom {matchId}.", match.Id);
+                _log.Warning("[PlayerMoveKeyDownReceived] MatchMovement component not found in MatchRoom {matchId}.", matchRoom.Id);
                 return;
             }
 
-            var playerMatchInfo = match.MatchInformation.GetPlayer(player.Id);
+            var playerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
             if (playerMatchInfo == null)
             {
-                _log.Warning("[PlayerMoveKeyDownReceived] MatchPlayer {playerId} not found in MatchRoom {matchId}.", player.Id, match.Id);
+                _log.Warning("[PlayerMoveKeyDownReceived] MatchPlayer {playerId} not found in MatchRoom {matchId}.", matchPlayer.Id, matchRoom.Id);
                 return;
             }
 
@@ -40,7 +40,7 @@ namespace Sobee.TestServer.MatchEvents
                 0f
             );
 
-            match.Players.SendMessage(new PlayerMoveTxMessage(
+            matchRoom.Players.SendMessage(new PlayerMoveTxMessage(
                 playerMatchInfo.GetAbsoluteSquadNumber(),
                 playerMatchInfo.Position,
                 new Vector2(playerMatchInfo.Velocity.X, playerMatchInfo.Velocity.Y),
@@ -50,14 +50,14 @@ namespace Sobee.TestServer.MatchEvents
             ));
 
             playerMatchInfo.IsMoving = true;
-            _log.Debug("[PlayerMoveKeyDownReceived] Player {playerId} moving to {direction}.", player.Id, playerMatchInfo.Direction);
+            _log.Debug("[PlayerMoveKeyDownReceived] Player {playerId} moving to {direction}.", matchPlayer.Id, playerMatchInfo.Direction);
         }
 
         public static void PlayerMoveKeyUpReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
-            if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not PlayerMoveKeyUpRxMessage moveReleased) return;
+            if (e.Handler is not MatchPlayer matchPlayer) return;
+            if (e.Message is not PlayerMoveKeyUpRxMessage moveReleased) return;
 
             var playerInformation = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
             if (playerInformation == null)

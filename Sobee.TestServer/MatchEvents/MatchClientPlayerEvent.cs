@@ -7,13 +7,13 @@ namespace Sobee.TestServer.MatchEvents
 {
     public class MatchClientPlayerEvent
     {
-        private static readonly Serilog.ILogger _log = Logging.Get<MatchClientPlayerEvent>();
+        private static readonly Serilog.ILogger _log = LogFactory.GetContextForType<MatchClientPlayerEvent>();
 
         public static void PlayerHeartbeatReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
-            if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not PlayerHeartbeatRxMessage heartbeatMessage) return;
+            if (e.Handler is not MatchPlayer matchPlayer) return;
+            if (e.Message is not PlayerHeartbeatRxMessage heartbeatMessage) return;
 
             //matchPlayer.SendMessage(new Sobee.TestServer.Messages.HeartbeatMessage(heartbeatMessage.Timestamp));
             //_log.Debug("[HeartbeatMessageReceived] Heartbeat received from {playerId}", matchPlayer.Id);
@@ -22,8 +22,8 @@ namespace Sobee.TestServer.MatchEvents
         public static void PlayerMatchStateAlertReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
-            if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not PlayerMatchStateAlertRxMessage matchAlert) return;
+            if (e.Handler is not MatchPlayer matchPlayer) return;
+            if (e.Message is not PlayerMatchStateAlertRxMessage matchAlert) return;
 
             // TODO: Ek kontroller gerekebilir.
             matchRoom.Players.SendMessage(new Messages.Chat.ChatSystemTextTxMessage($"[MatchStateAlertReceived] Player {matchPlayer.Id} reported his match state is changed.", Messages.Chat.ChatSystemMessageType.General));

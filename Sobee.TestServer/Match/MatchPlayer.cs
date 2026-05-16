@@ -1,6 +1,4 @@
-﻿using Serilog;
-using Sobee.Common;
-using Sobee.Network;
+﻿using Sobee.Network;
 using Sobee.Network.Messaging;
 using Sobee.TestServer.MatchEvents;
 using Sobee.TestServer.Messages;
@@ -12,48 +10,30 @@ namespace Sobee.TestServer.Match
 {
     public class MatchPlayer : User
     {
-        private static readonly ILogger _log = Logging.Get<MatchPlayer>();
-        private bool _isDisposed;
-
-        public AuthInformationRxMessage AuthInformation;
+        public readonly AuthInformationRxMessage AuthInformation;
 
         public MatchPlayer(
-            SocketWrapper userSocket,
+            SocketWrapper socket,
             AuthInformationRxMessage authInformation,
             MessageCommunication communication
-        ) : base(userSocket, communication)
+        ) : base(socket, communication)
         {
             SessionType = SessionType.User;
             AuthInformation = authInformation;
 
-            communication.AddSessionHandler<PlayerHeartbeatRxMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerEvent.PlayerHeartbeatReceived));
-            communication.AddSessionHandler<PlayerMatchStateAlertRxMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerEvent.PlayerMatchStateAlertReceived));
-            communication.AddSessionHandler<PlayerMoveKeyDownRxMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerMovementEvent.PlayerMoveKeyDownReceived));
-            communication.AddSessionHandler<PlayerMoveKeyUpRxMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerMovementEvent.PlayerMoveKeyUpReceived));
-            communication.AddSessionHandler<ChatPlayerTextRxMessage>(this, new EventHandler<MessageEventArgs>(MatchClientPlayerChatEvent.ChatPlayerInputReceived));
-
-            _log.Debug("{id} initialized.", Id);
+            communication.AddSessionMessageHandler<PlayerHeartbeatRxMessage>(this, MatchClientPlayerEvent.PlayerHeartbeatReceived);
+            communication.AddSessionMessageHandler<PlayerMatchStateAlertRxMessage>(this, MatchClientPlayerEvent.PlayerMatchStateAlertReceived);
+            communication.AddSessionMessageHandler<PlayerMoveKeyDownRxMessage>(this, MatchClientPlayerMovementEvent.PlayerMoveKeyDownReceived);
+            communication.AddSessionMessageHandler<PlayerMoveKeyUpRxMessage>(this, MatchClientPlayerMovementEvent.PlayerMoveKeyUpReceived);
+            communication.AddSessionMessageHandler<ChatPlayerTextRxMessage>(this, MatchClientPlayerChatEvent.ChatPlayerInputReceived);
         }
 
-        public override void Update(double delta)
+        #region Lifecycle
+        protected override void OnUpdate(double delta)
         {
+            base.OnUpdate(delta);
             SendMessage(new LatencyMessage((float)delta));
-            base.Update(delta);
         }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (_isDisposed)
-                return;
-
-            _isDisposed = true;
-
-            if (disposing)
-            {
-                _log.Debug("{id} disposed.", Id);
-            }
-
-            base.Dispose(disposing);
-        }
+        #endregion
     }
 }

@@ -8,15 +8,15 @@ namespace Sobee.TestServer.AuthEvents
 {
     public class AuthClientEvent
     {
-        private static readonly ILogger _log = Logging.Get<AuthClientEvent>();
+        private static readonly ILogger _log = LogFactory.GetContextForType<AuthClientEvent>();
 
         public static void AuthInformationReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not AuthRoom authRoom) return;
-            if (e.handler is not AuthUser authUser) return;
-            if (e.message is not AuthInformationRxMessage authInformation) return;
+            if (e.Handler is not AuthUser authUser) return;
+            if (e.Message is not AuthInformationRxMessage authInformation) return;
 
-            if (authRoom.ConnectedHub is not Hub hub) return;
+            if (authRoom.Owner is not Hub hub) return;
 
             // TODO: Process auth information here when database integration is done
             authUser.AuthInformation = authInformation;

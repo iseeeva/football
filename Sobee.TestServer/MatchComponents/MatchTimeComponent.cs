@@ -1,52 +1,39 @@
-﻿using Sobee.Common;
-using Sobee.TestServer.Match;
+﻿using Sobee.TestServer.Match;
 using Sobee.TestServer.Messages.Match;
 
 namespace Sobee.TestServer.MatchComponents
 {
-    public class MatchTimeComponent : MatchComponent
+    public class MatchTimeComponent : MatchComponent<MatchRoom>
     {
-        private readonly Serilog.ILogger _log = Logging.Get<MatchTimeComponent>();
-        private bool _isDisposed;
-
-        public MatchTimeComponent(MatchRoom room) : base(room)
+        public MatchTimeComponent()
         {
-            _log.Debug("{id} initialized.", Id);
+
         }
 
-        public override void Update(double delta)
+        #region Lifecycle
+        protected override void OnUpdate(double delta)
         {
-            var matchInfo = _matchRoom.MatchInformation;
+            if (Owner == null)
+            {
+                _log.Warning("Owner is null. Component aborted.");
+                Stop();
+
+                return;
+            }
+
+            var matchInfo = Owner.MatchInformation;
             var phaseInfo = matchInfo.PhaseInfo;
 
             if (matchInfo.MatchState == MatchState.Running)
             {
                 //if (matchInfo.TimeMultiplier <= 0)
                 //{
-                //    _log.Warning("{roomId} TimeMultiplier was 0 or negative, resetting to 1 for avoiding errors.", _matchRoom.Id);
+                //    _log.Warning("{roomId} TimeMultiplier was 0 or negative, resetting to 1.", _matchRoom.Id);
                 //    matchInfo.TimeMultiplier = 1;
                 //}
-
-                // Update match time
-                phaseInfo.MatchTime += (delta * matchInfo.TimeMultiplier);
+                phaseInfo.MatchTime += delta * matchInfo.TimeMultiplier;
             }
-
-            base.Update(delta);
         }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (_isDisposed)
-                return;
-
-            _isDisposed = true;
-
-            if (disposing)
-            {
-                _log.Debug("{id} disposed.", Id);
-            }
-
-            base.Dispose(disposing);
-        }
+        #endregion
     }
 }

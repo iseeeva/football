@@ -1,8 +1,6 @@
-﻿using Sobee.Common;
-
-namespace Sobee.Serialization
+﻿namespace Sobee.Serialization
 {
-    public class MessageSerialization : Disposable
+    public class MessageSerialization : IDisposable
     {
         private bool _isDisposed;
 
@@ -21,8 +19,8 @@ namespace Sobee.Serialization
 
         public void WriteMessage(IMessage message)
         {
-            if (binaryWriter == null)
-                throw new ArgumentException("Stream was not writeable.");
+            if (binaryWriter == null || !binaryWriter.CanWrite)
+                throw new ArgumentException("BinaryWriter is null or can't writeable.");
 
             ushort num = messageTypeToId(message.GetType());
             num ^= 7779;
@@ -32,15 +30,21 @@ namespace Sobee.Serialization
 
         public IMessage ReadMessage()
         {
-            if (binaryReader == null)
-                throw new ArgumentException("Stream was not readable.");
+            if (binaryReader == null || !binaryReader.CanRead)
+                throw new ArgumentException("BinaryReader is null or can't readable.");
 
             ushort num = binaryReader.method_15();
             num ^= 7779;
             return (IMessage)dispatchToMessage(num, binaryReader);
         }
 
-        protected override void Dispose(bool disposing)
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
         {
             if (_isDisposed)
                 return;
@@ -52,8 +56,6 @@ namespace Sobee.Serialization
                 binaryWriter.Dispose();
                 binaryReader.Dispose();
             }
-
-            base.Dispose(disposing);
         }
     }
 }

@@ -1,83 +1,132 @@
 ﻿namespace Sobee.Common
 {
-    public class ComponentManager<T> : Component where T : Component
+    public interface IComponentOwner : IComponent
     {
-        private readonly Serilog.ILogger _log = Logging.Get<ComponentManager<T>>();
-        private bool _isDisposed;
 
-        private readonly Dictionary<Guid, T> _components = new();
-        private readonly List<T> _updateList = new();
+    }
 
-        public T this[Guid id] => _components[id];
+    public class ComponentManager<TComponent> : Component<IComponentOwner>, IComponentOwner
+        where TComponent : IComponent
+    {
+        private readonly Dictionary<Guid, TComponent> _components = new();
 
-        public override void Update(double delta)
+        public TComponent? this[Guid id]
+            => _components.GetValueOrDefault(id);
+
+        public int Count => _components.Count;
+
+        public event Action<TComponent>? ComponentAdded;
+        public event Action<TComponent>? ComponentRemoved;
+
+        #region Lifecycle
+        protected override void OnStart()
         {
-            for (int i = 0; i < _updateList.Count; i++)
-            {
-                _updateList[i].Update(delta);
-            }
+            foreach (var c in _components.Values.ToArray())
+                c.Start();
         }
 
-        public A? GetComponent<A>() where A : T
+        protected override void OnStop()
         {
-            foreach (var component in _updateList)
-            {
-                if (component is A a)
-                    return a;
-            }
-            return null;
+            foreach (var c in _components.Values.ToArray())
+                c.Stop();
         }
 
-        public bool AddComponent(T component)
+        protected override void OnUpdate(double delta)
         {
-            if (_components.Values.Any(x => x.GetType() == component.GetType()))
+            foreach (var c in _components.Values.ToArray())
+                c.Update(delta);
+        }
+        #endregion
+
+        #region Components
+        public bool AddComponent(TComponent component)
+        {
+            ArgumentNullException.ThrowIfNull(component);
+
+            if (IsDisposed)
             {
-                _log.Warning("{managerId} already has component type {type}.", Id, component.GetType().Name);
+                _log.Warning("class disposed — cannot add {Type} component.", component.GetType().Name);
                 return false;
             }
 
-            _components.Add(component.Id, component);
-            _updateList.Add(component);
+            if (component.IsDisposed)
+            {
+                _log.Warning("cannot add disposed {Type} component.", component.GetType().Name);
+                return false;
+            }
 
-            _log.Debug("{managerId} added component {componentId}.", Id, component.Id);
+            if (HasComponent(component.GetType()))
+            {
+                _log.Warning("class already owns a {Type} component.", component.GetType().Name);
+                return false;
+            }
+
+            if (component is Component c)
+                c.Owner = this;
+
+            _components.Add(component.Id, component);
+
+            if (IsRunning)
+                component.Start();
+
+            _log.Information("added {Type} ({ComponentId}) component.", component.GetType().Name, component.Id);
+            ComponentAdded?.Invoke(component);
             return true;
         }
 
         public bool RemoveComponent(Guid componentId)
         {
-            if (_components.Remove(componentId, out var component))
-            {
-                _updateList.Remove(component);
-                component.Dispose();
+            if (IsDisposed) return false;
+            if (!_components.Remove(componentId, out var component)) return false;
 
-                _log.Debug("{managerId} removed component {componentId}.", Id, componentId);
-                return true;
-            }
+            if (component is Component c)
+                c.Owner = null;
 
-            return false;
+            component.Dispose();
+            _log.Information("removed {Type} ({ComponentId}) component.", component.GetType().Name, component.Id);
+            ComponentRemoved?.Invoke(component);
+            return true;
         }
 
-        public int Count => _components.Count;
-
-        protected override void Dispose(bool disposing)
+        public bool RemoveComponent<TDerived>() where TDerived : TComponent
         {
-            if (_isDisposed)
-                return;
-
-            _isDisposed = true;
-
-            if (disposing)
-            {
-                foreach (var component in _updateList)
-                    component.Dispose();
-
-                _components.Clear();
-                _updateList.Clear();
-
-                _log.Debug("{id} disposed.", Id);
-            }
-
-            base.Dispose(disposing);
+            var component = GetComponent<TDerived>();
+            return component is not null && RemoveComponent(component.Id);
         }
+
+        public TDerived? GetComponent<TDerived>() where TDerived : TComponent
+        {
+            foreach (var c in _components.Values)
+                if (c is TDerived match) return match;
+            return default;
+        }
+
+        public IEnumerable<TComponent> GetAllComponents()
+            => _components.Values.ToArray();
+
+        public IEnumerable<TDerived> GetComponentOfType<TDerived>() where TDerived : TComponent
+            => _components.Values.OfType<TDerived>();
+
+        public bool HasComponent<TDerived>() where TDerived : TComponent
+            => HasComponent(typeof(TDerived));
+
+        public bool HasComponent(Type type, bool allowDerived = false)
+            => _components.Values.Any(c => allowDerived
+                ? type.IsAssignableFrom(c.GetType())
+                : c.GetType() == type);
+        #endregion
+
+        #region Dispose
+        protected override void OnDispose()
+        {
+            foreach (var c in _components.Values.ToArray())
+            {
+                if (c is Component base_c)
+                    base_c.Owner = null;
+                c.Dispose();
+            }
+            _components.Clear();
+        }
+        #endregion
     }
 }

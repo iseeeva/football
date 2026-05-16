@@ -1,58 +1,28 @@
-﻿using Serilog;
-using Sobee.Common;
-using Sobee.Network;
-using Sobee.Network.Messaging;
+﻿using Sobee.Network;
 using Sobee.TestServer.AuthEvents;
 
 namespace Sobee.TestServer.Auth
 {
-    public class AuthRoom : Room<AuthUser>
+    public class AuthRoom : Room<AuthRoom, AuthUser>
     {
-        private static readonly ILogger _log = Logging.Get<AuthRoom>();
-        private bool _isDisposed;
+        public AuthUserManager<AuthUser> Users => (AuthUserManager<AuthUser>)_sessions;
+        public RoomCommunication Communication => _communication;
 
-        public AuthUserManager Users => (AuthUserManager)_sessions;
-        public readonly Hub ConnectedHub;
-
-        public AuthRoom(Hub connectedHub) : base()
+        #region Constructor
+        public AuthRoom()
         {
-            _log.Debug("{id} initializing.", Id);
-            CommunicationType = SessionType.Authentication;
-            ConnectedHub = connectedHub;
+            // === Communication ===
+            Communication.CommunicationType = SessionType.Authentication;
 
-            // Bu handler ın bütün sessionlardan gelen mesajları işlemesi gerekiyor.
-            RegisterMessageEvent<Messages.Auth.AuthInformationRxMessage>(OnReceivedMessage);
-            AddGlobalHandler<Messages.Auth.AuthInformationRxMessage>(new EventHandler<MessageEventArgs>(AuthClientEvent.AuthInformationReceived));
-
-            _log.Debug("{id} initialized.", Id);
+            // === User Messages ===
+            Communication.RegisterMessage<Messages.Auth.AuthInformationRxMessage>();
+            Communication.AddGlobalMessageHandler<Messages.Auth.AuthInformationRxMessage>(AuthClientEvent.AuthInformationReceived);
         }
+        #endregion
 
-        protected override SessionManager<AuthUser> CreateSessionManager()
-        {
-            return new AuthUserManager(this);
-        }
-
-        public override void Update(double delta)
-        {
-            if (_sessions != null)
-            {
-                Users.Update(delta);
-            }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (!_isDisposed)
-            {
-                _isDisposed = true;
-
-                if (disposing)
-                {
-                    _log.Debug("{id} disposed.", Id);
-                }
-            }
-
-            base.Dispose(disposing);
-        }
+        #region Session Manager
+        protected override SessionManager<AuthRoom, AuthUser> CreateSessionManager()
+            => new AuthUserManager<AuthUser>();
+        #endregion
     }
 }

@@ -9,13 +9,13 @@ namespace Sobee.TestServer.MatchEvents
 {
     public class MatchClientPlayerChatEvent
     {
-        private static readonly Serilog.ILogger _log = Logging.Get<MatchClientPlayerChatEvent>();
+        private static readonly Serilog.ILogger _log = LogFactory.GetContextForType<MatchClientPlayerChatEvent>();
 
         public static void ChatPlayerInputReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not MatchRoom matchRoom) return;
-            if (e.handler is not MatchPlayer matchPlayer) return;
-            if (e.message is not ChatPlayerTextRxMessage chatPlayerMessage) return;
+            if (e.Handler is not MatchPlayer matchPlayer) return;
+            if (e.Message is not ChatPlayerTextRxMessage chatPlayerMessage) return;
 
             if (matchRoom.MatchInformation == null)
             {
