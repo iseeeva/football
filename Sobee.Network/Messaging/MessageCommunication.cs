@@ -4,13 +4,19 @@ using System.Reflection;
 
 namespace Sobee.Network.Messaging
 {
-    public class MessageCommunication : Component
+    public class MessageCommunication : ComponentManager<IComponent>
     {
         public SessionType CommunicationType { get; set; }
 
         private readonly MessageDispatch _dispatcher = new();
         private readonly ConcurrentDictionary<Type, EventHandler<MessageEventArgs>> _globalHandlers = new();
         private readonly ConcurrentDictionary<Session, ConcurrentDictionary<Type, EventHandler<MessageEventArgs>>> _sessionHandlers = new();
+
+        public MessageCommunication()
+        {
+            // === Components ===
+            AddComponent(_dispatcher);
+        }
 
         #region Message Registration
         public void RegisterMessages(string assemblyName)
