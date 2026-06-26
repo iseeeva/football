@@ -3,19 +3,29 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sobee", "Sobee\Sobee.csproj", "{9F29CD32-2158-4F6D-B191-0215739F646B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Football.GameServer", "Football.GameServer\Football.GameServer.csproj", "{9F29CD32-2158-4F6D-B191-0215739F646B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sobee.Network", "Sobee.Network\Sobee.Network.csproj", "{20ECD080-2E5B-4523-9397-C08D4520719C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Football.Network", "Football.Network\Football.Network.csproj", "{20ECD080-2E5B-4523-9397-C08D4520719C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sobee.Common", "Sobee.Common\Sobee.Common.csproj", "{3DDE7D83-02FB-4410-B3D2-82CBBFAF6235}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Football.Common", "Football.Common\Football.Common.csproj", "{3DDE7D83-02FB-4410-B3D2-82CBBFAF6235}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sobee.Serialization", "Sobee.Serialization\Sobee.Serialization.csproj", "{C6351104-11A0-41D7-8FCA-045DD2DF9E0F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Football.Serialization", "Football.Serialization\Football.Serialization.csproj", "{C6351104-11A0-41D7-8FCA-045DD2DF9E0F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sobee.Tasks", "Sobee.Tasks\Sobee.Tasks.csproj", "{76399949-CEB3-4A33-93C6-CA111A3D6F71}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Football.Tasks", "Football.Tasks\Football.Tasks.csproj", "{76399949-CEB3-4A33-93C6-CA111A3D6F71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sobee.TestServer.Messages", "Sobee.TestServer.Messages\Sobee.TestServer.Messages.csproj", "{F8D68E0F-2333-42EB-50D5-E5F586434167}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Football.GameServer.Messages", "Football.GameServer.Messages\Football.GameServer.Messages.csproj", "{F8D68E0F-2333-42EB-50D5-E5F586434167}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sobee.TestServer", "Sobee.TestServer\Sobee.TestServer.csproj", "{DC31DBBB-CE20-4B32-A4F9-EAD6271D5A23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Football.ServerBrowser", "Football.ServerBrowser\Football.ServerBrowser.csproj", "{8C252190-021C-4A4F-A43D-D828E6380FC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Football.Database", "Football.Database\Football.Database.csproj", "{31C354B5-772F-4E4C-BF63-975BB5AB64AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Football.ServerBrowser.Messages", "Football.ServerBrowser.Messages\Football.ServerBrowser.Messages.csproj", "{298BCA1B-7E28-43E8-8C05-D3532BD221BB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServerBrowser", "ServerBrowser", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FootballLibrary", "FootballLibrary", "{548579F6-74F3-4FFE-853C-1431A17A3274}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GameServer", "GameServer", "{FD9EB3B6-37E7-49F1-9BB0-FD18E665670A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,13 +57,32 @@ Global
 		{F8D68E0F-2333-42EB-50D5-E5F586434167}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8D68E0F-2333-42EB-50D5-E5F586434167}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8D68E0F-2333-42EB-50D5-E5F586434167}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DC31DBBB-CE20-4B32-A4F9-EAD6271D5A23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DC31DBBB-CE20-4B32-A4F9-EAD6271D5A23}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DC31DBBB-CE20-4B32-A4F9-EAD6271D5A23}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DC31DBBB-CE20-4B32-A4F9-EAD6271D5A23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C252190-021C-4A4F-A43D-D828E6380FC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C252190-021C-4A4F-A43D-D828E6380FC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C252190-021C-4A4F-A43D-D828E6380FC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C252190-021C-4A4F-A43D-D828E6380FC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31C354B5-772F-4E4C-BF63-975BB5AB64AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31C354B5-772F-4E4C-BF63-975BB5AB64AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31C354B5-772F-4E4C-BF63-975BB5AB64AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31C354B5-772F-4E4C-BF63-975BB5AB64AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{298BCA1B-7E28-43E8-8C05-D3532BD221BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{298BCA1B-7E28-43E8-8C05-D3532BD221BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{298BCA1B-7E28-43E8-8C05-D3532BD221BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{298BCA1B-7E28-43E8-8C05-D3532BD221BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9F29CD32-2158-4F6D-B191-0215739F646B} = {FD9EB3B6-37E7-49F1-9BB0-FD18E665670A}
+		{20ECD080-2E5B-4523-9397-C08D4520719C} = {548579F6-74F3-4FFE-853C-1431A17A3274}
+		{3DDE7D83-02FB-4410-B3D2-82CBBFAF6235} = {548579F6-74F3-4FFE-853C-1431A17A3274}
+		{C6351104-11A0-41D7-8FCA-045DD2DF9E0F} = {548579F6-74F3-4FFE-853C-1431A17A3274}
+		{76399949-CEB3-4A33-93C6-CA111A3D6F71} = {548579F6-74F3-4FFE-853C-1431A17A3274}
+		{F8D68E0F-2333-42EB-50D5-E5F586434167} = {FD9EB3B6-37E7-49F1-9BB0-FD18E665670A}
+		{8C252190-021C-4A4F-A43D-D828E6380FC4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{31C354B5-772F-4E4C-BF63-975BB5AB64AD} = {548579F6-74F3-4FFE-853C-1431A17A3274}
+		{298BCA1B-7E28-43E8-8C05-D3532BD221BB} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E54B1B78-6ADC-40F9-8FEB-9990F0597723}
