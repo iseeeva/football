@@ -10,11 +10,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Football.Common\Football.Common.csproj" />
-    <ProjectReference Include="..\Football.Database\Football.Database.csproj" />
     <ProjectReference Include="..\Football.GameServer.Messages\Football.GameServer.Messages.csproj" />
     <ProjectReference Include="..\Football.Network\Football.Network.csproj" />
     <ProjectReference Include="..\Football.Serialization\Football.Serialization.csproj" />
-    <ProjectReference Include="..\Football.ServerBrowser.Messages\Football.ServerBrowser.Messages.csproj" />
     <ProjectReference Include="..\Football.Tasks\Football.Tasks.csproj" />
   </ItemGroup>
 

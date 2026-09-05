@@ -11,7 +11,7 @@ namespace Football.GameServer.LobbyEvents
     {
         private static readonly ILogger _log = LogFactory.GetContextForType<MatchClientAuthEvent>();
 
-        public static async void AuthInformationReceived(object? sender, MessageEventArgs e)
+        public static void AuthInformationReceived(object? sender, MessageEventArgs e)
         {
             if (sender is not LobbyRoom authRoom) return;
             if (e.Handler is not LobbyUser authUser) return;
@@ -22,13 +22,6 @@ namespace Football.GameServer.LobbyEvents
             if (authUser.Socket == null)
             {
                 _log.Error("[AuthInformationReceived] Session ({sessionId}) socket is null.", authUser.Id);
-                return;
-            }
-
-            var authDbUser = await authUser.GetDbUserDetailsAsync();
-            if (authDbUser == null)
-            {
-                _log.Error("[AuthInformationReceived] Session ({sessionId}) doesn't have user linkage from database.", authUser.Id);
                 return;
             }
 

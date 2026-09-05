@@ -1,7 +1,5 @@
 ﻿using Football.Common;
-using Football.Database;
 using Football.GameServer.Game;
-using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace Football.GameServer
@@ -21,8 +19,6 @@ namespace Football.GameServer
         {
             LogFactory.Configure();
             _log.Information("Logging started.");
-
-            await ClearTransientStateAsync();
 
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
             Console.CancelKeyPress += OnCancelKeyPress;
@@ -44,21 +40,6 @@ namespace Football.GameServer
             _gameServer.Stop();
         }
 
-        private static async Task ClearTransientStateAsync()
-        {
-            try
-            {
-                using var db = new ServerBrowserDbContext();
-                await db.BrowserSessions.ExecuteDeleteAsync();
-                await db.ActiveMatches.ExecuteDeleteAsync();
-                _log.Information("Temporary database context cleared.");
-            }
-            catch (Exception ex)
-            {
-                _log.Error(ex, "Failed to clear temporary database context.");
-            }
-        }
-
         private static void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
         {
             _log.Information("Ctrl+C detected. Shutting down...");
@@ -71,7 +52,6 @@ namespace Football.GameServer
             try
             {
                 _gameServer?.Stop();
-                ClearTransientStateAsync().GetAwaiter().GetResult();
                 _log.Information("Exit cleanup complete.");
             }
             catch (Exception ex)
