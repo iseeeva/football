@@ -9,7 +9,7 @@ using Football.Network.Messaging;
 
 namespace Football.GameServer.Match
 {
-    public class MatchUser : GameUser
+    public class MatchUser : GameUser<MatchRoom, MatchUser>
     {
         public readonly MatchClientAuthInfoRxMessage AuthInformation;
 

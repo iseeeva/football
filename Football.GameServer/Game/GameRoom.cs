@@ -5,7 +5,7 @@ namespace Football.GameServer.Game
 {
     public class GameRoom<TRoom, TSession> : ComponentManager<IComponent>
         where TRoom : GameRoom<TRoom, TSession>
-        where TSession : Session
+        where TSession : GameUser<TRoom, TSession>
     {
         protected readonly SessionManager<TRoom, TSession> _sessions;
         protected readonly GameRoomCommunication _communication;

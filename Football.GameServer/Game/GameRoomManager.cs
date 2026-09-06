@@ -1,12 +1,11 @@
 ﻿using Football.Common;
-using Football.Network;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Football.GameServer.Game
 {
     public class GameRoomManager<R, A> : Component
         where R : GameRoom<R, A>, new()
-        where A : Session
+        where A : GameUser<R, A>
     {
         protected readonly Dictionary<Guid, R> _rooms = new();
         protected readonly List<R> _roomUpdateList = new();

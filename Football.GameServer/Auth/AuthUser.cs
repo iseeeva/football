@@ -5,7 +5,7 @@ using Football.Network.Messaging;
 
 namespace Football.GameServer.Auth
 {
-    public class AuthUser : GameUser
+    public class AuthUser : GameUser<AuthRoom, AuthUser>
     {
         public MatchClientAuthInfoRxMessage? AuthInformation;
 
