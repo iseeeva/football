@@ -3,13 +3,13 @@ using Football.GameServer.Messages.Auth;
 using Football.Network;
 using Football.Network.Messaging;
 
-namespace Football.GameServer.Lobby
+namespace Football.GameServer.Auth
 {
-    public class LobbyUser : GameUser
+    public class AuthUser : GameUser
     {
         public MatchClientAuthInfoRxMessage? AuthInformation;
 
-        public LobbyUser(SocketWrapper userSocket, MessageCommunication communication)
+        public AuthUser(SocketWrapper userSocket, MessageCommunication communication)
             : base(userSocket, communication)
         {
 

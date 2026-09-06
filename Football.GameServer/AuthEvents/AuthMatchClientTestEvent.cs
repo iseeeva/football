@@ -4,11 +4,11 @@ using Football.Network;
 using Football.Network.Messaging;
 using Serilog;
 
-namespace Football.GameServer.LobbyEvents
+namespace Football.GameServer.AuthEvents
 {
-    public class MatchClientAuthTestEvent
+    public class AuthMatchClientTestEvent
     {
-        private static readonly ILogger _log = LogFactory.GetContextForType<MatchClientAuthTestEvent>();
+        private static readonly ILogger _log = LogFactory.GetContextForType<AuthMatchClientTestEvent>();
 
         public static void GlobalTest(object? sender, MessageEventArgs e)
         {

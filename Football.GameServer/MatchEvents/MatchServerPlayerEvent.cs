@@ -21,23 +21,23 @@ namespace Football.GameServer.MatchEvents
                 return;
             }
 
-            var matchInformation = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
-            if (matchInformation == null)
+            var playerMatchInfo = matchRoom.MatchInformation.GetPlayer(matchPlayer.Id);
+            if (playerMatchInfo == null)
             {
                 _log.Warning("[PlayerJoinReceived] Player {playerId} not found in Match {matchId}.", matchPlayer.Id, matchRoom.Id);
                 matchRoom.Players.TryRemove(matchPlayer.Id, out _);
                 return;
             }
 
-            matchRoom.Players.SendMessage(new PlayerJoinTxMessage(matchInformation));
+            matchRoom.Players.SendMessage(new PlayerJoinTxMessage(playerMatchInfo));
             matchRoom.Players.SendMessage(new ChatSystemTextTxMessage(
-                $"{matchInformation.PlayerName} connected. (total player: {matchRoom.Players.Count})",
+                $"{playerMatchInfo.PlayerName} connected. (total player: {matchRoom.Players.Count})",
                 ChatSystemMessageType.Anounce
             ));
 
             // INFO: Set camera and clientId to the joining player for their own view
-            matchRoom.MatchInformation.ClientCamera = matchInformation.GetAbsoluteSquadNumber();
-            matchRoom.MatchInformation.ClientId = matchInformation.PlayerId;
+            matchRoom.MatchInformation.ClientCamera = playerMatchInfo.GetAbsoluteSquadNumber();
+            matchRoom.MatchInformation.ClientId = playerMatchInfo.PlayerId;
             matchPlayer.SendMessage(matchRoom.MatchInformation);
 
             _log.Information("[PlayerJoinReceived] Player {playerId} joined to match {matchId}.", matchPlayer.Id, matchRoom.Id);
@@ -59,7 +59,7 @@ namespace Football.GameServer.MatchEvents
                     ChatSystemMessageType.General));
 
                 player.SendMessage(new ChatSystemTextTxMessage(
-                    $"[PlayerJoinReceived] (PlayerMatchInformation: {matchInformation})",
+                    $"[PlayerJoinReceived] (PlayerMatchInformation: {playerMatchInfo})",
                     ChatSystemMessageType.General));
             });
         }

@@ -1,20 +1,20 @@
 ﻿using Football.Common;
+using Football.GameServer.Auth;
 using Football.GameServer.Game;
-using Football.GameServer.Lobby;
 using Football.GameServer.Messages.Auth;
 using Football.Network.Messaging;
 using Serilog;
 
-namespace Football.GameServer.LobbyEvents
+namespace Football.GameServer.AuthEvents
 {
-    public class MatchClientAuthEvent
+    public class AuthMatchClientEvent
     {
-        private static readonly ILogger _log = LogFactory.GetContextForType<MatchClientAuthEvent>();
+        private static readonly ILogger _log = LogFactory.GetContextForType<AuthMatchClientEvent>();
 
         public static void AuthInformationReceived(object? sender, MessageEventArgs e)
         {
-            if (sender is not LobbyRoom authRoom) return;
-            if (e.Handler is not LobbyUser authUser) return;
+            if (sender is not AuthRoom authRoom) return;
+            if (e.Handler is not AuthUser authUser) return;
             if (e.Message is not MatchClientAuthInfoRxMessage authInformation) return;
 
             if (authRoom.Owner is not GameHub hub) return;
@@ -30,11 +30,11 @@ namespace Football.GameServer.LobbyEvents
 
             // TODO: Remove this temporary code after implementing proper matchmaking flow
             #region Temporary
-            //if (hub.RoomManager.TryCreate(out var matchRoom))
-            //{
-            //    if (!matchRoom.Players.TryCreate(authUser))
-            //        _log.Error("[AuthInformationReceived] Failed to add auth user {authId} to match room.", authUser.Id);
-            //}
+            if (hub.RoomManager.TryCreate(out var matchRoom))
+            {
+                if (!matchRoom.Players.TryCreate(authUser))
+                    _log.Error("[AuthInformationReceived] Failed to add auth user {authId} to match room.", authUser.Id);
+            }
             #endregion
 
             _log.Information($"{authUser.Id} - {authInformation}");

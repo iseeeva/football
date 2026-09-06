@@ -1,11 +1,11 @@
 ﻿using Football.Network;
 
-namespace Football.GameServer.Lobby
+namespace Football.GameServer.Auth
 {
-    public class LobbyUserManager<TUser> : SessionManager<LobbyRoom, TUser>
-      where TUser : LobbyUser
+    public class AuthUserManager<TUser> : SessionManager<AuthRoom, TUser>
+      where TUser : AuthUser
     {
-        public LobbyUserManager()
+        public AuthUserManager()
         {
 
         }
@@ -26,7 +26,7 @@ namespace Football.GameServer.Lobby
                 return false;
             }
 
-            var authUser = new LobbyUser(socketWrapper, Owner.Communication);
+            var authUser = new AuthUser(socketWrapper, Owner.Communication);
             if (base.TryAdd((TUser)authUser))
                 return true;
 

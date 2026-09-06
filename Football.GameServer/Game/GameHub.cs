@@ -1,5 +1,5 @@
 ﻿using Football.Common;
-using Football.GameServer.Lobby;
+using Football.GameServer.Auth;
 using Football.GameServer.Match;
 using Football.Network;
 using System.Net;
@@ -12,7 +12,7 @@ namespace Football.GameServer.Game
         public readonly int Port;
         public readonly Socket Socket;
 
-        public readonly LobbyRoom AuthRoom;
+        public readonly AuthRoom AuthRoom;
         public readonly MatchRoomManager RoomManager;
 
         #region Constructor
@@ -30,7 +30,7 @@ namespace Football.GameServer.Game
                 Socket.Listen(100);
                 Socket.Blocking = false;
 
-                AuthRoom = new LobbyRoom();
+                AuthRoom = new AuthRoom();
                 AddComponent(AuthRoom);
 
                 RoomManager = new MatchRoomManager();

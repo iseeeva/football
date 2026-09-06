@@ -1,4 +1,4 @@
-﻿using Football.GameServer.Lobby;
+﻿using Football.GameServer.Auth;
 using Football.GameServer.Match;
 using Football.GameServer.Messages;
 using Football.GameServer.Messages.Match;
@@ -12,7 +12,7 @@ namespace Football.GameServer.MatchHelpers
     {
         public static bool TryGeneratePlayer(
             MatchRoom matchRoom,
-            LobbyUser authUser,
+            AuthUser authUser,
             [NotNullWhen(true)] out MatchUser? matchPlayer,
             [NotNullWhen(true)] out PlayerMatchInformationMessage? playerMatchInformation
         )

@@ -1,4 +1,4 @@
-﻿using Football.GameServer.Lobby;
+﻿using Football.GameServer.Auth;
 using Football.GameServer.MatchHelpers;
 using Football.GameServer.Messages.Player;
 using Football.Network;
@@ -25,7 +25,7 @@ namespace Football.GameServer.Match
             //return false;
         }
 
-        public virtual bool TryCreate(LobbyUser authUser)
+        public virtual bool TryCreate(AuthUser authUser)
         {
             if (Owner == null)
             {
